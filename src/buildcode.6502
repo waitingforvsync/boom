@@ -1,0 +1,126 @@
+\\ Builds code for 4 pixel high dither blocks
+
+.copysnippet
+{
+	LDA snippets,X:INX
+	CMP #&FE:BCC gotit:BEQ exit
+	LDA addr
+	.gotit
+	STA (write),Y
+	INY
+	BNE copysnippet
+	.exit
+	RTS
+}
+
+.snippets
+
+\\ Fill routine:
+\\
+\\		; Enter with C clear and X=0
+\\
+\\		.loop
+\\		LDA &7000,X		BD 00 70
+\\		EOR &7004,X		5D 04 70
+\\		STA &7004,X		9D 04 70
+\\
+\\		EOR &7100,X		5D 00 71
+\\		STA &7100,X		9D 00 71
+\\		EOR &7104,X		5D 04 71
+\\		STA &7104,X		9D 04 71
+\\		  ...
+\\		EOR &7F00,X		5D 00 7F
+\\		STA &7F00,X		9D 00 7F
+\\		EOR &7F04,X		5D 04 7F
+\\		STA &7F04,X		9D 04 7F
+\\
+\\		TXA				8A
+\\		ADC #8			69 08
+\\		ADC #0			69 00
+\\		TAX				AA
+\\		EOR #4			49 04
+\\		BNE +1			D0 01
+\\		RTS				60
+\\		JMP loop		4C xx xx
+\\
+\\ total 203 (&CB) bytes
+
+.fill_pre
+	LDA &FF00,X
+	EQUB &FE
+.fill_main
+	EOR &FF00,X
+	STA &FF00,X
+.fill_pre_2
+	EOR &FF04,X
+	STA &FF04,X
+	EQUB &FE
+.fill_post
+	TXA:ADC #8:ADC #0:TAX:EOR #4:BNE fill_reloop
+	RTS
+	.fill_reloop
+	EQUB &4C
+	EQUB &FE
+
+\\ Clear routine:
+\\
+\\		; Enter with A=0 and X=0
+\\
+\\		.loop
+\\		STA &7000,X		9D 00 70
+\\		STA &7100,X		9D 00 71
+\\		  ...
+\\		STA &7F00,X		9D 00 7F
+\\
+\\		INX				E8
+\\		BNE -51			D0 CD
+\\		RTS				60
+\\
+\\ total 52 (&34) bytes
+
+.cls_main
+	STA &FF00,X
+	EQUB &FE
+.cls_post
+	INX
+	BNE P%-49
+	RTS
+	EQUB &FE
+
+
+\\ Build fill routine
+\\
+\\ If we need to grab back more memory in future, consider building this dynamically on the
+\\ stack with PHA, each time it's required.
+
+.buildfill
+{
+	LDY #0
+	LDX #fill_pre-snippets:JSR copysnippet
+	LDX #fill_pre_2-snippets:JSR copysnippet
+	LDA #15:STA count
+	.loop
+	INC addr
+	LDX #fill_main-snippets:JSR copysnippet
+	DEC count
+	BNE loop
+	JSR copysnippet		; C set on exit
+	LDA write:STA (write),Y:INY
+	LDA write+1:STA (write),Y
+	RTS
+}
+
+
+\\ Build clear routine
+
+.buildcls
+{
+	LDY #0
+	LDA #16:STA count
+	.loop
+	LDX #cls_main-snippets:JSR copysnippet
+	INC addr
+	DEC count
+	BNE loop
+	JMP copysnippet
+}

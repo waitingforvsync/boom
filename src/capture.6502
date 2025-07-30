@@ -1,0 +1,103 @@
+
+
+
+.capture_test
+{
+	LDY #0
+	LDA #0:STA line_x0,Y
+	LDA &FF:STA line_x1,Y
+	LDA #5:STA line_y0,Y
+	LDA colourtab0 + colour_bright_blue:STA line_colour0,Y
+	LDA colourtab1 + colour_bright_blue:STA line_colour1,Y
+	SEC:LDA line_x1,Y:SBC line_x0,Y:TAX
+	SEC:LDA #22:SBC line_y0,Y
+	STY savey
+	JSR calc_gradient
+	LDY savey
+	STA line_dydxlo,Y
+	TXA:STA line_dydxhi,Y
+
+	INY
+	LDA #0:STA line_x0,Y
+	LDA &FF:STA line_x1,Y
+	LDA #118:STA line_y0,Y
+	LDA colourtab0 + colour_bright_blue:EOR colourtab0 + colour_dark_red:STA line_colour0,Y
+	LDA colourtab1 + colour_bright_blue:EOR colourtab1 + colour_dark_red:STA line_colour1,Y
+	SEC:LDA line_x1,Y:SBC line_x0,Y:TAX
+	SEC:LDA line_y0,Y:SBC #69
+	STY savey
+	JSR calc_gradient
+	LDY savey
+	STA line_dydxlo,Y
+	TXA:ORA #&80:STA line_dydxhi,Y
+
+	INY
+	LDA &FF:STA line_x0,Y
+	LDA #128:STA line_x1,Y
+	LDA #22:STA line_y0,Y
+	LDA colourtab0 + colour_dark_blue:STA line_colour0,Y
+	LDA colourtab1 + colour_dark_blue:STA line_colour1,Y
+	SEC:LDA line_x1,Y:SBC line_x0,Y:TAX
+	SEC:LDA line_y0,Y:SBC #11
+	STY savey
+	JSR calc_gradient
+	LDY savey
+	STA line_dydxlo,Y
+	TXA:ORA #&80:STA line_dydxhi,Y
+
+	INY
+	LDA &FF:STA line_x0,Y
+	LDA #128:STA line_x1,Y
+	LDA #69:STA line_y0,Y
+	LDA colourtab0 + colour_dark_blue:EOR colourtab0 + colour_dark_red:STA line_colour0,Y
+	LDA colourtab1 + colour_dark_blue:EOR colourtab1 + colour_dark_red:STA line_colour1,Y
+	SEC:LDA line_x1,Y:SBC line_x0,Y:TAX
+	SEC:LDA #118:SBC line_y0,Y
+	STY savey
+	JSR calc_gradient
+	LDY savey
+	STA line_dydxlo,Y
+	TXA:STA line_dydxhi,Y
+
+	RTS
+}
+
+
+.capture
+{
+	\\ set up initial lines
+	
+	; [0] is the lower line
+	; [1] is the upper line
+	LDA #0:STA line_x0+0:STA line_x0+1
+	STA line_y0+1
+	STA line_dydxlo+0:STA line_dydxhi+0
+	STA line_dydxlo+1:STA line_dydxhi+1
+	STA line_colour0+0:STA line_colour1+0
+	STA numcachedsubzones
+	LDA #128:STA line_y0+0
+	STA line_x1+0:STA line_x1+1
+	
+	\\ cache the start subzone
+
+	LDY playersubzone
+	JSR initialise_subzone
+	LDA #0:STA szc_lower_bounds
+	LDA #1:STA szc_upper_bounds
+
+	LDY playerzone:LDA (zone_ceiling_colours),Y:TAY
+	LDA colourtab0,Y:STA line_colour0+1
+	LDA colourtab1,Y:STA line_colour1+1
+	
+	LDA #2:STA numlines
+		
+	\\ Get start index for iteration round the initial subzone
+	
+	; get the angle of the second column of the screen
+	SEC
+	LDA playerangle:SBC #127:STA tempangle
+	LDA playerangle+1:SBC #0:AND #3:STA tempangle+1
+	
+	
+	
+}

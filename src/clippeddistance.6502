@@ -1,0 +1,95 @@
+\\ Inputs:
+\\   dx, +1            - x offset of line start
+\\   dy, +1            - y offset of line start
+\\   normalangle, +1   - world angle of the line normal
+\\   clipangle, +1     - world angle of the ray to clip the line by
+\\   playerangle, +1   - world angle of the player facing direction
+\\
+\\ Outputs:
+\\   distance, +1      - distance to line along clipangle
+
+.clippeddistance
+{
+	\\ Get perpendicular distance to the line
+	
+	LDX normalangle
+	LDY normalangle+1
+	JSR distancealongray
+	STA distance+1
+	
+	\\ Divide the distance by the cos of the clip-normal angle
+	\\ This enlarges the distance relative to the perp distance
+	
+	SEC
+	LDA clipangle:SBC normalangle:BEQ clipnormalcoincident:TAY
+	LDA clipangle+1:SBC normalangle+1:AND #3:BNE clipnormalnegative
+	TYA:EOR #255:TAY:INY
+	.clipnormalnegative
+	CPY #sin_1_index:BCS clipnormalcoincident
+	
+	LDX sintable,Y
+	SEC
+
+	LDA reciptabhi,X:STA multablo_ptr:STA multabhi_ptr
+	EOR #255:STA multabneglo_ptr:STA multabneghi_ptr
+
+	; mul(dist & 0xFF, reciphi)
+	LDY distance
+	LDA (multablo_ptr),Y:SBC (multabneglo_ptr),Y:STA xc
+	LDA (multabhi_ptr),Y:SBC (multabneghi_ptr),Y:STA xc+1
+	
+	; mul_lo(dist >> 8, reciphi)
+	LDY distance+1
+	LDA (multablo_ptr),Y:SBC (multabneglo_ptr),Y:STA temp
+	
+	LDA reciptablo,X:STA multablo_ptr:STA multabhi_ptr
+	EOR #255:STA multabneglo_ptr:STA multabneghi_ptr
+	
+	; mul(dist >> 8, reciplo)
+	LDA (multablo_ptr),Y:SBC (multabneglo_ptr),Y:STA ys
+	LDA (multabhi_ptr),Y:SBC (multabneghi_ptr),Y:STA ys+1
+	
+	; mul_hi(dist & 0xFF, reciplo)
+	LDY distance
+	LDA (multabhi_ptr),Y:SBC (multabneghi_ptr),Y
+	
+	CLC
+	ADC ys:STA ys
+	LDA ys+1:ADC temp:STA ys+1
+	
+	; C clear
+	LDA ys:ADC xc:STA distance
+	LDA ys+1:ADC xc+1:STA distance+1
+	
+	.clipnormalcoincident
+	
+	\\ We want the cos of the angle between the facing angle and the clip angle
+	\\ This will always be <45 degrees (the sign isn't important), because it's inside the field of view.
+	\\ This component gives the distance along the facing direction, i.e. the final Z value.
+	
+	SEC
+	LDA playerangle:SBC clipangle:BEQ nothingtoclip
+	BMI facingclipnegative
+	EOR #255:CLC:ADC #1
+	.facingclipnegative
+	
+	CMP #sin_1_index:BCS nothingtoclip
+	
+	TAX:LDA sintable,X:STA multablo_ptr:STA multabhi_ptr
+	EOR #255:STA multabneglo_ptr:STA multabneghi_ptr
+	
+	; mul_hi(dist & 0xFF, sin[facing_clip])
+	LDY distance:SEC
+	LDA (multabhi_ptr),Y:SBC (multabneghi_ptr),Y:TAX
+	
+	; mul(dist >> 8, sin[facing_clip])
+	LDY distance+1
+	LDA (multablo_ptr),Y:SBC (multabneglo_ptr),Y:STA distance
+	LDA (multabhi_ptr),Y:SBC (multabneghi_ptr),Y:STA distance+1
+	
+	CLC
+	TXA:ADC distance:STA distance
+	BCC nothingtoclip:INC distance+1
+	
+	.nothingtoclip
+}

@@ -1,0 +1,113 @@
+
+; Inputs:
+;   (read) = base of map
+
+.initialise_map
+{
+	LDY #0
+	STY playerx:STY playery
+	
+	\\ Initialize player start position (multiply start positions by 32)
+	LDA (read),Y:STA playerx+2:LDA #0
+	LSR playerx+2:ROR A:LSR playerx+2:ROR A:LSR playerx+2:ROR A:STA playerx+1
+	INY
+	
+	LDA (read),Y:STA playery+2:LDA #0
+	LSR playery+2:ROR A:LSR playery+2:ROR A:LSR playery+2:ROR A:STA playery+1
+	INY
+	
+	\\ Initialize player start angle (multiply start angle by 4)
+	LDA (read),Y:STA playerangle:LDA #0
+	ASL playerangle:ROL A:ASL playerangle:ROL A:STA playerangle+1
+	INY
+	
+	\\ Initialize player subzone
+	LDA (read),Y:STA playersubzone
+	INY
+	
+	\\ Initialize pointers to all the map elements, relative to the map base
+	LDX #0
+	.initmapoffsets
+	CLC
+	LDA (read),Y:ADC read:STA map_ptrs,X:INY:INX
+	LDA (read),Y:ADC read+1:STA map_ptrs,X:INY:INX
+	CPX #num_map_offsets
+	BNE initmapoffsets
+	
+	\\ Initialize subzone cache indices to invalid
+	LDX #0:LDA #255
+	.initsubzonecache
+	STA sz_cache_indices,X
+	INX
+	BNE initsubzonecache
+	
+	\\ Initialize player z from subzone floor height
+	LDY playersubzone
+	LDA (sz_zone_indices),Y
+	STA playerzone
+	TAY
+	LDA (zone_floor_heights),Y
+	SEC:SBC #player_height
+	STA playerz
+	
+	RTS
+}
+
+
+; Inputs:
+;    Y = subzone to initialize
+;
+; Outputs:
+;    X = subzone cache index
+;    C = set if it was newly cached (and needs initializing)
+
+.initialise_subzone
+{
+	; Get a pointer to the contour vertex list for this subzone
+	CLC
+	LDA (sz_cont_indices),Y:TAX:ADC cont_vertices_base:STA cont_vertices
+	LDA cont_vertices_base+1:ADC #0:STA cont_vertices+1
+	
+	; Get a pointer to the contour edge list for this subzone (C clear)
+	TXA:ADC cont_edges_base:STA cont_edges
+	LDA cont_edges_base+1:ADC #0:STA cont_edges+1
+	
+	; Cache the vertex count for this subzone
+	LDA (sz_vert_counts),Y:STA cont_num_verts
+	
+	; Allocate a new subzone cache entry if necessary
+	LDX sz_cache_indices,Y:BPL finished		; with C clear
+	
+	LDA numcachedsubzones:STA sz_cache_indices,Y:TAX
+	INC numcachedsubzones
+	TYA:STA szc_subzone_indices,X
+	SEC										; C set indicates a newly cached subzone
+	
+	.finished
+	RTS
+}
+
+
+.clear_world_angle_cache
+{
+	LDX cont_num_verts	; num verts in the current contour, minus one
+	LDA #&FF
+	.loop
+	STA world_angle_cache_hi,X
+	DEX
+	BPL loop
+	RTS
+}
+
+
+.clear_subzone_cache
+{
+	LDX numcachedsubzones:DEX	; will always be at least 1
+	LDA #&FF
+	.loop
+	LDY szc_subzone_indices,X
+	STA sz_cache_indices,Y
+	DEX
+	BPL loop
+	RTS
+}

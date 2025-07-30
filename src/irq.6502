@@ -1,0 +1,135 @@
+
+\\ The IRQ handler for the game
+
+.irq
+	BIT &FE4D:BVS irq_top_screen:.rupture_handler
+	LDA &FC:RTI
+
+
+
+.irq_bottom_screen
+{
+	LDA #12:STA &FE00							; 7
+	LDA #HI(screenaddrhud DIV 8):STA &FE01		; 8
+	
+	STX irqsavex+1								; 4
+	LDX #2										; 2
+	.palloop
+	LDA bottompalette,X:STA &FE21				; 8*3   = 24
+	EOR #&10:STA &FE21							; 6*3   = 18
+	EOR #&40:STA &FE21							; 6*3   = 18
+	EOR #&10:STA &FE21							; 6*3   = 18
+	DEX:BPL palloop								; 5*3-1 = 14
+	.irqsavex LDX #0							; 2	
+	LDA #irq_top_screen-rupture_handler			; 2
+	STA rupture_handler-1						; 4
+	
+	top_screen_rows = (screen_height DIV 8)+2	; add two blank lines
+	bottom_screen_rows = 39 - top_screen_rows
+
+	LDA #HI(top_screen_rows * 8 * 64 - 2)		; 2
+	STA &FE47									; 6
+	
+												; total: 129 cycles
+
+	\\ At this point we are at least 5 cycles into the bottom screen
+
+	LDA #4:STA &FE00:LDA #bottom_screen_rows-1:STA &FE01
+	LDA #6:STA &FE00:LDA #hud_rows:STA &FE01
+	LDA #7:STA &FE00:LDA #screen_vsync_pos-top_screen_rows:STA &FE01
+	
+	LDA &FC:RTI
+}
+
+IF (irq_bottom_screen EOR rupture_handler) AND &FF00
+	ERROR "irq handler branch crosses page boundary"
+ENDIF
+
+IF irq_bottom_screen - rupture_handler > 127
+	ERROR "irq handler out of range"
+ENDIF
+
+
+
+\\ Derived from the cycle counts in irq_top_screen
+irq_cycles_before_top_screen = 124
+
+.irq_top_screen
+{
+	\\ Wait until the last possible moment to set the top screen address, for low latency
+	\\ This is timed to occur in the scanline before the top screen starts.
+	\\ Set up the required palette for this screen too.
+	\\ There are at least 8 cycles between setting the palette and the screen start, to cover the maximum IRQ latency.
+	
+	STX irqsavex+1								; 4
+
+	\\ This does the handling for an atomic screen swap
+	\\ Set scrnswapflag to 1 when you want to swap, and fill dispscrnlo+1,dispscrnhi+1 with the new CRTC address
+	
+	LDA #12:STA &FE00							; 7
+	LDX scrnswapflag							; 3
+	LDA dispscrnhi,X:STA &FE01					; 10
+	
+	LDX #2										; 2
+	.palloop
+	LDA toppalette,X:STA &FE21					; 8*3   = 24
+	EOR #&10:STA &FE21							; 6*3   = 18
+	EOR #&40:STA &FE21							; 6*3   = 18
+	EOR #&10:STA &FE21							; 6*3   = 18
+	DEX:BPL palloop								; 5*3-1 = 14
+	LDA #irq_bottom_screen-rupture_handler		; 2
+	STA rupture_handler-1						; 4
+	
+												; total: 124 cycles
+	
+	\\ From now on we are on the new CRTC frame, so set up all the registers as appropriate
+
+	top_screen_rows = (screen_height DIV 8)+2		; add two blank lines
+	bottom_screen_rows = 39 - top_screen_rows
+	
+	LDA #HI(bottom_screen_rows * 8 * 64 - 2)
+	STA &FE47
+
+	LDA #4:STA &FE00:LDA #top_screen_rows-1:STA &FE01
+	LDA #6:STA &FE00:LDA #(screen_height DIV 8):STA &FE01	
+	LDA #7:STA &FE00:LDA #255:STA &FE01
+
+	LDA scrnswapflag:BEQ dontswap
+	LDA dispscrnhi+1:STA dispscrnhi
+	DEC scrnswapflag
+	.dontswap
+	
+	.irqsavex LDX #0		
+	LDA &FC:RTI
+}
+
+IF (irq_top_screen EOR rupture_handler) AND &FF00
+	ERROR "irq handler branch crosses page boundary"
+ENDIF
+
+IF irq_top_screen - rupture_handler > 127
+	ERROR "irq handler out of range"
+ENDIF
+
+
+
+
+.swap_screen
+{
+	LDA scrnbase:LSR A:LSR A:LSR A
+	STA dispscrnhi+1
+	LDA scrnbase:EOR #HI(screenaddr1 EOR screenaddr2):STA scrnbase
+	LDA #1:STA scrnswapflag
+	RTS
+}
+
+
+.wait_screen
+{
+	; we only need to wait if we have called swap_screen and wish to start writing to the back buffer,
+	; but the top screen area is being rasterised.
+	LDA scrnswapflag:BEQ nothingtowait
+	.wait LDA rupture_handler-1:CMP #irq_top_screen-rupture_handler:BNE wait
+	.nothingtowait
+	RTS
+}

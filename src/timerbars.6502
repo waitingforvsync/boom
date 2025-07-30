@@ -1,0 +1,169 @@
+\\ Call this at the beginning of each frame to initialize the timer bars
+
+.inittimerbar
+{
+	LDX numbars
+	LDA barpos+1,X:STA oldbarend
+	LDA #0:STA numbars:STA barpos:STA barpos+1
+	RTS
+}
+
+
+\\ Call this at the beginning of the code you wish to measure
+
+.starttimer
+{
+	LDA #&FF:STA &FE68:STA &FE69
+;	LDA #&C0:STA &FE6E		; enable IRQ so we can crash if the timer overflows (nice)
+	RTS
+}
+	
+
+\\ Call this at the end of the code you wish to measure
+
+.endtimer
+;	LDA #&40:STA &FE6E		; disable IRQ
+	LDA &FE69:EOR #255:CLC:ADC #1:ROR A:LSR A:ADC #0
+	LDX numbars
+	ADC barpos,X
+	STA barpos+1,X
+	INC numbars
+.nobars
+	RTS
+
+
+\\ This belongs to the subroutine below
+
+	\\ plot partial byte and finish this bar
+	\\ we want to blank the pixels to the right
+	\\
+	\\ scrn' = (scrn AND NOT leftmask) OR ((leftmask AND rightmask) AND colour)
+	\\       = (((colour AND rightmask) EOR scrn) AND leftmask) EOR scrn
+	
+	.startandendsame
+	LDA barpos+1,X:AND #3:TAX:LDA rightmask,X:STA temp+1
+	LDX temp:AND leftmask,X:STA temp
+	LDX savex
+	LDA temp+1:AND barcol1,X
+	EOR (write),Y:AND temp
+	EOR (write),Y:STA (write),Y:INY:INY:STA (write),Y:INY
+	LDA temp+1:AND barcol2,X
+	EOR (write),Y:AND temp
+	EOR (write),Y:STA (write),Y:DEY:DEY:STA (write),Y:DEY
+	JMP donextbar
+
+
+\\ Call this to plot the timer bars you've added.
+\\ It will also add the time it takes to render itself as an additional bar.
+
+.plottimerbar
+
+	LDA numbars:BEQ nobars
+	JSR starttimer
+
+	LDX #0		; index of bar segment
+	LDY #0		; screen address offset
+
+.foreachbar
+	
+	STX savex
+	
+	\\ skip this bar if it's of zero length
+	
+	LDA barpos,X:CMP barpos+1,X:BEQ donextbar
+
+	\\ see if we have a sliver to the left to plot
+
+	AND #3:BEQ plotmain	
+	STA temp
+
+	\\ see if the bar starts and ends in the same byte
+	
+	LDA barpos,X
+	EOR barpos+1,X
+	AND #&FC
+	BEQ startandendsame
+	
+	\\ just plot the partial left sliver
+	\\ we assume that the pixels underneath are black, so we can just ORA instead of doing a full mask
+
+	LDA barcol1,X:LDX temp:AND leftmask,X
+	ORA (write),Y:STA (write),Y:INY:INY:STA (write),Y:DEY
+	LDA leftmask,X:LDX savex:AND barcol2,X
+	ORA (write),Y:STA (write),Y:INY:INY:STA (write),Y
+	CLC:TYA:ADC #5:TAY
+
+.plotmain
+
+	\\ calculate the number of full bytes to write
+	
+	LDA barpos+1,X:AND #&FC:SEC
+	SBC barpos,X:BCC checkrightsliver
+	LSR A:LSR A:BEQ checkrightsliver
+	STA temp
+	CLC
+	
+	\\ plot full bytes
+	
+.plotmainloop
+
+	LDA barcol1,X:STA (write),Y:INY:INY:STA (write),Y:DEY
+	LDA barcol2,X:STA (write),Y:INY:INY:STA (write),Y
+	TYA:ADC #5:TAY
+
+	DEC temp
+	BNE plotmainloop
+	
+.checkrightsliver
+
+	\\ plot any remaining sliver on the right
+	\\ we blank to the right of the sliver so that it is already black for the next left-sliver
+	
+	LDA barpos+1,X:AND #3:BNE plotrightsliver
+	
+.donextbar
+
+	\\ If there are more bars to plot, reloop.
+	\\ If there are no more, we are going to add one more (ourselves) if this is the first time we got here
+
+	INX:CPX numbars:BCC foreachbar
+	
+	BNE verylastbar
+	JSR endtimer		; add last timer bar (ourselves). X is still correct
+	DEC numbars			; so that next time it will go to verylastbar
+	JMP foreachbar
+	
+.verylastbar
+	
+	\\ blank the end of the old bar if this frame's is smaller
+	
+	LDA barpos,X:CMP oldbarend:BCS finished
+
+	AND #3:BEQ aligned
+	TYA:CLC:ADC #8:TAY
+	.aligned
+	
+	LDA oldbarend:AND #&FC:SEC:SBC barpos,X:BCC finished:LSR A:LSR A:TAX:CLC
+	.blankloop
+	LDA #0
+	STA (write),Y:INY
+	STA (write),Y:INY
+	STA (write),Y:INY
+	STA (write),Y
+	TYA:ADC #5:TAY
+	DEX:BPL blankloop
+	
+.finished
+
+	RTS
+	
+.plotrightsliver
+
+	TAX:LDA rightmask,X:STA temp
+	LDX savex:AND barcol1,X
+	STA (write),Y:INY:INY:STA (write),Y:INY
+	LDA temp:AND barcol2,X
+	STA (write),Y:DEY:DEY:STA (write),Y:DEY
+	JMP donextbar
+	
+

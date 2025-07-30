@@ -1,0 +1,195 @@
+\\ Returns the world angle corresponding to the vector dx, dy
+\\
+\\ Inputs:
+\\   dx, dx+1       - x offset (16 bits)
+\\   dy, dy+1       - y offset (16 bits)
+\\
+\\ Outputs:
+\\   A              - world angle LSB
+\\   angle+1        - world angle MSB
+
+.getworldangle
+{
+	\\ Get msb of result
+	\\ bit 8 = sign(dx) EOR sign(dy)
+	\\ bit 9 = sign(dy)
+
+	LDA dy+1:CMP #128
+	EOR dx+1:ROL A:PHP			; push bit 8 (C) to stack
+	ROL A:AND #3
+	STA angle+1		; [20 cycles]
+
+	\\ Get absolute dx, dy
+
+	LDA dx+1:BPL dxpositive
+	SEC
+	LDA #0:SBC dx:STA dx
+	LDA #0:SBC dx+1:STA dx+1
+	.dxpositive		; [6/23 cycles]
+
+	LDA dy+1:BPL dypositive
+	SEC
+	LDA #0:SBC dy:STA dy
+	LDA #0:SBC dy+1:STA dy+1
+	.dypositive		; [6/23 cycles]
+
+	\\ Determine which half of the first quadrant
+	\\ We need to divide by the smallest of dx or dy.
+
+	;LDA dy+1  ; already loaded!
+	LDY dy
+	CMP dx+1:BNE P%+4:CPY dx
+	BCS dy_ge_dx
+
+	\\ Case where dy < dx
+
+	; normalise dx and dy to be no longer than 8 bits
+	; we know dy is smaller, so we truncate both until dx is 8 bits long
+	LDA dx+1:BEQ dxnormalised
+	LSR dy+1:ROR dy:LSR A:BEQ dxshifted:ROR dx
+	LSR dy+1:ROR dy:LSR A:BEQ dxshifted:ROR dx
+	LSR dy+1:ROR dy:LSR A:BEQ dxshifted:ROR dx
+	LSR dy+1:ROR dy:LSR A:.dxshifted ROR dx
+	.dxnormalised		; [6/25/44/63/82 cycles]
+	
+	LDA dy:CMP dx:BEQ return127		; if after truncation, they are equal, just return 45 degrees
+	STA multablo_ptr:STA multabhi_ptr
+	EOR #255:STA multabneglo_ptr:STA multabneghi_ptr	; [22 cycles]
+	
+	LDX dx:SEC
+	LDY reciptablo,X:LDA (multabhi_ptr),Y:SBC (multabneghi_ptr),Y:STA angle
+	LDY reciptabhi,X:LDA (multablo_ptr),Y:SBC (multabneglo_ptr),Y
+	CLC:ADC angle
+	TAX:LDA atantable,X		; [47 cycles]
+	
+	PLP:BCC P%+4:EOR #255			; if bit 8 set, invert the result for the quadrant
+	RTS			; [13 cycles]
+
+	\\ Case where dy == dx
+
+	.return127
+	LDA #127
+	PLP:BCC P%+4:EOR #255
+	RTS
+
+	\\ Cases where dy >= dx
+
+	.dy_ge_dx
+	BEQ dy_eq_dx
+
+	\\ Case where dy > dx
+
+	; normalise dx and dy to be no longer than 8 bits
+	; we know dx is smaller, so we truncate both until dy is 8 bits long
+	CMP #0:BEQ dynormalised			; A contains dy+1
+	LSR dx+1:ROR dx:LSR A:BEQ dyshifted:ROR dy
+	LSR dx+1:ROR dx:LSR A:BEQ dyshifted:ROR dy
+	LSR dx+1:ROR dx:LSR A:BEQ dyshifted:ROR dy
+	LSR dx+1:ROR dx:LSR A:.dyshifted ROR dy
+	.dynormalised
+	
+	LDA dx:CMP dy:BEQ return128		; if after truncation, they are equal, just return 45 degrees
+	STA multablo_ptr:STA multabhi_ptr
+	EOR #255:STA multabneglo_ptr:STA multabneghi_ptr
+
+	LDX dy:SEC
+	LDY reciptablo,X:LDA (multabhi_ptr),Y:SBC (multabneghi_ptr),Y:STA angle
+	LDY reciptabhi,X:LDA (multablo_ptr),Y:SBC (multabneglo_ptr),Y
+	CLC:ADC angle
+	TAX:LDA atantable,X
+	
+	PLP:BCS P%+4:EOR #255			; if bit 8 clear, invert the result for the quadrant
+	RTS
+
+	\\ Case where dy == dx
+
+	.return128	
+	.dy_eq_dx
+	LDA #128
+	PLP:BCC P%+4:EOR #255
+	RTS
+}
+
+
+
+\\ Returns the world angle corresponding to the vector dx, dy (8 bit values)
+\\
+\\ Inputs:
+\\   dx             - x offset (8 bits)
+\\   dy             - y offset (8 bits)
+\\
+\\ Outputs:
+\\   A              - world angle LSB
+\\   angle+1        - world angle MSB
+
+.getworldangle8
+{
+	\\ Get msb of result
+	\\ bit 8 = sign(dx) EOR sign(dy)
+	\\ bit 9 = sign(dy)
+
+	LDA dy:CMP #128
+	EOR dx:ROL A:PHP			; push bit 8 (C) to stack
+	AND #1:ROL A				; C now clear
+	STA angle+1
+
+	\\ Get absolute dx, dy
+
+	LDA dx:BPL dxpositive
+	EOR #255:ADC #1:STA dx
+	CLC
+	.dxpositive
+
+	LDA dy:BPL dypositive
+	EOR #255:ADC #1:STA dy
+	.dypositive
+
+	\\ Determine which half of the first quadrant
+	\\ We need to divide by the smallest of dx or dy.
+
+	;LDA dy    ; already loaded!
+	CMP dx
+	BCS dy_ge_dx
+
+	\\ Case where dy < dx
+
+	STA multablo_ptr:STA multabhi_ptr
+	EOR #255:STA multabneglo_ptr:STA multabneghi_ptr
+	
+	LDX dx:SEC
+	LDY reciptablo,X:LDA (multabhi_ptr),Y:SBC (multabneghi_ptr),Y:STA angle
+	LDY reciptabhi,X:LDA (multablo_ptr),Y:SBC (multabneglo_ptr),Y
+	CLC:ADC angle
+	TAX:LDA atantable,X
+	
+	PLP:BCC P%+4:EOR #255			; if bit 8 set, invert the result for the quadrant
+	RTS
+
+	\\ Case where dy >= dx
+
+	.dy_ge_dx
+	BEQ dy_eq_dx
+
+	\\ Case where dy > dx
+
+	TAX
+	LDA dx:STA multablo_ptr:STA multabhi_ptr
+	EOR #255:STA multabneglo_ptr:STA multabneghi_ptr
+
+	SEC
+	LDY reciptablo,X:LDA (multabhi_ptr),Y:SBC (multabneghi_ptr),Y:STA angle
+	LDY reciptabhi,X:LDA (multablo_ptr),Y:SBC (multabneglo_ptr),Y
+	CLC:ADC angle
+	TAX:LDA atantable,X
+	
+	PLP:BCS P%+4:EOR #255			; if bit 8 clear, invert the result for the quadrant
+	RTS
+
+	\\ Case where dy == dx
+
+	.return128	
+	.dy_eq_dx
+	LDA #128
+	PLP:BCC P%+4:EOR #255
+	RTS
+}

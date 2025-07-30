@@ -1,0 +1,23 @@
+\\ Inputs:
+\\   scrnbase - MSB of screen start address
+
+.screenfill
+{
+	LDX #0:CLC
+	LDA scrnbase:EOR #HI(screenaddr1):BNE P%+5
+	JMP screenfill1
+	JMP screenfill2
+}
+
+
+\\ Inputs:
+\\   scrnbase - MSB of screen start address
+
+.screenclear
+{
+	LDA #0:TAX
+	LDY scrnbase:CPY #HI(screenaddr1):BNE P%+5
+	JMP screenclear1
+	JMP screenclear2
+}
+

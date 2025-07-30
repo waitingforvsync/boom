@@ -1,0 +1,36 @@
+\\ Returns the quadrant of the world normal corresponding to the vector dx, dy
+\\
+\\ Inputs:
+\\   dx, dx+1       - x offset (16 bits)
+\\   dy, dy+1       - y offset (16 bits)
+\\
+\\ Outputs:
+\\   A              - world angle MSB
+
+.calcworldnormalquadrant
+{
+	\\ If dx == 0 and dy positive, return quadrant 0
+
+	LDA dx:BNE dxnotzero
+	LDA dx+1:BNE dxnotzero
+	BIT dy+1:BMI dxnotzero		; @todo: test LDA dy+1:ASL A:ROL A:ASL A:AND #3
+	RTS
+	.dxnotzero
+
+	\\ If dy == 0 and dx negative, return quadrant 1
+
+	LDA dy:BNE dynotzero
+	LDA dy+1:BNE dynotzero
+	LDA dx+1:BPL dynotzero
+	LDA #1:RTS
+	.dynotzero
+
+	\\ General case:
+	\\ bit 8 = NOT(sign(dx) EOR sign(dy))
+	\\ bit 9 = NOT(sign(dx))
+
+	LDA dx+1:ASL A
+	EOR dy+1:ROL A
+	ROL A:AND #3:EOR #3
+	RTS
+}

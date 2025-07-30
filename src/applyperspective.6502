@@ -1,0 +1,64 @@
+\\ Normalise z value
+\\
+\\ Inputs:
+\\   distance, A    - z value (16 bit)
+\\
+\\ Outputs:
+\\   distance          - normalised z (8 bit)
+\\   zshift            - amount to shift z (8 bit)
+
+.normalise_z
+{
+	LDX #0
+	CMP #0:BEQ alreadynormalised
+	INX:LSR A:BEQ normalised:ROR distance
+	INX:LSR A:BEQ normalised:ROR distance
+	INX:LSR A:BEQ normalised:ROR distance
+	INX:LSR A:.normalised ROR distance
+	.alreadynormalised
+	STX zshift
+	RTS
+}
+
+
+\\ Apply perspective to y position based on z
+\\ y is a positive 8-bit value.
+\\
+\\ Inputs:
+\\   A            - y value (8 bit)
+\\   X            - normalised z value (8 bit)
+\\   zshift       - amount to shift result (8 bit)
+\\
+\\ Outputs:
+\\   A, X         - result (lsb, msb)
+
+.applyperspective
+{
+	STA multablo_ptr:STA multabhi_ptr
+	EOR #255:STA multabneglo_ptr:STA multabneghi_ptr
+	
+	LDY reciptabhi,X
+	SEC
+	LDA (multablo_ptr),Y:SBC (multabneglo_ptr),Y:STA result
+	LDA (multabhi_ptr),Y:SBC (multabneghi_ptr),Y:STA result+1
+	
+	LDY reciptablo,X
+	LDA (multabhi_ptr),Y:SBC (multabneghi_ptr),Y
+	
+	CLC:ADC result:BCC P%+4:INC result+1
+	
+	\\ Shift down 1 to multiply by 128
+	
+	LSR result+1:ROR A
+	
+	\\ Adjust for higher z's
+	
+	LDX zshift:BEQ finished
+	LSR result+1:ROR A:DEX:BEQ finished
+	LSR result+1:ROR A:DEX:BEQ finished
+	LSR result+1:ROR A:DEX:BEQ finished
+	LSR result+1:ROR A:.finished
+	LDX result+1
+	
+	RTS
+}

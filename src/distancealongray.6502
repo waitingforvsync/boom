@@ -1,0 +1,539 @@
+\\ Returns the length of the component of dx,dy which lies along a ray of the given world angle.
+\\
+\\ Inputs:
+\\   dx, dx+1              - x offset (16 bits)
+\\   dy, dy+1              - y offset (16 bits)
+\\   X, Y                  - world angle (16 bits)
+\\
+\\ Outputs:
+\\   distance, A           - distance (16 bits)
+
+.distancealongray
+{
+	LDA dartablelo,Y:STA darjmp+1
+	CPX #0
+	.darjmp JMP distancealongray2_stub		; [13 cycles]
+}
+
+
+.distancealongray2_stub JMP distancealongray2
+.distancealongray3_stub JMP distancealongray3
+
+
+\\ First quadrant
+\\ sin = sin[a]
+\\ cos = sin[256 - a]
+\\ result = dx * cos + dy * sin
+
+.zeroangle0
+	LDA dx:STA distance
+	LDA dx+1
+	RTS
+
+.distancealongray0
+{
+	BEQ zeroangle0
+	
+	\\ Calculate dy * sin(angle)
+	
+	.calcsin	; [~85 cycles] 
+	{
+		CPX #sin_1_index:BCS sineis1
+		
+		LDA sintable,X
+		STA multablo_ptr:STA multabhi_ptr
+		EOR #255:STA multabneglo_ptr:STA multabneghi_ptr
+		
+		SEC	; [*]
+		LDY dy+1:BMI dynegative
+				
+		\\ This is the path for +ve dy * sin(angle)
+		.dypositive
+		{
+			; C set from [*]
+			LDA (multablo_ptr),Y:SBC (multabneglo_ptr),Y:STA ys
+			LDA (multabhi_ptr),Y:SBC (multabneghi_ptr),Y:STA ys+1
+			
+			LDY dy
+			; C set because ys always >= 0
+			LDA (multabhi_ptr),Y:SBC (multabneghi_ptr),Y
+			
+			CLC:ADC ys:STA ys:BCC calccos:INC ys+1:BCS calccos
+		}
+		
+		\\ This is the path for -ve dy * sin(angle)
+		.dynegative
+		{
+			; C set from [*]
+			LDA #0:SBC dy:STA temp		; get LSB(-dy)
+			LDA #0:SBC dy+1:TAY			; get MSB(-dy)
+			
+			SEC
+			LDA (multabneglo_ptr),Y:SBC (multablo_ptr),Y:STA ys
+			LDA (multabneghi_ptr),Y:SBC (multabhi_ptr),Y:STA ys+1
+		
+			LDY temp:SEC
+			LDA (multabhi_ptr),Y:SBC (multabneghi_ptr),Y:EOR #255
+			
+			; C set from above subtraction
+			ADC ys:STA ys:BCS calccos:DEC ys+1:BCC calccos
+		}
+		
+		\\ This is the path for dy * sin(a), where sin(a) is 1.0.
+		.sineis1
+		LDA dy:STA ys
+		LDA dy+1:STA ys+1
+	}
+	
+	\\ Calculate dx * cos(angle)
+	
+	.calccos
+	{
+		CPX #257-sin_1_index:BCC cosineis1 ; [**]
+		
+		TXA:EOR #255:TAX:;INX
+		LDA sintable+1,X	; we can do this because X will never be FF here
+		STA multablo_ptr:STA multabhi_ptr
+		EOR #255:STA multabneglo_ptr:STA multabneghi_ptr
+		
+		LDY dx+1:BMI dxnegative
+		
+		\\ This is the path for +ve dx * cos(angle)
+		.dxpositive
+		{
+			; C set from [**]
+			LDA (multablo_ptr),Y:SBC (multabneglo_ptr),Y:STA xc
+			LDA (multabhi_ptr),Y:SBC (multabneghi_ptr),Y:STA xc+1
+			
+			; C set because xc is always >= 0
+			LDY dx
+			LDA (multabhi_ptr),Y:SBC (multabneghi_ptr),Y
+			
+			CLC:ADC xc:BCC done2:INC xc+1:BCS done  ; A = xc
+		}
+		
+		\\ This is the path for -ve dx * cos(angle)
+		.dxnegative
+		{
+			; C set from [**]
+			LDA #0:SBC dx:STA temp		; get LSB(-dx)
+			LDA #0:SBC dx+1:TAY			; get MSB(-dx)
+
+			SEC
+			LDA (multabneglo_ptr),Y:SBC (multablo_ptr),Y:STA xc
+			LDA (multabneghi_ptr),Y:SBC (multabhi_ptr),Y:STA xc+1
+
+			LDY temp:SEC
+			LDA (multabhi_ptr),Y:SBC (multabneghi_ptr),Y:EOR #255
+
+			; C set from above subtraction
+			ADC xc:BCS done:DEC xc+1:BCC done2	; A = xc
+		}
+		
+		\\ This is the path for dx * cos(a), where cos(a) is 1.0.
+		.cosineis1
+		LDA dx+1:STA xc+1
+		LDA dx
+	}
+	
+	.done
+	CLC
+	.done2
+	; A = xc
+	ADC ys:STA distance
+	LDA xc+1:ADC ys+1
+	RTS
+}
+
+
+\\ Second quadrant
+\\ sin = sin[256 - a]
+\\ cos = -sin[a]
+\\ result = dx * cos + dy * sin
+
+.zeroangle1
+	LDA dy:STA distance
+	LDA dy+1
+	RTS
+
+.distancealongray1
+{
+	BEQ zeroangle1
+	
+	\\ Calculate dx * cos(angle)
+	
+	.calccos
+	{
+		CPX #sin_1_index:BCS cosineis1
+		
+		LDA sintable,X
+		STA multablo_ptr:STA multabhi_ptr
+		EOR #255:STA multabneglo_ptr:STA multabneghi_ptr
+		
+		SEC ; [*]
+		LDY dx+1:BMI dxnegative
+				
+		\\ This is the path for +ve dx * cos(angle)
+		.dxpositive
+		{
+			; C set from [*]
+			LDA (multabneglo_ptr),Y:SBC (multablo_ptr),Y:STA xc
+			LDA (multabneghi_ptr),Y:SBC (multabhi_ptr),Y:STA xc+1	; result -ve or 0
+			
+			SEC:LDY dx
+			LDA (multabhi_ptr),Y:SBC (multabneghi_ptr),Y:EOR #255
+			
+			; C set - add with EOR#255 is like SBC
+			ADC xc:STA xc:BCS calcsin:DEC xc+1:BCC calcsin
+		}
+		
+		\\ This is the path for -ve dx * cos(angle)
+		.dxnegative
+		{
+			; C set from [*]
+			LDA #0:SBC dx:STA temp		; get LSB(-dx)
+			LDA #0:SBC dx+1:TAY			; get MSB(-dx)
+
+			SEC
+			LDA (multablo_ptr),Y:SBC (multabneglo_ptr),Y:STA xc
+			LDA (multabhi_ptr),Y:SBC (multabneghi_ptr),Y:STA xc+1
+
+			LDY temp
+			; C set because xc always >= 0
+			LDA (multabhi_ptr),Y:SBC (multabneghi_ptr),Y
+			
+			CLC:ADC xc:STA xc:BCC calcsin:INC xc+1:BCS calcsin
+		}
+		
+		\\ This is the path for dx * cos(a), where cos(a) is -1.0.
+		.cosineis1
+		; C set
+		LDA #0:SBC dx:STA xc
+		LDA #0:SBC dx+1:STA xc+1
+	}
+	
+	\\ Calculate dy * sin(angle)
+	
+	.calcsin
+	{
+		CPX #257-sin_1_index:BCC sineis1 ; [**]
+		
+		TXA:EOR #255:TAX:;INX
+		LDA sintable+1,X	; we can do this because X will never be FF here
+		STA multablo_ptr:STA multabhi_ptr
+		EOR #255:STA multabneglo_ptr:STA multabneghi_ptr
+		
+		LDY dy+1:BMI dynegative
+		
+		\\ This is the path for +ve dy * sin(angle)
+		.dypositive
+		{
+			; C set from [**]
+			LDA (multablo_ptr),Y:SBC (multabneglo_ptr),Y:STA ys
+			LDA (multabhi_ptr),Y:SBC (multabneghi_ptr),Y:STA ys+1
+			
+			; C set because ys is always >= 0
+			LDY dy
+			LDA (multabhi_ptr),Y:SBC (multabneghi_ptr),Y
+			
+			CLC:ADC ys:BCC done2:INC ys+1:BCS done	; A = ys
+		}
+		
+		\\ This is the path for -ve dy * sin(angle)
+		.dynegative
+		{
+			; C set from [**]
+			LDA #0:SBC dy:STA temp		; get LSB(-dy)
+			LDA #0:SBC dy+1:TAY			; get MSB(-dy)
+			
+			SEC
+			LDA (multabneglo_ptr),Y:SBC (multablo_ptr),Y:STA ys
+			LDA (multabneghi_ptr),Y:SBC (multabhi_ptr),Y:STA ys+1
+
+			LDY temp:SEC
+			LDA (multabhi_ptr),Y:SBC (multabneghi_ptr),Y:EOR #255
+			
+			; C set from above subtraction
+			ADC ys:BCS done:DEC ys+1:BCC done2	; A = ys
+		}
+		
+		\\ This is the path for dy * sin(a), where sin(a) is 1.0.
+		.sineis1
+		LDA dy+1:STA ys+1
+		LDA dy
+	}
+	
+	.done
+	CLC
+	.done2
+	; A = ys
+	ADC xc:STA distance
+	LDA ys+1:ADC xc+1
+	RTS
+}
+
+
+\\ Third quadrant
+\\ sin = -sin[a]
+\\ cos = -sin[256 - a]
+\\ result = dx * cos + dy * sin
+
+.zeroangle2
+	; C set from CPX #0 at start of distancealongray
+	LDA #0:SBC dx:STA distance
+	LDA #0:SBC dx+1
+	RTS
+
+.distancealongray2
+{
+	BEQ zeroangle2
+	
+	\\ Calculate dy * sin(angle)
+	
+	.calcsin
+	{
+		CPX #sin_1_index:BCS sineis1
+		
+		LDA sintable,X
+		STA multablo_ptr:STA multabhi_ptr
+		EOR #255:STA multabneglo_ptr:STA multabneghi_ptr
+		
+		SEC	; [*]
+		LDY dy+1:BMI dynegative
+				
+		\\ This is the path for +ve dy * sin(angle)
+		.dypositive
+		{
+			; C set from [*]
+			LDA (multabneglo_ptr),Y:SBC (multablo_ptr),Y:STA ys
+			LDA (multabneghi_ptr),Y:SBC (multabhi_ptr),Y:STA ys+1	; result -ve or 0
+			
+			SEC:LDY dy
+			LDA (multabhi_ptr),Y:SBC (multabneghi_ptr),Y:EOR #255
+			
+			; C set - add with EOR#255 is like SBC
+			ADC ys:STA ys:BCS calccos:DEC ys+1:BCC calccos
+		}
+		
+		\\ This is the path for -ve dy * sin(angle)
+		.dynegative
+		{
+			; C set from [*]
+			LDA #0:SBC dy:STA temp		; get LSB(-dy)
+			LDA #0:SBC dy+1:TAY			; get MSB(-dy)
+			
+			SEC
+			LDA (multablo_ptr),Y:SBC (multabneglo_ptr),Y:STA ys
+			LDA (multabhi_ptr),Y:SBC (multabneghi_ptr),Y:STA ys+1
+		
+			LDY temp
+			; C set because ys always >= 0
+			LDA (multabhi_ptr),Y:SBC (multabneghi_ptr),Y
+			
+			CLC:ADC ys:STA ys:BCC calccos:INC ys+1:BCS calccos
+		}
+		
+		\\ This is the path for dy * sin(a), where sin(a) is 1.0.
+		.sineis1
+		; C set
+		LDA #0:SBC dy:STA ys
+		LDA #0:SBC dy+1:STA ys+1
+	}
+	
+	\\ Calculate dx * cos(angle)
+	
+	.calccos
+	{
+		CPX #257-sin_1_index:BCC cosineis1 ; [**]
+		
+		TXA:EOR #255:TAX:;INX
+		LDA sintable+1,X	; we can do this because X will never be FF here
+		STA multablo_ptr:STA multabhi_ptr
+		EOR #255:STA multabneglo_ptr:STA multabneghi_ptr
+		
+		LDY dx+1:BMI dxnegative
+		
+		\\ This is the path for +ve dx * cos(angle)
+		.dxpositive
+		{
+			; C set from [**]
+			LDA (multabneglo_ptr),Y:SBC (multablo_ptr),Y:STA xc
+			LDA (multabneghi_ptr),Y:SBC (multabhi_ptr),Y:STA xc+1
+			
+			SEC:LDY dx
+			LDA (multabhi_ptr),Y:SBC (multabneghi_ptr),Y:EOR #255
+			
+			; C set - add with EOR#255 is like SBC
+			ADC xc:BCS done:DEC xc+1:BCC done2  ; A = xc
+		}
+		
+		\\ This is the path for -ve dx * cos(angle)
+		.dxnegative
+		{
+			; C set from [**]
+			LDA #0:SBC dx:STA temp		; get LSB(-dx)
+			LDA #0:SBC dx+1:TAY			; get MSB(-dx)
+
+			SEC
+			LDA (multablo_ptr),Y:SBC (multabneglo_ptr),Y:STA xc
+			LDA (multabhi_ptr),Y:SBC (multabneghi_ptr),Y:STA xc+1
+
+			LDY temp
+			; C set because xc always >= 0
+			LDA (multabhi_ptr),Y:SBC (multabneghi_ptr),Y
+
+			CLC:ADC xc:BCC done2:INC xc+1:BCS done	; A = xc
+		}
+		
+		\\ This is the path for dx * cos(a), where cos(a) is 1.0.
+		.cosineis1
+		SEC
+		LDA #0:SBC dx:TAX
+		LDA #0:SBC dx+1:STA xc+1
+		TXA
+	}
+	
+	.done
+	CLC
+	.done2
+	; A = xc
+	ADC ys:STA distance
+	LDA xc+1:ADC ys+1
+	RTS
+}
+
+
+\\ Fourth quadrant
+\\ sin = -sin[256 - a]
+\\ cos = sin[a]
+\\ result = dx * cos + dy * sin
+
+.zeroangle3
+	; C set from CPX #0 at start of distancealongray
+	LDA #0:SBC dy:STA distance
+	LDA #0:SBC dy+1
+	RTS
+
+.distancealongray3
+{
+	BEQ zeroangle3
+	
+	\\ Calculate dx * cos(angle)
+	
+	.calccos
+	{
+		CPX #sin_1_index:BCS cosineis1
+		
+		LDA sintable,X
+		STA multablo_ptr:STA multabhi_ptr
+		EOR #255:STA multabneglo_ptr:STA multabneghi_ptr
+		
+		SEC ; [*]
+		LDY dx+1:BMI dxnegative
+				
+		\\ This is the path for +ve dx * cos(angle)
+		.dxpositive
+		{
+			; C set from [*]
+			LDA (multablo_ptr),Y:SBC (multabneglo_ptr),Y:STA xc
+			LDA (multabhi_ptr),Y:SBC (multabneghi_ptr),Y:STA xc+1
+			
+			LDY dx
+			; C set because xc is always >= 0
+			LDA (multabhi_ptr),Y:SBC (multabneghi_ptr),Y
+			
+			CLC:ADC xc:STA xc:BCC calcsin:INC xc+1:BCS calcsin
+		}
+		
+		\\ This is the path for -ve dx * cos(angle)
+		.dxnegative
+		{
+			; C set from [*]
+			LDA #0:SBC dx:STA temp		; get LSB(-dx)
+			LDA #0:SBC dx+1:TAY			; get MSB(-dx)
+
+			SEC
+			LDA (multabneglo_ptr),Y:SBC (multablo_ptr),Y:STA xc
+			LDA (multabneghi_ptr),Y:SBC (multabhi_ptr),Y:STA xc+1
+
+			LDY temp:SEC
+			LDA (multabhi_ptr),Y:SBC (multabneghi_ptr),Y:EOR #255
+			
+			; C set from above subtraction
+			ADC xc:STA xc:BCS calcsin:DEC xc+1:BCC calcsin
+		}
+		
+		\\ This is the path for dx * cos(a), where cos(a) is 1.0.
+		.cosineis1
+		; C set
+		LDA dx:STA xc
+		LDA dx+1:STA xc+1
+	}
+	
+	\\ Calculate dy * sin(angle)
+	
+	.calcsin
+	{
+		CPX #257-sin_1_index:BCC sineis1 ; [**]
+		
+		TXA:EOR #255:TAX:;INX
+		LDA sintable+1,X	; we can do this because X will never be FF here
+		STA multablo_ptr:STA multabhi_ptr
+		EOR #255:STA multabneglo_ptr:STA multabneghi_ptr
+		
+		LDY dy+1:BMI dynegative
+		
+		\\ This is the path for +ve dy * sin(angle)
+		.dypositive
+		{
+			; C set from [**]
+			LDA (multabneglo_ptr),Y:SBC (multablo_ptr),Y:STA ys
+			LDA (multabneghi_ptr),Y:SBC (multabhi_ptr),Y:STA ys+1	; result -ve or 0
+			
+			SEC:LDY dy
+			LDA (multabhi_ptr),Y:SBC (multabneghi_ptr),Y:EOR #255
+			
+			; C set - add with EOR#255 is like SBC
+			ADC ys:BCS done:DEC ys+1:BCC done2	; A = ys
+		}
+		
+		\\ This is the path for -ve dy * sin(angle)
+		.dynegative
+		{
+			; C set from [**]
+			LDA #0:SBC dy:STA temp		; get LSB(-dy)
+			LDA #0:SBC dy+1:TAY			; get MSB(-dy)
+			
+			SEC
+			LDA (multablo_ptr),Y:SBC (multabneglo_ptr),Y:STA ys
+			LDA (multabhi_ptr),Y:SBC (multabneghi_ptr),Y:STA ys+1
+
+			LDY temp
+			; C set because ys always >= 0
+			LDA (multabhi_ptr),Y:SBC (multabneghi_ptr),Y
+			
+			CLC:ADC ys:BCC done2:INC ys+1:BCS done	; A = ys
+		}
+		
+		\\ This is the path for dy * sin(a), where sin(a) is -1.0.
+		.sineis1
+		SEC
+		LDA #0:SBC dy:TAX
+		LDA #0:SBC dy+1:STA ys+1
+		TXA
+	}
+	
+	.done
+	CLC
+	.done2
+	; A = ys
+	ADC xc:STA distance
+	LDA ys+1:ADC xc+1
+	RTS
+}
+
+
+IF HI(distancealongray2_stub)<>HI(distancealongray1)
+	ERROR "distancealongray routines must all be in the same page"
+ENDIF
+

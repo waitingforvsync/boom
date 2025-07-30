@@ -1,0 +1,86 @@
+.demomap
+{
+	.start_x
+		EQUB 15
+	.start_y
+		EQUB 7
+	.start_angle
+		EQUB 0
+	.start_subzone
+		EQUB 0
+	.offsets_start
+		EQUW vertex_x - demomap
+		EQUW vertex_y - demomap
+		EQUW edge_colour - demomap - 1
+		EQUW subzone_vertex_lists - demomap
+		EQUW subzone_edge_lists - demomap
+		EQUW subzone_list_start_index - demomap - 1
+		EQUW subzone_zone_index - demomap - 1
+		EQUW subzone_num_verts - demomap - 1
+		EQUW zone_floor_height - demomap
+		EQUW zone_ceiling_height - demomap
+		EQUW zone_floor_colour - demomap
+		EQUW zone_ceiling_colour - demomap
+		
+
+	\\ https://www.desmos.com/calculator/h49zizxuzm
+
+	\\ Vertex data
+		
+	; Vertex positions divided by 32
+	.vertex_x EQUB 24, 24, 12,  9,  9, 12,   20, 19, 15, 14, 18
+	.vertex_y EQUB  3, 17, 20, 12,  8,  0,    9, 13, 13,  9,  8
+
+
+	\\ Edge data (index 0 is invalid)
+
+	; Edge colour
+	.edge_colour
+		EQUB colour_dark_blue
+		EQUB colour_bright_blue
+		EQUB colour_violet
+		EQUB colour_purple
+		EQUB colour_violet
+		EQUB colour_deep_blue
+
+
+	\\ Subzone definitions
+
+	; A reversed list of all the vertex indices
+	.subzone_vertex_lists
+		.subzone_1_verts EQUB 5, 4, 3, 2, 1, 0
+		
+	; A reversed list of all the edge indices
+	.subzone_edge_lists
+		.subzone_1_edges EQUB 6, 5, 4, 3, 2, 1
+
+
+	\\ Subzone data (index 0 is invalid)
+
+	; Subzone list indices
+	.subzone_list_start_index
+		EQUB subzone_1_verts - subzone_vertex_lists
+		
+	; Subzone zone index
+	.subzone_zone_index
+		EQUB 0
+		
+	; Subzone vertex count, minus one
+	.subzone_num_verts
+		EQUB 6-1
+
+
+	\\ Zone data
+
+	.zone_floor_height
+		EQUB 209
+		
+	.zone_ceiling_height
+		EQUB 137
+
+	.zone_floor_colour
+		EQUB colour_dark_red
+
+	.zone_ceiling_colour
+		EQUB colour_deep_red
+}

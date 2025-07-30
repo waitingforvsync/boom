@@ -1,0 +1,3118 @@
+     0400   58         CLI
+     0401   A9 0F      LDA #&0F
+     0403   A2 00      LDX #&00
+     0405   20 F4 FF   JSR &FFF4
+     0408   A2 00      LDX #&00
+.loop
+     040A   BD 20 04   LDA &0420,X
+     040D   20 E3 FF   JSR &FFE3
+     0410   E8         INX
+     0411   C9 0D      CMP #&0D
+     0413   D0 F5      BNE &040A
+     0415   20 E7 FF   JSR &FFE7
+     0418   A2 1F      LDX #&1F
+     041A   A0 04      LDY #&04
+     041C   4C F7 FF   JMP &FFF7
+.cmd
+     041F   2F 44 4F ...
+     0424   0D
+Saving file '!BOOT'
+.multablo
+     0400
+.multabhi
+     0600
+.screenaddrhud
+     0800
+.multabneglo
+     0B00
+.multabneghi
+     1100
+.sintable
+     1300
+.atantable
+     1400
+.reciptablo
+     1500
+.reciptabhi
+     1600
+.angletocolumn
+     1700
+.screenaddr1
+     1800
+.tempbuffer
+     2800
+.line_x0
+     2900
+.line_x1
+     2980
+.line_y0
+     2A00
+.line_dydxlo
+     2A80
+.line_dydxhi
+     2B00
+.line_colour0
+     2B80
+.line_colour1
+     2C00
+.line_next
+     2C80
+.codestart
+.zpinit_start
+.multablo_ptr
+     0000
+.multabneglo_ptr
+     0002
+.multabhi_ptr
+     0004
+.multabneghi_ptr
+     0006
+.scrnbase
+     0008
+.dispscrnhi
+     0009
+.scrnswapflag
+     000B
+.numbars
+     000C
+.numlines
+     000D
+.numcachedsubzones
+     000E
+.startcontindex
+     000F
+.zpinit_end
+.dx
+     0010
+.dy
+     0012
+.angle
+     0014
+.xc
+     0016
+.ys
+     0018
+.distance
+     001A
+.zshift
+     001C
+.result
+     001D
+.read
+     001F
+.write
+     0021
+.addr
+     0023
+.temp
+     0025
+.savex
+     0027
+.savey
+     0028
+.count
+     0029
+.tempangle
+     002A
+.anglediff
+     002C
+.playerx
+     002E
+.playery
+     0031
+.playerz
+     0034
+.playerangle
+     0036
+.playersubzone
+     0038
+.playerzone
+     0039
+.clipangle
+     003A
+.normalangle
+     003C
+.barpos
+     003E
+.oldbarend
+     0046
+.x0
+     0047
+.x1
+     0048
+.y0
+     0049
+.y1
+     004A
+.acc
+     004B
+.state
+     004C
+.dydxlo
+     004D
+.dydxhi
+     004E
+.map_ptrs
+.vert_xs
+     004F
+.vert_ys
+     0051
+.edge_colours
+     0053
+.cont_vertices_base
+     0055
+.cont_edges_base
+     0057
+.sz_cont_indices
+     0059
+.sz_zone_indices
+     005B
+.sz_vert_counts
+     005D
+.zone_floor_heights
+     005F
+.zone_ceiling_heights
+     0061
+.zone_floor_colours
+     0063
+.zone_ceiling_colours
+     0065
+.cont_vertices
+     0067
+.cont_edges
+     0069
+.cont_num_verts
+     006B
+.start
+.linecolours
+     0078
+.blockoffset
+     2D00   00
+     2D01   03
+     2D02   07
+     2D03   0B
+     2D04   10
+     2D05   14
+     2D06   19
+     2D07   1E
+     2D08   1E
+     2D09   24
+     2D0A   2B
+     2D0B   32
+     2D0C   3A
+     2D0D   41
+     2D0E   49
+     2D0F   51
+.blockoffset_reverse
+     2D10   1E
+     2D11   19
+     2D12   14
+     2D13   10
+     2D14   0B
+     2D15   07
+     2D16   03
+     2D17   00
+     2D18   51
+     2D19   49
+     2D1A   41
+     2D1B   3A
+     2D1C   32
+     2D1D   2B
+     2D1E   24
+     2D1F   1E
+.blockdefs
+.block0000
+     2D20   FF
+     2D21   FF
+     2D22   00
+.block0001
+     2D23   EE
+     2D24   FF
+     2D25   11
+     2D26   00
+.block0010
+     2D27   CC
+     2D28   FF
+     2D29   33
+     2D2A   00
+.block0011
+     2D2B   CC
+     2D2C   EE
+     2D2D   33
+     2D2E   11
+     2D2F   00
+.block0100
+     2D30   88
+     2D31   FF
+     2D32   77
+     2D33   00
+.block0101
+     2D34   88
+     2D35   EE
+     2D36   77
+     2D37   11
+     2D38   00
+.block0110
+     2D39   88
+     2D3A   CC
+     2D3B   77
+     2D3C   33
+     2D3D   00
+.block0111
+.block1000
+     2D3E   88
+     2D3F   CC
+     2D40   66
+     2D41   33
+     2D42   11
+     2D43   00
+.block1001
+     2D44   88
+     2D45   CC
+     2D46   66
+     2D47   22
+     2D48   11
+     2D49   11
+     2D4A   00
+.block1010
+     2D4B   88
+     2D4C   CC
+     2D4D   44
+     2D4E   22
+     2D4F   33
+     2D50   11
+     2D51   00
+.block1011
+     2D52   88
+     2D53   CC
+     2D54   44
+     2D55   22
+     2D56   22
+     2D57   11
+     2D58   11
+     2D59   00
+.block1100
+     2D5A   88
+     2D5B   88
+     2D5C   44
+     2D5D   66
+     2D5E   33
+     2D5F   11
+     2D60   00
+.block1101
+     2D61   88
+     2D62   88
+     2D63   44
+     2D64   66
+     2D65   22
+     2D66   11
+     2D67   11
+     2D68   00
+.block1110
+     2D69   88
+     2D6A   88
+     2D6B   44
+     2D6C   44
+     2D6D   22
+     2D6E   33
+     2D6F   11
+     2D70   00
+.block1111
+     2D71   88
+     2D72   88
+     2D73   44
+     2D74   44
+     2D75   22
+     2D76   22
+     2D77   11
+     2D78   11
+     2D79   00
+.bottompalette
+     2D7A   22
+     2D7B   81
+     2D7C   A4
+.toppalette
+     2D7D   23
+     2D7E   86
+     2D7F   A5
+.leftmask
+     2D80   FF
+     2D81   77
+     2D82   33
+     2D83   11
+.rightmask
+     2D84   00
+     2D85   88
+     2D86   CC
+     2D87   EE
+.pixelmask
+     2D88   88
+     2D89   44
+     2D8A   22
+     2D8B   11
+.dartablelo
+     2D8C   18
+     2D8D   F4
+     2D8E   0B
+     2D8F   0E
+.colourtab0
+     2D90   00
+     2D91   0A
+     2D92   0A
+     2D93   0A
+     2D94   0F
+     2D95   A0
+     2D96   A0
+     2D97   A0
+     2D98   F0
+     2D99   AA
+     2D9A   AA
+     2D9B   AA
+     2D9C   FF
+     2D9D   5A
+     2D9E   5A
+     2D9F   5A
+     2DA0   5F
+     2DA1   5F
+     2DA2   5F
+     2DA3   F5
+     2DA4   F5
+     2DA5   F5
+.colourtab1
+     2DA6   00
+     2DA7   00
+     2DA8   05
+     2DA9   0F
+     2DAA   0F
+     2DAB   00
+     2DAC   50
+     2DAD   F0
+     2DAE   F0
+     2DAF   00
+     2DB0   55
+     2DB1   FF
+     2DB2   FF
+     2DB3   0F
+     2DB4   A5
+     2DB5   F0
+     2DB6   0F
+     2DB7   AF
+     2DB8   FF
+     2DB9   F0
+     2DBA   FA
+     2DBB   FF
+.barcol1
+     2DBC   0F
+     2DBD   5A
+     2DBE   F0
+     2DBF   AF
+     2DC0   FF
+     2DC1   F5
+     2DC2   0F
+.barcol2
+     2DC3   0F
+     2DC4   A5
+     2DC5   F0
+     2DC6   5F
+     2DC7   FF
+     2DC8   FA
+     2DC9   0F
+.distancealongray
+     2E00   B9 8C 2D   LDA &2D8C,Y
+     2E03   8D 09 2E   STA &2E09
+     2E06   E0 00      CPX #&00
+.darjmp
+     2E08   4C 0B 2E   JMP &2E0B
+.distancealongray2_stub
+     2E0B   4C D8 2F   JMP &2FD8
+.distancealongray3_stub
+     2E0E   4C C3 30   JMP &30C3
+.zeroangle0
+     2E11   A5 10      LDA &10
+     2E13   85 1A      STA &1A
+     2E15   A5 11      LDA &11
+     2E17   60         RTS
+.distancealongray0
+     2E18   F0 F7      BEQ &2E11
+.calcsin
+     2E1A   E0 F6      CPX #&F6
+     2E1C   B0 5A      BCS &2E78
+     2E1E   BD 00 13   LDA &1300,X
+     2E21   85 00      STA &00
+     2E23   85 04      STA &04
+     2E25   49 FF      EOR #&FF
+     2E27   85 02      STA &02
+     2E29   85 06      STA &06
+     2E2B   38         SEC
+     2E2C   A4 13      LDY &13
+     2E2E   30 1D      BMI &2E4D
+.dypositive
+     2E30   B1 00      LDA (&00),Y
+     2E32   F1 02      SBC (&02),Y
+     2E34   85 18      STA &18
+     2E36   B1 04      LDA (&04),Y
+     2E38   F1 06      SBC (&06),Y
+     2E3A   85 19      STA &19
+     2E3C   A4 12      LDY &12
+     2E3E   B1 04      LDA (&04),Y
+     2E40   F1 06      SBC (&06),Y
+     2E42   18         CLC
+     2E43   65 18      ADC &18
+     2E45   85 18      STA &18
+     2E47   90 37      BCC &2E80
+     2E49   E6 19      INC &19
+     2E4B   B0 33      BCS &2E80
+.dynegative
+     2E4D   A9 00      LDA #&00
+     2E4F   E5 12      SBC &12
+     2E51   85 25      STA &25
+     2E53   A9 00      LDA #&00
+     2E55   E5 13      SBC &13
+     2E57   A8         TAY
+     2E58   38         SEC
+     2E59   B1 02      LDA (&02),Y
+     2E5B   F1 00      SBC (&00),Y
+     2E5D   85 18      STA &18
+     2E5F   B1 06      LDA (&06),Y
+     2E61   F1 04      SBC (&04),Y
+     2E63   85 19      STA &19
+     2E65   A4 25      LDY &25
+     2E67   38         SEC
+     2E68   B1 04      LDA (&04),Y
+     2E6A   F1 06      SBC (&06),Y
+     2E6C   49 FF      EOR #&FF
+     2E6E   65 18      ADC &18
+     2E70   85 18      STA &18
+     2E72   B0 0C      BCS &2E80
+     2E74   C6 19      DEC &19
+     2E76   90 08      BCC &2E80
+.sineis1
+     2E78   A5 12      LDA &12
+     2E7A   85 18      STA &18
+     2E7C   A5 13      LDA &13
+     2E7E   85 19      STA &19
+.calccos
+     2E80   E0 0B      CPX #&0B
+     2E82   90 59      BCC &2EDD
+     2E84   8A         TXA
+     2E85   49 FF      EOR #&FF
+     2E87   AA         TAX
+     2E88   BD 01 13   LDA &1301,X
+     2E8B   85 00      STA &00
+     2E8D   85 04      STA &04
+     2E8F   49 FF      EOR #&FF
+     2E91   85 02      STA &02
+     2E93   85 06      STA &06
+     2E95   A4 11      LDY &11
+     2E97   30 1B      BMI &2EB4
+.dxpositive
+     2E99   B1 00      LDA (&00),Y
+     2E9B   F1 02      SBC (&02),Y
+     2E9D   85 16      STA &16
+     2E9F   B1 04      LDA (&04),Y
+     2EA1   F1 06      SBC (&06),Y
+     2EA3   85 17      STA &17
+     2EA5   A4 10      LDY &10
+     2EA7   B1 04      LDA (&04),Y
+     2EA9   F1 06      SBC (&06),Y
+     2EAB   18         CLC
+     2EAC   65 16      ADC &16
+     2EAE   90 34      BCC &2EE4
+     2EB0   E6 17      INC &17
+     2EB2   B0 2F      BCS &2EE3
+.dxnegative
+     2EB4   A9 00      LDA #&00
+     2EB6   E5 10      SBC &10
+     2EB8   85 25      STA &25
+     2EBA   A9 00      LDA #&00
+     2EBC   E5 11      SBC &11
+     2EBE   A8         TAY
+     2EBF   38         SEC
+     2EC0   B1 02      LDA (&02),Y
+     2EC2   F1 00      SBC (&00),Y
+     2EC4   85 16      STA &16
+     2EC6   B1 06      LDA (&06),Y
+     2EC8   F1 04      SBC (&04),Y
+     2ECA   85 17      STA &17
+     2ECC   A4 25      LDY &25
+     2ECE   38         SEC
+     2ECF   B1 04      LDA (&04),Y
+     2ED1   F1 06      SBC (&06),Y
+     2ED3   49 FF      EOR #&FF
+     2ED5   65 16      ADC &16
+     2ED7   B0 0A      BCS &2EE3
+     2ED9   C6 17      DEC &17
+     2EDB   90 07      BCC &2EE4
+.cosineis1
+     2EDD   A5 11      LDA &11
+     2EDF   85 17      STA &17
+     2EE1   A5 10      LDA &10
+.done
+     2EE3   18         CLC
+.done2
+     2EE4   65 18      ADC &18
+     2EE6   85 1A      STA &1A
+     2EE8   A5 17      LDA &17
+     2EEA   65 19      ADC &19
+     2EEC   60         RTS
+.zeroangle1
+     2EED   A5 12      LDA &12
+     2EEF   85 1A      STA &1A
+     2EF1   A5 13      LDA &13
+     2EF3   60         RTS
+.distancealongray1
+     2EF4   F0 F7      BEQ &2EED
+.calccos
+     2EF6   E0 F6      CPX #&F6
+     2EF8   B0 5A      BCS &2F54
+     2EFA   BD 00 13   LDA &1300,X
+     2EFD   85 00      STA &00
+     2EFF   85 04      STA &04
+     2F01   49 FF      EOR #&FF
+     2F03   85 02      STA &02
+     2F05   85 06      STA &06
+     2F07   38         SEC
+     2F08   A4 11      LDY &11
+     2F0A   30 1F      BMI &2F2B
+.dxpositive
+     2F0C   B1 02      LDA (&02),Y
+     2F0E   F1 00      SBC (&00),Y
+     2F10   85 16      STA &16
+     2F12   B1 06      LDA (&06),Y
+     2F14   F1 04      SBC (&04),Y
+     2F16   85 17      STA &17
+     2F18   38         SEC
+     2F19   A4 10      LDY &10
+     2F1B   B1 04      LDA (&04),Y
+     2F1D   F1 06      SBC (&06),Y
+     2F1F   49 FF      EOR #&FF
+     2F21   65 16      ADC &16
+     2F23   85 16      STA &16
+     2F25   B0 39      BCS &2F60
+     2F27   C6 17      DEC &17
+     2F29   90 35      BCC &2F60
+.dxnegative
+     2F2B   A9 00      LDA #&00
+     2F2D   E5 10      SBC &10
+     2F2F   85 25      STA &25
+     2F31   A9 00      LDA #&00
+     2F33   E5 11      SBC &11
+     2F35   A8         TAY
+     2F36   38         SEC
+     2F37   B1 00      LDA (&00),Y
+     2F39   F1 02      SBC (&02),Y
+     2F3B   85 16      STA &16
+     2F3D   B1 04      LDA (&04),Y
+     2F3F   F1 06      SBC (&06),Y
+     2F41   85 17      STA &17
+     2F43   A4 25      LDY &25
+     2F45   B1 04      LDA (&04),Y
+     2F47   F1 06      SBC (&06),Y
+     2F49   18         CLC
+     2F4A   65 16      ADC &16
+     2F4C   85 16      STA &16
+     2F4E   90 10      BCC &2F60
+     2F50   E6 17      INC &17
+     2F52   B0 0C      BCS &2F60
+.cosineis1
+     2F54   A9 00      LDA #&00
+     2F56   E5 10      SBC &10
+     2F58   85 16      STA &16
+     2F5A   A9 00      LDA #&00
+     2F5C   E5 11      SBC &11
+     2F5E   85 17      STA &17
+.calcsin
+     2F60   E0 0B      CPX #&0B
+     2F62   90 59      BCC &2FBD
+     2F64   8A         TXA
+     2F65   49 FF      EOR #&FF
+     2F67   AA         TAX
+     2F68   BD 01 13   LDA &1301,X
+     2F6B   85 00      STA &00
+     2F6D   85 04      STA &04
+     2F6F   49 FF      EOR #&FF
+     2F71   85 02      STA &02
+     2F73   85 06      STA &06
+     2F75   A4 13      LDY &13
+     2F77   30 1B      BMI &2F94
+.dypositive
+     2F79   B1 00      LDA (&00),Y
+     2F7B   F1 02      SBC (&02),Y
+     2F7D   85 18      STA &18
+     2F7F   B1 04      LDA (&04),Y
+     2F81   F1 06      SBC (&06),Y
+     2F83   85 19      STA &19
+     2F85   A4 12      LDY &12
+     2F87   B1 04      LDA (&04),Y
+     2F89   F1 06      SBC (&06),Y
+     2F8B   18         CLC
+     2F8C   65 18      ADC &18
+     2F8E   90 34      BCC &2FC4
+     2F90   E6 19      INC &19
+     2F92   B0 2F      BCS &2FC3
+.dynegative
+     2F94   A9 00      LDA #&00
+     2F96   E5 12      SBC &12
+     2F98   85 25      STA &25
+     2F9A   A9 00      LDA #&00
+     2F9C   E5 13      SBC &13
+     2F9E   A8         TAY
+     2F9F   38         SEC
+     2FA0   B1 02      LDA (&02),Y
+     2FA2   F1 00      SBC (&00),Y
+     2FA4   85 18      STA &18
+     2FA6   B1 06      LDA (&06),Y
+     2FA8   F1 04      SBC (&04),Y
+     2FAA   85 19      STA &19
+     2FAC   A4 25      LDY &25
+     2FAE   38         SEC
+     2FAF   B1 04      LDA (&04),Y
+     2FB1   F1 06      SBC (&06),Y
+     2FB3   49 FF      EOR #&FF
+     2FB5   65 18      ADC &18
+     2FB7   B0 0A      BCS &2FC3
+     2FB9   C6 19      DEC &19
+     2FBB   90 07      BCC &2FC4
+.sineis1
+     2FBD   A5 13      LDA &13
+     2FBF   85 19      STA &19
+     2FC1   A5 12      LDA &12
+.done
+     2FC3   18         CLC
+.done2
+     2FC4   65 16      ADC &16
+     2FC6   85 1A      STA &1A
+     2FC8   A5 19      LDA &19
+     2FCA   65 17      ADC &17
+     2FCC   60         RTS
+.zeroangle2
+     2FCD   A9 00      LDA #&00
+     2FCF   E5 10      SBC &10
+     2FD1   85 1A      STA &1A
+     2FD3   A9 00      LDA #&00
+     2FD5   E5 11      SBC &11
+     2FD7   60         RTS
+.distancealongray2
+     2FD8   F0 F3      BEQ &2FCD
+.calcsin
+     2FDA   E0 F6      CPX #&F6
+     2FDC   B0 5A      BCS &3038
+     2FDE   BD 00 13   LDA &1300,X
+     2FE1   85 00      STA &00
+     2FE3   85 04      STA &04
+     2FE5   49 FF      EOR #&FF
+     2FE7   85 02      STA &02
+     2FE9   85 06      STA &06
+     2FEB   38         SEC
+     2FEC   A4 13      LDY &13
+     2FEE   30 1F      BMI &300F
+.dypositive
+     2FF0   B1 02      LDA (&02),Y
+     2FF2   F1 00      SBC (&00),Y
+     2FF4   85 18      STA &18
+     2FF6   B1 06      LDA (&06),Y
+     2FF8   F1 04      SBC (&04),Y
+     2FFA   85 19      STA &19
+     2FFC   38         SEC
+     2FFD   A4 12      LDY &12
+     2FFF   B1 04      LDA (&04),Y
+     3001   F1 06      SBC (&06),Y
+     3003   49 FF      EOR #&FF
+     3005   65 18      ADC &18
+     3007   85 18      STA &18
+     3009   B0 39      BCS &3044
+     300B   C6 19      DEC &19
+     300D   90 35      BCC &3044
+.dynegative
+     300F   A9 00      LDA #&00
+     3011   E5 12      SBC &12
+     3013   85 25      STA &25
+     3015   A9 00      LDA #&00
+     3017   E5 13      SBC &13
+     3019   A8         TAY
+     301A   38         SEC
+     301B   B1 00      LDA (&00),Y
+     301D   F1 02      SBC (&02),Y
+     301F   85 18      STA &18
+     3021   B1 04      LDA (&04),Y
+     3023   F1 06      SBC (&06),Y
+     3025   85 19      STA &19
+     3027   A4 25      LDY &25
+     3029   B1 04      LDA (&04),Y
+     302B   F1 06      SBC (&06),Y
+     302D   18         CLC
+     302E   65 18      ADC &18
+     3030   85 18      STA &18
+     3032   90 10      BCC &3044
+     3034   E6 19      INC &19
+     3036   B0 0C      BCS &3044
+.sineis1
+     3038   A9 00      LDA #&00
+     303A   E5 12      SBC &12
+     303C   85 18      STA &18
+     303E   A9 00      LDA #&00
+     3040   E5 13      SBC &13
+     3042   85 19      STA &19
+.calccos
+     3044   E0 0B      CPX #&0B
+     3046   90 59      BCC &30A1
+     3048   8A         TXA
+     3049   49 FF      EOR #&FF
+     304B   AA         TAX
+     304C   BD 01 13   LDA &1301,X
+     304F   85 00      STA &00
+     3051   85 04      STA &04
+     3053   49 FF      EOR #&FF
+     3055   85 02      STA &02
+     3057   85 06      STA &06
+     3059   A4 11      LDY &11
+     305B   30 1D      BMI &307A
+.dxpositive
+     305D   B1 02      LDA (&02),Y
+     305F   F1 00      SBC (&00),Y
+     3061   85 16      STA &16
+     3063   B1 06      LDA (&06),Y
+     3065   F1 04      SBC (&04),Y
+     3067   85 17      STA &17
+     3069   38         SEC
+     306A   A4 10      LDY &10
+     306C   B1 04      LDA (&04),Y
+     306E   F1 06      SBC (&06),Y
+     3070   49 FF      EOR #&FF
+     3072   65 16      ADC &16
+     3074   B0 38      BCS &30AE
+     3076   C6 17      DEC &17
+     3078   90 35      BCC &30AF
+.dxnegative
+     307A   A9 00      LDA #&00
+     307C   E5 10      SBC &10
+     307E   85 25      STA &25
+     3080   A9 00      LDA #&00
+     3082   E5 11      SBC &11
+     3084   A8         TAY
+     3085   38         SEC
+     3086   B1 00      LDA (&00),Y
+     3088   F1 02      SBC (&02),Y
+     308A   85 16      STA &16
+     308C   B1 04      LDA (&04),Y
+     308E   F1 06      SBC (&06),Y
+     3090   85 17      STA &17
+     3092   A4 25      LDY &25
+     3094   B1 04      LDA (&04),Y
+     3096   F1 06      SBC (&06),Y
+     3098   18         CLC
+     3099   65 16      ADC &16
+     309B   90 12      BCC &30AF
+     309D   E6 17      INC &17
+     309F   B0 0D      BCS &30AE
+.cosineis1
+     30A1   38         SEC
+     30A2   A9 00      LDA #&00
+     30A4   E5 10      SBC &10
+     30A6   AA         TAX
+     30A7   A9 00      LDA #&00
+     30A9   E5 11      SBC &11
+     30AB   85 17      STA &17
+     30AD   8A         TXA
+.done
+     30AE   18         CLC
+.done2
+     30AF   65 18      ADC &18
+     30B1   85 1A      STA &1A
+     30B3   A5 17      LDA &17
+     30B5   65 19      ADC &19
+     30B7   60         RTS
+.zeroangle3
+     30B8   A9 00      LDA #&00
+     30BA   E5 12      SBC &12
+     30BC   85 1A      STA &1A
+     30BE   A9 00      LDA #&00
+     30C0   E5 13      SBC &13
+     30C2   60         RTS
+.distancealongray3
+     30C3   F0 F3      BEQ &30B8
+.calccos
+     30C5   E0 F6      CPX #&F6
+     30C7   B0 5A      BCS &3123
+     30C9   BD 00 13   LDA &1300,X
+     30CC   85 00      STA &00
+     30CE   85 04      STA &04
+     30D0   49 FF      EOR #&FF
+     30D2   85 02      STA &02
+     30D4   85 06      STA &06
+     30D6   38         SEC
+     30D7   A4 11      LDY &11
+     30D9   30 1D      BMI &30F8
+.dxpositive
+     30DB   B1 00      LDA (&00),Y
+     30DD   F1 02      SBC (&02),Y
+     30DF   85 16      STA &16
+     30E1   B1 04      LDA (&04),Y
+     30E3   F1 06      SBC (&06),Y
+     30E5   85 17      STA &17
+     30E7   A4 10      LDY &10
+     30E9   B1 04      LDA (&04),Y
+     30EB   F1 06      SBC (&06),Y
+     30ED   18         CLC
+     30EE   65 16      ADC &16
+     30F0   85 16      STA &16
+     30F2   90 37      BCC &312B
+     30F4   E6 17      INC &17
+     30F6   B0 33      BCS &312B
+.dxnegative
+     30F8   A9 00      LDA #&00
+     30FA   E5 10      SBC &10
+     30FC   85 25      STA &25
+     30FE   A9 00      LDA #&00
+     3100   E5 11      SBC &11
+     3102   A8         TAY
+     3103   38         SEC
+     3104   B1 02      LDA (&02),Y
+     3106   F1 00      SBC (&00),Y
+     3108   85 16      STA &16
+     310A   B1 06      LDA (&06),Y
+     310C   F1 04      SBC (&04),Y
+     310E   85 17      STA &17
+     3110   A4 25      LDY &25
+     3112   38         SEC
+     3113   B1 04      LDA (&04),Y
+     3115   F1 06      SBC (&06),Y
+     3117   49 FF      EOR #&FF
+     3119   65 16      ADC &16
+     311B   85 16      STA &16
+     311D   B0 0C      BCS &312B
+     311F   C6 17      DEC &17
+     3121   90 08      BCC &312B
+.cosineis1
+     3123   A5 10      LDA &10
+     3125   85 16      STA &16
+     3127   A5 11      LDA &11
+     3129   85 17      STA &17
+.calcsin
+     312B   E0 0B      CPX #&0B
+     312D   90 59      BCC &3188
+     312F   8A         TXA
+     3130   49 FF      EOR #&FF
+     3132   AA         TAX
+     3133   BD 01 13   LDA &1301,X
+     3136   85 00      STA &00
+     3138   85 04      STA &04
+     313A   49 FF      EOR #&FF
+     313C   85 02      STA &02
+     313E   85 06      STA &06
+     3140   A4 13      LDY &13
+     3142   30 1D      BMI &3161
+.dypositive
+     3144   B1 02      LDA (&02),Y
+     3146   F1 00      SBC (&00),Y
+     3148   85 18      STA &18
+     314A   B1 06      LDA (&06),Y
+     314C   F1 04      SBC (&04),Y
+     314E   85 19      STA &19
+     3150   38         SEC
+     3151   A4 12      LDY &12
+     3153   B1 04      LDA (&04),Y
+     3155   F1 06      SBC (&06),Y
+     3157   49 FF      EOR #&FF
+     3159   65 18      ADC &18
+     315B   B0 38      BCS &3195
+     315D   C6 19      DEC &19
+     315F   90 35      BCC &3196
+.dynegative
+     3161   A9 00      LDA #&00
+     3163   E5 12      SBC &12
+     3165   85 25      STA &25
+     3167   A9 00      LDA #&00
+     3169   E5 13      SBC &13
+     316B   A8         TAY
+     316C   38         SEC
+     316D   B1 00      LDA (&00),Y
+     316F   F1 02      SBC (&02),Y
+     3171   85 18      STA &18
+     3173   B1 04      LDA (&04),Y
+     3175   F1 06      SBC (&06),Y
+     3177   85 19      STA &19
+     3179   A4 25      LDY &25
+     317B   B1 04      LDA (&04),Y
+     317D   F1 06      SBC (&06),Y
+     317F   18         CLC
+     3180   65 18      ADC &18
+     3182   90 12      BCC &3196
+     3184   E6 19      INC &19
+     3186   B0 0D      BCS &3195
+.sineis1
+     3188   38         SEC
+     3189   A9 00      LDA #&00
+     318B   E5 12      SBC &12
+     318D   AA         TAX
+     318E   A9 00      LDA #&00
+     3190   E5 13      SBC &13
+     3192   85 19      STA &19
+     3194   8A         TXA
+.done
+     3195   18         CLC
+.done2
+     3196   65 16      ADC &16
+     3198   85 1A      STA &1A
+     319A   A5 19      LDA &19
+     319C   65 17      ADC &17
+     319E   60         RTS
+.getworldangle
+     319F   A5 13      LDA &13
+     31A1   C9 80      CMP #&80
+     31A3   45 11      EOR &11
+     31A5   2A         ROL A
+     31A6   08         PHP
+     31A7   2A         ROL A
+     31A8   29 03      AND #&03
+     31AA   85 15      STA &15
+     31AC   A5 11      LDA &11
+     31AE   10 0D      BPL &31BD
+     31B0   38         SEC
+     31B1   A9 00      LDA #&00
+     31B3   E5 10      SBC &10
+     31B5   85 10      STA &10
+     31B7   A9 00      LDA #&00
+     31B9   E5 11      SBC &11
+     31BB   85 11      STA &11
+.dxpositive
+     31BD   A5 13      LDA &13
+     31BF   10 0D      BPL &31CE
+     31C1   38         SEC
+     31C2   A9 00      LDA #&00
+     31C4   E5 12      SBC &12
+     31C6   85 12      STA &12
+     31C8   A9 00      LDA #&00
+     31CA   E5 13      SBC &13
+     31CC   85 13      STA &13
+.dypositive
+     31CE   A4 12      LDY &12
+     31D0   C5 11      CMP &11
+     31D2   D0 02      BNE &31D6
+     31D4   C4 10      CPY &10
+     31D6   B0 5E      BCS &3236
+     31D8   A5 11      LDA &11
+     31DA   F0 22      BEQ &31FE
+     31DC   46 13      LSR &13
+     31DE   66 12      ROR &12
+     31E0   4A         LSR A
+     31E1   F0 19      BEQ &31FC
+     31E3   66 10      ROR &10
+     31E5   46 13      LSR &13
+     31E7   66 12      ROR &12
+     31E9   4A         LSR A
+     31EA   F0 10      BEQ &31FC
+     31EC   66 10      ROR &10
+     31EE   46 13      LSR &13
+     31F0   66 12      ROR &12
+     31F2   4A         LSR A
+     31F3   F0 07      BEQ &31FC
+     31F5   66 10      ROR &10
+     31F7   46 13      LSR &13
+     31F9   66 12      ROR &12
+     31FB   4A         LSR A
+.dxshifted
+     31FC   66 10      ROR &10
+.dxnormalised
+     31FE   A5 12      LDA &12
+     3200   C5 10      CMP &10
+     3202   F0 2A      BEQ &322E
+     3204   85 00      STA &00
+     3206   85 04      STA &04
+     3208   49 FF      EOR #&FF
+     320A   85 02      STA &02
+     320C   85 06      STA &06
+     320E   A6 10      LDX &10
+     3210   38         SEC
+     3211   BC 00 15   LDY &1500,X
+     3214   B1 04      LDA (&04),Y
+     3216   F1 06      SBC (&06),Y
+     3218   85 14      STA &14
+     321A   BC 00 16   LDY &1600,X
+     321D   B1 00      LDA (&00),Y
+     321F   F1 02      SBC (&02),Y
+     3221   18         CLC
+     3222   65 14      ADC &14
+     3224   AA         TAX
+     3225   BD 00 14   LDA &1400,X
+     3228   28         PLP
+     3229   90 02      BCC &322D
+     322B   49 FF      EOR #&FF
+     322D   60         RTS
+.return127
+     322E   A9 7F      LDA #&7F
+     3230   28         PLP
+     3231   90 02      BCC &3235
+     3233   49 FF      EOR #&FF
+     3235   60         RTS
+.dy_ge_dx
+     3236   F0 56      BEQ &328E
+     3238   C9 00      CMP #&00
+     323A   F0 22      BEQ &325E
+     323C   46 11      LSR &11
+     323E   66 10      ROR &10
+     3240   4A         LSR A
+     3241   F0 19      BEQ &325C
+     3243   66 12      ROR &12
+     3245   46 11      LSR &11
+     3247   66 10      ROR &10
+     3249   4A         LSR A
+     324A   F0 10      BEQ &325C
+     324C   66 12      ROR &12
+     324E   46 11      LSR &11
+     3250   66 10      ROR &10
+     3252   4A         LSR A
+     3253   F0 07      BEQ &325C
+     3255   66 12      ROR &12
+     3257   46 11      LSR &11
+     3259   66 10      ROR &10
+     325B   4A         LSR A
+.dyshifted
+     325C   66 12      ROR &12
+.dynormalised
+     325E   A5 10      LDA &10
+     3260   C5 12      CMP &12
+     3262   F0 2A      BEQ &328E
+     3264   85 00      STA &00
+     3266   85 04      STA &04
+     3268   49 FF      EOR #&FF
+     326A   85 02      STA &02
+     326C   85 06      STA &06
+     326E   A6 12      LDX &12
+     3270   38         SEC
+     3271   BC 00 15   LDY &1500,X
+     3274   B1 04      LDA (&04),Y
+     3276   F1 06      SBC (&06),Y
+     3278   85 14      STA &14
+     327A   BC 00 16   LDY &1600,X
+     327D   B1 00      LDA (&00),Y
+     327F   F1 02      SBC (&02),Y
+     3281   18         CLC
+     3282   65 14      ADC &14
+     3284   AA         TAX
+     3285   BD 00 14   LDA &1400,X
+     3288   28         PLP
+     3289   B0 02      BCS &328D
+     328B   49 FF      EOR #&FF
+     328D   60         RTS
+.return128
+.dy_eq_dx
+     328E   A9 80      LDA #&80
+     3290   28         PLP
+     3291   90 02      BCC &3295
+     3293   49 FF      EOR #&FF
+     3295   60         RTS
+.getworldangle8
+     3296   A5 12      LDA &12
+     3298   C9 80      CMP #&80
+     329A   45 10      EOR &10
+     329C   2A         ROL A
+     329D   08         PHP
+     329E   29 01      AND #&01
+     32A0   2A         ROL A
+     32A1   85 15      STA &15
+     32A3   A5 10      LDA &10
+     32A5   10 07      BPL &32AE
+     32A7   49 FF      EOR #&FF
+     32A9   69 01      ADC #&01
+     32AB   85 10      STA &10
+     32AD   18         CLC
+.dxpositive
+     32AE   A5 12      LDA &12
+     32B0   10 06      BPL &32B8
+     32B2   49 FF      EOR #&FF
+     32B4   69 01      ADC #&01
+     32B6   85 12      STA &12
+.dypositive
+     32B8   C5 10      CMP &10
+     32BA   B0 2A      BCS &32E6
+     32BC   85 00      STA &00
+     32BE   85 04      STA &04
+     32C0   49 FF      EOR #&FF
+     32C2   85 02      STA &02
+     32C4   85 06      STA &06
+     32C6   A6 10      LDX &10
+     32C8   38         SEC
+     32C9   BC 00 15   LDY &1500,X
+     32CC   B1 04      LDA (&04),Y
+     32CE   F1 06      SBC (&06),Y
+     32D0   85 14      STA &14
+     32D2   BC 00 16   LDY &1600,X
+     32D5   B1 00      LDA (&00),Y
+     32D7   F1 02      SBC (&02),Y
+     32D9   18         CLC
+     32DA   65 14      ADC &14
+     32DC   AA         TAX
+     32DD   BD 00 14   LDA &1400,X
+     32E0   28         PLP
+     32E1   90 02      BCC &32E5
+     32E3   49 FF      EOR #&FF
+     32E5   60         RTS
+.dy_ge_dx
+     32E6   F0 2B      BEQ &3313
+     32E8   AA         TAX
+     32E9   A5 10      LDA &10
+     32EB   85 00      STA &00
+     32ED   85 04      STA &04
+     32EF   49 FF      EOR #&FF
+     32F1   85 02      STA &02
+     32F3   85 06      STA &06
+     32F5   38         SEC
+     32F6   BC 00 15   LDY &1500,X
+     32F9   B1 04      LDA (&04),Y
+     32FB   F1 06      SBC (&06),Y
+     32FD   85 14      STA &14
+     32FF   BC 00 16   LDY &1600,X
+     3302   B1 00      LDA (&00),Y
+     3304   F1 02      SBC (&02),Y
+     3306   18         CLC
+     3307   65 14      ADC &14
+     3309   AA         TAX
+     330A   BD 00 14   LDA &1400,X
+     330D   28         PLP
+     330E   B0 02      BCS &3312
+     3310   49 FF      EOR #&FF
+     3312   60         RTS
+.return128
+.dy_eq_dx
+     3313   A9 80      LDA #&80
+     3315   28         PLP
+     3316   90 02      BCC &331A
+     3318   49 FF      EOR #&FF
+     331A   60         RTS
+.irq
+     331B   2C 4D FE   BIT &FE4D
+     331E   70 57      BVS &3377
+.rupture_handler
+     3320   A5 FC      LDA &FC
+     3322   40         RTI
+.irq_bottom_screen
+     3323   A9 0C      LDA #&0C
+     3325   8D 00 FE   STA &FE00
+     3328   A9 01      LDA #&01
+     332A   8D 01 FE   STA &FE01
+     332D   8E 4B 33   STX &334B
+     3330   A2 02      LDX #&02
+.palloop
+     3332   BD 7A 2D   LDA &2D7A,X
+     3335   8D 21 FE   STA &FE21
+     3338   49 10      EOR #&10
+     333A   8D 21 FE   STA &FE21
+     333D   49 40      EOR #&40
+     333F   8D 21 FE   STA &FE21
+     3342   49 10      EOR #&10
+     3344   8D 21 FE   STA &FE21
+     3347   CA         DEX
+     3348   10 E8      BPL &3332
+.irqsavex
+     334A   A2 00      LDX #&00
+     334C   A9 57      LDA #&57
+     334E   8D 1F 33   STA &331F
+     3351   A9 23      LDA #&23
+     3353   8D 47 FE   STA &FE47
+     3356   A9 04      LDA #&04
+     3358   8D 00 FE   STA &FE00
+     335B   A9 14      LDA #&14
+     335D   8D 01 FE   STA &FE01
+     3360   A9 06      LDA #&06
+     3362   8D 00 FE   STA &FE00
+     3365   A9 03      LDA #&03
+     3367   8D 01 FE   STA &FE01
+     336A   A9 07      LDA #&07
+     336C   8D 00 FE   STA &FE00
+     336F   A9 0D      LDA #&0D
+     3371   8D 01 FE   STA &FE01
+     3374   A5 FC      LDA &FC
+     3376   40         RTI
+.irq_top_screen
+     3377   8E D3 33   STX &33D3
+     337A   A9 0C      LDA #&0C
+     337C   8D 00 FE   STA &FE00
+     337F   A6 0B      LDX &0B
+     3381   B5 09      LDA &09,X
+     3383   8D 01 FE   STA &FE01
+     3386   A2 02      LDX #&02
+.palloop
+     3388   BD 7D 2D   LDA &2D7D,X
+     338B   8D 21 FE   STA &FE21
+     338E   49 10      EOR #&10
+     3390   8D 21 FE   STA &FE21
+     3393   49 40      EOR #&40
+     3395   8D 21 FE   STA &FE21
+     3398   49 10      EOR #&10
+     339A   8D 21 FE   STA &FE21
+     339D   CA         DEX
+     339E   10 E8      BPL &3388
+     33A0   A9 03      LDA #&03
+     33A2   8D 1F 33   STA &331F
+     33A5   A9 29      LDA #&29
+     33A7   8D 47 FE   STA &FE47
+     33AA   A9 04      LDA #&04
+     33AC   8D 00 FE   STA &FE00
+     33AF   A9 11      LDA #&11
+     33B1   8D 01 FE   STA &FE01
+     33B4   A9 06      LDA #&06
+     33B6   8D 00 FE   STA &FE00
+     33B9   A9 10      LDA #&10
+     33BB   8D 01 FE   STA &FE01
+     33BE   A9 07      LDA #&07
+     33C0   8D 00 FE   STA &FE00
+     33C3   A9 FF      LDA #&FF
+     33C5   8D 01 FE   STA &FE01
+     33C8   A5 0B      LDA &0B
+     33CA   F0 06      BEQ &33D2
+     33CC   A5 0A      LDA &0A
+     33CE   85 09      STA &09
+     33D0   C6 0B      DEC &0B
+.dontswap
+.irqsavex
+     33D2   A2 00      LDX #&00
+     33D4   A5 FC      LDA &FC
+     33D6   40         RTI
+.swap_screen
+     33D7   A5 08      LDA &08
+     33D9   4A         LSR A
+     33DA   4A         LSR A
+     33DB   4A         LSR A
+     33DC   85 0A      STA &0A
+     33DE   A5 08      LDA &08
+     33E0   49 68      EOR #&68
+     33E2   85 08      STA &08
+     33E4   A9 01      LDA #&01
+     33E6   85 0B      STA &0B
+     33E8   60         RTS
+.wait_screen
+     33E9   A5 0B      LDA &0B
+     33EB   F0 07      BEQ &33F4
+.wait
+     33ED   AD 1F 33   LDA &331F
+     33F0   C9 57      CMP #&57
+     33F2   D0 F9      BNE &33ED
+.nothingtowait
+     33F4   60         RTS
+.renderlines
+     33F5   A2 00      LDX #&00
+     33F7   20 2D 34   JSR &342D
+     33FA   A2 01      LDX #&01
+     33FC   20 2D 34   JSR &342D
+     33FF   A2 02      LDX #&02
+     3401   20 2D 34   JSR &342D
+     3404   A2 03      LDX #&03
+     3406   20 2D 34   JSR &342D
+     3409   60         RTS
+.plotpoint
+     340A   A5 47      LDA &47
+     340C   29 7C      AND #&7C
+     340E   0A         ASL A
+     340F   85 21      STA &21
+     3411   A5 49      LDA &49
+     3413   4A         LSR A
+     3414   4A         LSR A
+     3415   4A         LSR A
+     3416   18         CLC
+     3417   65 08      ADC &08
+     3419   85 22      STA &22
+     341B   A5 49      LDA &49
+     341D   29 07      AND #&07
+     341F   A8         TAY
+     3420   A5 47      LDA &47
+     3422   29 03      AND #&03
+     3424   AA         TAX
+     3425   B1 21      LDA (&21),Y
+     3427   5D 88 2D   EOR &2D88,X
+     342A   91 21      STA (&21),Y
+.abortline
+     342C   60         RTS
+.drawline
+     342D   BD 80 2B   LDA &2B80,X
+     3430   85 78      STA &78
+     3432   85 7A      STA &7A
+     3434   85 7C      STA &7C
+     3436   85 7E      STA &7E
+     3438   1D 00 2C   ORA &2C00,X
+     343B   F0 EF      BEQ &342C
+     343D   BD 00 2C   LDA &2C00,X
+     3440   85 79      STA &79
+     3442   85 7B      STA &7B
+     3444   85 7D      STA &7D
+     3446   85 7F      STA &7F
+     3448   BD 80 2A   LDA &2A80,X
+     344B   85 4D      STA &4D
+     344D   A9 80      LDA #&80
+     344F   85 4B      STA &4B
+     3451   BD 00 2B   LDA &2B00,X
+     3454   30 03      BMI &3459
+     3456   4C E3 35   JMP &35E3
+.line_up
+     3459   29 7F      AND #&7F
+     345B   85 4E      STA &4E
+     345D   BD 80 29   LDA &2980,X
+     3460   85 48      STA &48
+     3462   BD 00 29   LDA &2900,X
+     3465   85 47      STA &47
+     3467   29 7C      AND #&7C
+     3469   0A         ASL A
+     346A   85 21      STA &21
+     346C   BD 00 2A   LDA &2A00,X
+     346F   69 01      ADC #&01
+     3471   4A         LSR A
+     3472   4A         LSR A
+     3473   4A         LSR A
+     3474   18         CLC
+     3475   65 08      ADC &08
+     3477   85 22      STA &22
+     3479   BD 00 2A   LDA &2A00,X
+     347C   69 01      ADC #&01
+     347E   29 07      AND #&07
+     3480   A8         TAY
+     3481   A5 4E      LDA &4E
+     3483   C9 02      CMP #&02
+     3485   90 63      BCC &34EA
+.line_up_steep
+     3487   C6 4E      DEC &4E
+     3489   38         SEC
+     348A   A5 48      LDA &48
+     348C   E5 47      SBC &47
+     348E   85 29      STA &29
+     3490   A5 47      LDA &47
+     3492   29 03      AND #&03
+     3494   AA         TAX
+     3495   BD 88 2D   LDA &2D88,X
+     3498   18         CLC
+.foreachcolumn
+     3499   AA         TAX
+     349A   39 78 00   AND &0078,Y
+     349D   51 21      EOR (&21),Y
+     349F   91 21      STA (&21),Y
+     34A1   8A         TXA
+     34A2   88         DEY
+     34A3   30 38      BMI &34DD
+     34A5   39 78 00   AND &0078,Y
+     34A8   51 21      EOR (&21),Y
+     34AA   91 21      STA (&21),Y
+.backfromcrossedrow
+     34AC   C6 29      DEC &29
+     34AE   F0 39      BEQ &34E9
+     34B0   A5 4B      LDA &4B
+     34B2   E5 4D      SBC &4D
+     34B4   85 4B      STA &4B
+     34B6   98         TYA
+     34B7   E5 4E      SBC &4E
+     34B9   10 0E      BPL &34C9
+     34BB   A8         TAY
+     34BC   4A         LSR A
+     34BD   4A         LSR A
+     34BE   4A         LSR A
+     34BF   09 E0      ORA #&E0
+     34C1   18         CLC
+     34C2   65 22      ADC &22
+     34C4   85 22      STA &22
+     34C6   98         TYA
+     34C7   29 07      AND #&07
+.samerow
+     34C9   A8         TAY
+     34CA   8A         TXA
+     34CB   4A         LSR A
+     34CC   90 CB      BCC &3499
+     34CE   A5 21      LDA &21
+     34D0   69 07      ADC #&07
+     34D2   85 21      STA &21
+     34D4   A9 88      LDA #&88
+     34D6   90 C1      BCC &3499
+     34D8   E6 22      INC &22
+     34DA   18         CLC
+     34DB   90 BC      BCC &3499
+.crossedrow
+     34DD   A0 07      LDY #&07
+     34DF   C6 22      DEC &22
+     34E1   25 7F      AND &7F
+     34E3   51 21      EOR (&21),Y
+     34E5   91 21      STA (&21),Y
+     34E7   90 C3      BCC &34AC
+.finishedsteepline
+     34E9   60         RTS
+.line_up_shallow
+     34EA   C9 01      CMP #&01
+     34EC   D0 05      BNE &34F3
+     34EE   A9 22      LDA #&22
+     34F0   8D 51 35   STA &3551
+.selfmodbranch
+     34F3   A5 47      LDA &47
+     34F5   29 03      AND #&03
+     34F7   F0 1A      BEQ &3513
+     34F9   AA         TAX
+     34FA   49 03      EOR #&03
+     34FC   38         SEC
+     34FD   65 47      ADC &47
+     34FF   C5 48      CMP &48
+     3501   90 09      BCC &350C
+     3503   E5 47      SBC &47
+     3505   85 29      STA &29
+     3507   BD 88 2D   LDA &2D88,X
+     350A   D0 7D      BNE &3589
+.plotleftsliver
+     350C   BD 88 2D   LDA &2D88,X
+     350F   85 29      STA &29
+     3511   D0 76      BNE &3589
+.noleftsliver
+     3513   38         SEC
+     3514   A5 48      LDA &48
+     3516   29 FC      AND #&FC
+     3518   E5 47      SBC &47
+     351A   90 63      BCC &357F
+     351C   4A         LSR A
+     351D   4A         LSR A
+     351E   F0 5F      BEQ &357F
+     3520   85 29      STA &29
+.nextblock_clc
+     3522   18         CLC
+.nextblock
+     3523   C6 29      DEC &29
+     3525   30 58      BMI &357F
+.plot4pixels
+     3527   A5 4E      LDA &4E
+     3529   85 4C      STA &4C
+     352B   A5 4B      LDA &4B
+     352D   E5 4D      SBC &4D
+     352F   26 4C      ROL &4C
+     3531   E5 4D      SBC &4D
+     3533   26 4C      ROL &4C
+     3535   E5 4D      SBC &4D
+     3537   26 4C      ROL &4C
+     3539   E5 4D      SBC &4D
+     353B   85 4B      STA &4B
+     353D   A6 4C      LDX &4C
+     353F   BD 10 2D   LDA &2D10,X
+     3542   AA         TAX
+     3543   BD 20 2D   LDA &2D20,X
+.plotblock
+     3546   39 78 00   AND &0078,Y
+     3549   51 21      EOR (&21),Y
+     354B   91 21      STA (&21),Y
+     354D   BD 21 2D   LDA &2D21,X
+.finish_branch
+     3550   F0 0A      BEQ &355C
+     3552   E8         INX
+     3553   88         DEY
+     3554   10 F0      BPL &3546
+     3556   C6 22      DEC &22
+     3558   A0 07      LDY #&07
+     355A   D0 EA      BNE &3546
+.finishedblock
+     355C   90 0A      BCC &3568
+     355E   C8         INY
+     355F   C0 08      CPY #&08
+     3561   90 05      BCC &3568
+     3563   A0 00      LDY #&00
+     3565   E6 22      INC &22
+.correctrow
+     3567   18         CLC
+.correctrow2
+     3568   A5 21      LDA &21
+     356A   69 08      ADC #&08
+     356C   85 21      STA &21
+     356E   90 B3      BCC &3523
+     3570   E6 22      INC &22
+     3572   B0 AE      BCS &3522
+.finishedblock2
+     3574   B0 F1      BCS &3567
+     3576   88         DEY
+     3577   10 EF      BPL &3568
+     3579   A0 07      LDY #&07
+     357B   C6 22      DEC &22
+     357D   90 E9      BCC &3568
+.shallowlineend
+     357F   A5 48      LDA &48
+     3581   29 03      AND #&03
+     3583   F0 48      BEQ &35CD
+     3585   85 29      STA &29
+     3587   A9 88      LDA #&88
+.sliver_up
+     3589   18         CLC
+.foreachslivercolumn
+     358A   AA         TAX
+     358B   39 78 00   AND &0078,Y
+     358E   51 21      EOR (&21),Y
+     3590   91 21      STA (&21),Y
+     3592   8A         TXA
+     3593   88         DEY
+     3594   30 3D      BMI &35D3
+     3596   39 78 00   AND &0078,Y
+     3599   51 21      EOR (&21),Y
+     359B   91 21      STA (&21),Y
+     359D   C8         INY
+.backfromslivercrossedrow
+     359E   C6 29      DEC &29
+     35A0   F0 2B      BEQ &35CD
+     35A2   A5 4B      LDA &4B
+     35A4   E5 4D      SBC &4D
+     35A6   85 4B      STA &4B
+     35A8   98         TYA
+     35A9   E5 4E      SBC &4E
+     35AB   10 0E      BPL &35BB
+     35AD   A8         TAY
+     35AE   4A         LSR A
+     35AF   4A         LSR A
+     35B0   4A         LSR A
+     35B1   09 E0      ORA #&E0
+     35B3   18         CLC
+     35B4   65 22      ADC &22
+     35B6   85 22      STA &22
+     35B8   98         TYA
+     35B9   29 07      AND #&07
+.sliversamerow
+     35BB   A8         TAY
+     35BC   8A         TXA
+     35BD   4A         LSR A
+     35BE   90 CA      BCC &358A
+     35C0   A5 21      LDA &21
+     35C2   69 07      ADC #&07
+     35C4   85 21      STA &21
+     35C6   90 02      BCC &35CA
+     35C8   E6 22      INC &22
+     35CA   4C 13 35   JMP &3513
+.finishedsliver
+     35CD   A2 0A      LDX #&0A
+     35CF   8E 51 35   STX &3551
+     35D2   60         RTS
+.slivercrossedrow
+     35D3   A0 07      LDY #&07
+     35D5   C6 22      DEC &22
+     35D7   25 7F      AND &7F
+     35D9   51 21      EOR (&21),Y
+     35DB   91 21      STA (&21),Y
+     35DD   A0 00      LDY #&00
+     35DF   E6 22      INC &22
+     35E1   90 BB      BCC &359E
+.line_down
+     35E3   85 4E      STA &4E
+     35E5   BD 80 29   LDA &2980,X
+     35E8   85 48      STA &48
+     35EA   BD 00 29   LDA &2900,X
+     35ED   85 47      STA &47
+     35EF   29 7C      AND #&7C
+     35F1   0A         ASL A
+     35F2   E9 77      SBC #&77
+     35F4   08         PHP
+     35F5   85 21      STA &21
+     35F7   BD 00 2A   LDA &2A00,X
+     35FA   4A         LSR A
+     35FB   4A         LSR A
+     35FC   4A         LSR A
+     35FD   28         PLP
+     35FE   E9 00      SBC #&00
+     3600   18         CLC
+     3601   65 08      ADC &08
+     3603   85 22      STA &22
+     3605   BD 00 2A   LDA &2A00,X
+     3608   09 78      ORA #&78
+     360A   A8         TAY
+     360B   A5 4E      LDA &4E
+     360D   C9 02      CMP #&02
+     360F   90 65      BCC &3676
+.line_down_steep
+     3611   C6 4E      DEC &4E
+     3613   38         SEC
+     3614   A5 48      LDA &48
+     3616   E5 47      SBC &47
+     3618   85 29      STA &29
+     361A   A5 47      LDA &47
+     361C   29 03      AND #&03
+     361E   AA         TAX
+     361F   BD 88 2D   LDA &2D88,X
+     3622   18         CLC
+.foreachcolumn
+     3623   AA         TAX
+     3624   39 00 00   AND &0000,Y
+     3627   51 21      EOR (&21),Y
+     3629   91 21      STA (&21),Y
+     362B   8A         TXA
+     362C   C8         INY
+     362D   30 3A      BMI &3669
+     362F   39 00 00   AND &0000,Y
+     3632   51 21      EOR (&21),Y
+     3634   91 21      STA (&21),Y
+.backfromcrossedrow
+     3636   C6 29      DEC &29
+     3638   F0 3B      BEQ &3675
+     363A   A5 4B      LDA &4B
+     363C   65 4D      ADC &4D
+     363E   85 4B      STA &4B
+     3640   98         TYA
+     3641   65 4E      ADC &4E
+     3643   10 10      BPL &3655
+     3645   A8         TAY
+     3646   E9 77      SBC #&77
+     3648   4A         LSR A
+     3649   4A         LSR A
+     364A   4A         LSR A
+     364B   18         CLC
+     364C   65 22      ADC &22
+     364E   85 22      STA &22
+     3650   98         TYA
+     3651   29 07      AND #&07
+     3653   09 78      ORA #&78
+.samerow
+     3655   A8         TAY
+     3656   8A         TXA
+     3657   4A         LSR A
+     3658   90 C9      BCC &3623
+     365A   A5 21      LDA &21
+     365C   69 07      ADC #&07
+     365E   85 21      STA &21
+     3660   A9 88      LDA #&88
+     3662   90 BF      BCC &3623
+     3664   E6 22      INC &22
+     3666   18         CLC
+     3667   90 BA      BCC &3623
+.crossedrow
+     3669   A0 78      LDY #&78
+     366B   E6 22      INC &22
+     366D   25 78      AND &78
+     366F   51 21      EOR (&21),Y
+     3671   91 21      STA (&21),Y
+     3673   90 C1      BCC &3636
+.finishedsteepline
+     3675   60         RTS
+.line_down_shallow
+     3676   C9 01      CMP #&01
+     3678   D0 05      BNE &367F
+     367A   A9 22      LDA #&22
+     367C   8D DD 36   STA &36DD
+.selfmodbranch
+     367F   A5 47      LDA &47
+     3681   29 03      AND #&03
+     3683   F0 1A      BEQ &369F
+     3685   AA         TAX
+     3686   49 03      EOR #&03
+     3688   38         SEC
+     3689   65 47      ADC &47
+     368B   C5 48      CMP &48
+     368D   90 09      BCC &3698
+     368F   E5 47      SBC &47
+     3691   85 29      STA &29
+     3693   BD 88 2D   LDA &2D88,X
+     3696   D0 7D      BNE &3715
+.plotleftsliver
+     3698   BD 88 2D   LDA &2D88,X
+     369B   85 29      STA &29
+     369D   D0 76      BNE &3715
+.noleftsliver
+     369F   38         SEC
+     36A0   A5 48      LDA &48
+     36A2   29 FC      AND #&FC
+     36A4   E5 47      SBC &47
+     36A6   90 63      BCC &370B
+     36A8   4A         LSR A
+     36A9   4A         LSR A
+     36AA   F0 5F      BEQ &370B
+     36AC   85 29      STA &29
+.nextblock_clc
+     36AE   18         CLC
+.nextblock
+     36AF   C6 29      DEC &29
+     36B1   30 58      BMI &370B
+.plot4pixels
+     36B3   A5 4E      LDA &4E
+     36B5   85 4C      STA &4C
+     36B7   A5 4B      LDA &4B
+     36B9   65 4D      ADC &4D
+     36BB   26 4C      ROL &4C
+     36BD   65 4D      ADC &4D
+     36BF   26 4C      ROL &4C
+     36C1   65 4D      ADC &4D
+     36C3   26 4C      ROL &4C
+     36C5   65 4D      ADC &4D
+     36C7   85 4B      STA &4B
+     36C9   A6 4C      LDX &4C
+     36CB   BD 00 2D   LDA &2D00,X
+     36CE   AA         TAX
+     36CF   BD 20 2D   LDA &2D20,X
+.plotblock
+     36D2   39 00 00   AND &0000,Y
+     36D5   51 21      EOR (&21),Y
+     36D7   91 21      STA (&21),Y
+     36D9   BD 21 2D   LDA &2D21,X
+.finish_branch
+     36DC   F0 0A      BEQ &36E8
+     36DE   E8         INX
+     36DF   C8         INY
+     36E0   10 F0      BPL &36D2
+     36E2   E6 22      INC &22
+     36E4   A0 78      LDY #&78
+     36E6   D0 EA      BNE &36D2
+.finishedblock
+     36E8   B0 0A      BCS &36F4
+     36EA   88         DEY
+     36EB   C0 78      CPY #&78
+     36ED   B0 05      BCS &36F4
+     36EF   A0 7F      LDY #&7F
+     36F1   C6 22      DEC &22
+.correctrow
+     36F3   38         SEC
+.correctrow2
+     36F4   A5 21      LDA &21
+     36F6   69 07      ADC #&07
+     36F8   85 21      STA &21
+     36FA   90 B3      BCC &36AF
+     36FC   E6 22      INC &22
+     36FE   B0 AE      BCS &36AE
+.finishedblock2
+     3700   90 F1      BCC &36F3
+     3702   C8         INY
+     3703   10 EF      BPL &36F4
+     3705   A0 78      LDY #&78
+     3707   E6 22      INC &22
+     3709   B0 E9      BCS &36F4
+.shallowlineend
+     370B   A5 48      LDA &48
+     370D   29 03      AND #&03
+     370F   F0 4A      BEQ &375B
+     3711   85 29      STA &29
+     3713   A9 88      LDA #&88
+.sliver_down
+     3715   18         CLC
+.foreachslivercolumn
+     3716   AA         TAX
+     3717   39 00 00   AND &0000,Y
+     371A   51 21      EOR (&21),Y
+     371C   91 21      STA (&21),Y
+     371E   8A         TXA
+     371F   C8         INY
+     3720   30 3F      BMI &3761
+     3722   39 00 00   AND &0000,Y
+     3725   51 21      EOR (&21),Y
+     3727   91 21      STA (&21),Y
+     3729   88         DEY
+.backfromslivercrossedrow
+     372A   C6 29      DEC &29
+     372C   F0 2D      BEQ &375B
+     372E   A5 4B      LDA &4B
+     3730   65 4D      ADC &4D
+     3732   85 4B      STA &4B
+     3734   98         TYA
+     3735   65 4E      ADC &4E
+     3737   10 10      BPL &3749
+     3739   A8         TAY
+     373A   E9 77      SBC #&77
+     373C   4A         LSR A
+     373D   4A         LSR A
+     373E   4A         LSR A
+     373F   18         CLC
+     3740   65 22      ADC &22
+     3742   85 22      STA &22
+     3744   98         TYA
+     3745   29 07      AND #&07
+     3747   09 78      ORA #&78
+.sliversamerow
+     3749   A8         TAY
+     374A   8A         TXA
+     374B   4A         LSR A
+     374C   90 C8      BCC &3716
+     374E   A5 21      LDA &21
+     3750   69 07      ADC #&07
+     3752   85 21      STA &21
+     3754   90 02      BCC &3758
+     3756   E6 22      INC &22
+     3758   4C 9F 36   JMP &369F
+.finishedsliver
+     375B   A2 0A      LDX #&0A
+     375D   8E DD 36   STX &36DD
+     3760   60         RTS
+.slivercrossedrow
+     3761   A0 78      LDY #&78
+     3763   E6 22      INC &22
+     3765   25 78      AND &78
+     3767   51 21      EOR (&21),Y
+     3769   91 21      STA (&21),Y
+     376B   A0 7F      LDY #&7F
+     376D   C6 22      DEC &22
+     376F   90 B9      BCC &372A
+.normalise_z
+     3771   A2 00      LDX #&00
+     3773   C9 00      CMP #&00
+     3775   F0 16      BEQ &378D
+     3777   E8         INX
+     3778   4A         LSR A
+     3779   F0 10      BEQ &378B
+     377B   66 1A      ROR &1A
+     377D   E8         INX
+     377E   4A         LSR A
+     377F   F0 0A      BEQ &378B
+     3781   66 1A      ROR &1A
+     3783   E8         INX
+     3784   4A         LSR A
+     3785   F0 04      BEQ &378B
+     3787   66 1A      ROR &1A
+     3789   E8         INX
+     378A   4A         LSR A
+.normalised
+     378B   66 1A      ROR &1A
+.alreadynormalised
+     378D   86 1C      STX &1C
+     378F   60         RTS
+.applyperspective
+     3790   85 00      STA &00
+     3792   85 04      STA &04
+     3794   49 FF      EOR #&FF
+     3796   85 02      STA &02
+     3798   85 06      STA &06
+     379A   BC 00 16   LDY &1600,X
+     379D   38         SEC
+     379E   B1 00      LDA (&00),Y
+     37A0   F1 02      SBC (&02),Y
+     37A2   85 1D      STA &1D
+     37A4   B1 04      LDA (&04),Y
+     37A6   F1 06      SBC (&06),Y
+     37A8   85 1E      STA &1E
+     37AA   BC 00 15   LDY &1500,X
+     37AD   B1 04      LDA (&04),Y
+     37AF   F1 06      SBC (&06),Y
+     37B1   18         CLC
+     37B2   65 1D      ADC &1D
+     37B4   90 02      BCC &37B8
+     37B6   E6 1E      INC &1E
+     37B8   46 1E      LSR &1E
+     37BA   6A         ROR A
+     37BB   A6 1C      LDX &1C
+     37BD   F0 15      BEQ &37D4
+     37BF   46 1E      LSR &1E
+     37C1   6A         ROR A
+     37C2   CA         DEX
+     37C3   F0 0F      BEQ &37D4
+     37C5   46 1E      LSR &1E
+     37C7   6A         ROR A
+     37C8   CA         DEX
+     37C9   F0 09      BEQ &37D4
+     37CB   46 1E      LSR &1E
+     37CD   6A         ROR A
+     37CE   CA         DEX
+     37CF   F0 03      BEQ &37D4
+     37D1   46 1E      LSR &1E
+     37D3   6A         ROR A
+.finished
+     37D4   A6 1E      LDX &1E
+     37D6   60         RTS
+.calcworldnormalquadrant
+     37D7   A5 10      LDA &10
+     37D9   D0 09      BNE &37E4
+     37DB   A5 11      LDA &11
+     37DD   D0 05      BNE &37E4
+     37DF   24 13      BIT &13
+     37E1   30 01      BMI &37E4
+     37E3   60         RTS
+.dxnotzero
+     37E4   A5 12      LDA &12
+     37E6   D0 0B      BNE &37F3
+     37E8   A5 13      LDA &13
+     37EA   D0 07      BNE &37F3
+     37EC   A5 11      LDA &11
+     37EE   10 03      BPL &37F3
+     37F0   A9 01      LDA #&01
+     37F2   60         RTS
+.dynotzero
+     37F3   A5 11      LDA &11
+     37F5   0A         ASL A
+     37F6   45 13      EOR &13
+     37F8   2A         ROL A
+     37F9   2A         ROL A
+     37FA   29 03      AND #&03
+     37FC   49 03      EOR #&03
+     37FE   60         RTS
+.clippeddistance
+     37FF   A6 3C      LDX &3C
+     3801   A4 3D      LDY &3D
+     3803   20 00 2E   JSR &2E00
+     3806   85 1B      STA &1B
+     3808   38         SEC
+     3809   A5 3A      LDA &3A
+     380B   E5 3C      SBC &3C
+     380D   F0 6F      BEQ &387E
+     380F   A8         TAY
+     3810   A5 3B      LDA &3B
+     3812   E5 3D      SBC &3D
+     3814   29 03      AND #&03
+     3816   D0 05      BNE &381D
+     3818   98         TYA
+     3819   49 FF      EOR #&FF
+     381B   A8         TAY
+     381C   C8         INY
+.clipnormalnegative
+     381D   C0 F6      CPY #&F6
+     381F   B0 5D      BCS &387E
+     3821   BE 00 13   LDX &1300,Y
+     3824   38         SEC
+     3825   BD 00 16   LDA &1600,X
+     3828   85 00      STA &00
+     382A   85 04      STA &04
+     382C   49 FF      EOR #&FF
+     382E   85 02      STA &02
+     3830   85 06      STA &06
+     3832   A4 1A      LDY &1A
+     3834   B1 00      LDA (&00),Y
+     3836   F1 02      SBC (&02),Y
+     3838   85 16      STA &16
+     383A   B1 04      LDA (&04),Y
+     383C   F1 06      SBC (&06),Y
+     383E   85 17      STA &17
+     3840   A4 1B      LDY &1B
+     3842   B1 00      LDA (&00),Y
+     3844   F1 02      SBC (&02),Y
+     3846   85 25      STA &25
+     3848   BD 00 15   LDA &1500,X
+     384B   85 00      STA &00
+     384D   85 04      STA &04
+     384F   49 FF      EOR #&FF
+     3851   85 02      STA &02
+     3853   85 06      STA &06
+     3855   B1 00      LDA (&00),Y
+     3857   F1 02      SBC (&02),Y
+     3859   85 18      STA &18
+     385B   B1 04      LDA (&04),Y
+     385D   F1 06      SBC (&06),Y
+     385F   85 19      STA &19
+     3861   A4 1A      LDY &1A
+     3863   B1 04      LDA (&04),Y
+     3865   F1 06      SBC (&06),Y
+     3867   18         CLC
+     3868   65 18      ADC &18
+     386A   85 18      STA &18
+     386C   A5 19      LDA &19
+     386E   65 25      ADC &25
+     3870   85 19      STA &19
+     3872   A5 18      LDA &18
+     3874   65 16      ADC &16
+     3876   85 1A      STA &1A
+     3878   A5 19      LDA &19
+     387A   65 17      ADC &17
+     387C   85 1B      STA &1B
+.clipnormalcoincident
+     387E   38         SEC
+     387F   A5 36      LDA &36
+     3881   E5 3A      SBC &3A
+     3883   F0 39      BEQ &38BE
+     3885   30 05      BMI &388C
+     3887   49 FF      EOR #&FF
+     3889   18         CLC
+     388A   69 01      ADC #&01
+.facingclipnegative
+     388C   C9 F6      CMP #&F6
+     388E   B0 2E      BCS &38BE
+     3890   AA         TAX
+     3891   BD 00 13   LDA &1300,X
+     3894   85 00      STA &00
+     3896   85 04      STA &04
+     3898   49 FF      EOR #&FF
+     389A   85 02      STA &02
+     389C   85 06      STA &06
+     389E   A4 1A      LDY &1A
+     38A0   38         SEC
+     38A1   B1 04      LDA (&04),Y
+     38A3   F1 06      SBC (&06),Y
+     38A5   AA         TAX
+     38A6   A4 1B      LDY &1B
+     38A8   B1 00      LDA (&00),Y
+     38AA   F1 02      SBC (&02),Y
+     38AC   85 1A      STA &1A
+     38AE   B1 04      LDA (&04),Y
+     38B0   F1 06      SBC (&06),Y
+     38B2   85 1B      STA &1B
+     38B4   18         CLC
+     38B5   8A         TXA
+     38B6   65 1A      ADC &1A
+     38B8   85 1A      STA &1A
+     38BA   90 02      BCC &38BE
+     38BC   E6 1B      INC &1B
+.nothingtoclip
+.screenfill
+     38BE   A2 00      LDX #&00
+     38C0   18         CLC
+     38C1   A5 08      LDA &08
+     38C3   49 18      EOR #&18
+     38C5   D0 03      BNE &38CA
+     38C7   4C 82 6C   JMP &6C82
+     38CA   4C 0D 6E   JMP &6E0D
+.screenclear
+     38CD   A9 00      LDA #&00
+     38CF   AA         TAX
+     38D0   A4 08      LDY &08
+     38D2   C0 18      CPY #&18
+     38D4   D0 03      BNE &38D9
+     38D6   4C 98 6F   JMP &6F98
+     38D9   4C CC 6F   JMP &6FCC
+.main
+     38DC   20 CD 38   JSR &38CD
+     38DF   A9 08      LDA #&08
+     38E1   8D 00 FE   STA &FE00
+     38E4   A9 C0      LDA #&C0
+     38E6   8D 01 FE   STA &FE01
+     38E9   20 D7 33   JSR &33D7
+     38EC   20 F8 3B   JSR &3BF8
+     38EF   20 96 3C   JSR &3C96
+     38F2   A9 4B      LDA #&4B
+     38F4   85 FF      STA &FF
+.mainloop
+     38F6   20 B8 3A   JSR &3AB8
+     38F9   20 C7 3A   JSR &3AC7
+     38FC   20 42 39   JSR &3942
+     38FF   20 D0 3A   JSR &3AD0
+     3902   20 E9 33   JSR &33E9
+     3905   20 C7 3A   JSR &3AC7
+     3908   20 CD 38   JSR &38CD
+     390B   20 D0 3A   JSR &3AD0
+     390E   20 C7 3A   JSR &3AC7
+     3911   20 F5 33   JSR &33F5
+     3914   20 D0 3A   JSR &3AD0
+     3917   20 C7 3A   JSR &3AC7
+     391A   20 BE 38   JSR &38BE
+     391D   20 D0 3A   JSR &3AD0
+     3920   38         SEC
+     3921   A5 FF      LDA &FF
+     3923   E9 01      SBC #&01
+     3925   D0 02      BNE &3929
+     3927   A9 7F      LDA #&7F
+     3929   85 FF      STA &FF
+     392B   20 D7 33   JSR &33D7
+     392E   20 C7 3A   JSR &3AC7
+     3931   20 D0 3A   JSR &3AD0
+     3934   A9 03      LDA #&03
+     3936   85 21      STA &21
+     3938   A9 08      LDA #&08
+     393A   85 22      STA &22
+     393C   20 1F 3B   JSR &3B1F
+     393F   4C F6 38   JMP &38F6
+.capture_test
+     3942   A0 00      LDY #&00
+     3944   A9 00      LDA #&00
+     3946   99 00 29   STA &2900,Y
+     3949   A5 FF      LDA &FF
+     394B   99 80 29   STA &2980,Y
+     394E   A9 05      LDA #&05
+     3950   99 00 2A   STA &2A00,Y
+     3953   AD 94 2D   LDA &2D94
+     3956   99 80 2B   STA &2B80,Y
+     3959   AD AA 2D   LDA &2DAA
+     395C   99 00 2C   STA &2C00,Y
+     395F   38         SEC
+     3960   B9 80 29   LDA &2980,Y
+     3963   F9 00 29   SBC &2900,Y
+     3966   AA         TAX
+     3967   38         SEC
+     3968   A9 16      LDA #&16
+     396A   F9 00 2A   SBC &2A00,Y
+     396D   84 28      STY &28
+     396F   20 91 3A   JSR &3A91
+     3972   A4 28      LDY &28
+     3974   99 80 2A   STA &2A80,Y
+     3977   8A         TXA
+     3978   99 00 2B   STA &2B00,Y
+     397B   C8         INY
+     397C   A9 00      LDA #&00
+     397E   99 00 29   STA &2900,Y
+     3981   A5 FF      LDA &FF
+     3983   99 80 29   STA &2980,Y
+     3986   A9 76      LDA #&76
+     3988   99 00 2A   STA &2A00,Y
+     398B   AD 94 2D   LDA &2D94
+     398E   4D 96 2D   EOR &2D96
+     3991   99 80 2B   STA &2B80,Y
+     3994   AD AA 2D   LDA &2DAA
+     3997   4D AC 2D   EOR &2DAC
+     399A   99 00 2C   STA &2C00,Y
+     399D   38         SEC
+     399E   B9 80 29   LDA &2980,Y
+     39A1   F9 00 29   SBC &2900,Y
+     39A4   AA         TAX
+     39A5   38         SEC
+     39A6   B9 00 2A   LDA &2A00,Y
+     39A9   E9 45      SBC #&45
+     39AB   84 28      STY &28
+     39AD   20 91 3A   JSR &3A91
+     39B0   A4 28      LDY &28
+     39B2   99 80 2A   STA &2A80,Y
+     39B5   8A         TXA
+     39B6   09 80      ORA #&80
+     39B8   99 00 2B   STA &2B00,Y
+     39BB   C8         INY
+     39BC   A5 FF      LDA &FF
+     39BE   99 00 29   STA &2900,Y
+     39C1   A9 80      LDA #&80
+     39C3   99 80 29   STA &2980,Y
+     39C6   A9 16      LDA #&16
+     39C8   99 00 2A   STA &2A00,Y
+     39CB   AD 92 2D   LDA &2D92
+     39CE   99 80 2B   STA &2B80,Y
+     39D1   AD A8 2D   LDA &2DA8
+     39D4   99 00 2C   STA &2C00,Y
+     39D7   38         SEC
+     39D8   B9 80 29   LDA &2980,Y
+     39DB   F9 00 29   SBC &2900,Y
+     39DE   AA         TAX
+     39DF   38         SEC
+     39E0   B9 00 2A   LDA &2A00,Y
+     39E3   E9 0B      SBC #&0B
+     39E5   84 28      STY &28
+     39E7   20 91 3A   JSR &3A91
+     39EA   A4 28      LDY &28
+     39EC   99 80 2A   STA &2A80,Y
+     39EF   8A         TXA
+     39F0   09 80      ORA #&80
+     39F2   99 00 2B   STA &2B00,Y
+     39F5   C8         INY
+     39F6   A5 FF      LDA &FF
+     39F8   99 00 29   STA &2900,Y
+     39FB   A9 80      LDA #&80
+     39FD   99 80 29   STA &2980,Y
+     3A00   A9 45      LDA #&45
+     3A02   99 00 2A   STA &2A00,Y
+     3A05   AD 92 2D   LDA &2D92
+     3A08   4D 96 2D   EOR &2D96
+     3A0B   99 80 2B   STA &2B80,Y
+     3A0E   AD A8 2D   LDA &2DA8
+     3A11   4D AC 2D   EOR &2DAC
+     3A14   99 00 2C   STA &2C00,Y
+     3A17   38         SEC
+     3A18   B9 80 29   LDA &2980,Y
+     3A1B   F9 00 29   SBC &2900,Y
+     3A1E   AA         TAX
+     3A1F   38         SEC
+     3A20   A9 76      LDA #&76
+     3A22   F9 00 2A   SBC &2A00,Y
+     3A25   84 28      STY &28
+     3A27   20 91 3A   JSR &3A91
+     3A2A   A4 28      LDY &28
+     3A2C   99 80 2A   STA &2A80,Y
+     3A2F   8A         TXA
+     3A30   99 00 2B   STA &2B00,Y
+     3A33   60         RTS
+.capture
+     3A34   A9 00      LDA #&00
+     3A36   8D 00 29   STA &2900
+     3A39   8D 01 29   STA &2901
+     3A3C   8D 01 2A   STA &2A01
+     3A3F   8D 80 2A   STA &2A80
+     3A42   8D 00 2B   STA &2B00
+     3A45   8D 81 2A   STA &2A81
+     3A48   8D 01 2B   STA &2B01
+     3A4B   8D 80 2B   STA &2B80
+     3A4E   8D 00 2C   STA &2C00
+     3A51   85 0E      STA &0E
+     3A53   A9 80      LDA #&80
+     3A55   8D 00 2A   STA &2A00
+     3A58   8D 80 29   STA &2980
+     3A5B   8D 81 29   STA &2981
+     3A5E   A4 38      LDY &38
+     3A60   20 66 3C   JSR &3C66
+     3A63   A9 00      LDA #&00
+     3A65   8D C0 28   STA &28C0
+     3A68   A9 01      LDA #&01
+     3A6A   8D 80 28   STA &2880
+     3A6D   A4 39      LDY &39
+     3A6F   B1 65      LDA (&65),Y
+     3A71   A8         TAY
+     3A72   B9 90 2D   LDA &2D90,Y
+     3A75   8D 81 2B   STA &2B81
+     3A78   B9 A6 2D   LDA &2DA6,Y
+     3A7B   8D 01 2C   STA &2C01
+     3A7E   A9 02      LDA #&02
+     3A80   85 0D      STA &0D
+     3A82   38         SEC
+     3A83   A5 36      LDA &36
+     3A85   E9 7F      SBC #&7F
+     3A87   85 2A      STA &2A
+     3A89   A5 37      LDA &37
+     3A8B   E9 00      SBC #&00
+     3A8D   29 03      AND #&03
+     3A8F   85 2B      STA &2B
+.calc_gradient
+     3A91   85 00      STA &00
+     3A93   85 04      STA &04
+     3A95   49 FF      EOR #&FF
+     3A97   85 02      STA &02
+     3A99   85 06      STA &06
+     3A9B   BC 00 16   LDY &1600,X
+     3A9E   38         SEC
+     3A9F   B1 00      LDA (&00),Y
+     3AA1   F1 02      SBC (&02),Y
+     3AA3   85 4D      STA &4D
+     3AA5   B1 04      LDA (&04),Y
+     3AA7   F1 06      SBC (&06),Y
+     3AA9   BC 00 15   LDY &1500,X
+     3AAC   AA         TAX
+     3AAD   B1 04      LDA (&04),Y
+     3AAF   F1 06      SBC (&06),Y
+     3AB1   18         CLC
+     3AB2   65 4D      ADC &4D
+     3AB4   90 01      BCC &3AB7
+     3AB6   E8         INX
+     3AB7   60         RTS
+.inittimerbar
+     3AB8   A6 0C      LDX &0C
+     3ABA   B5 3F      LDA &3F,X
+     3ABC   85 46      STA &46
+     3ABE   A9 00      LDA #&00
+     3AC0   85 0C      STA &0C
+     3AC2   85 3E      STA &3E
+     3AC4   85 3F      STA &3F
+     3AC6   60         RTS
+.starttimer
+     3AC7   A9 FF      LDA #&FF
+     3AC9   8D 68 FE   STA &FE68
+     3ACC   8D 69 FE   STA &FE69
+     3ACF   60         RTS
+.endtimer
+     3AD0   AD 69 FE   LDA &FE69
+     3AD3   49 FF      EOR #&FF
+     3AD5   18         CLC
+     3AD6   69 01      ADC #&01
+     3AD8   6A         ROR A
+     3AD9   4A         LSR A
+     3ADA   69 00      ADC #&00
+     3ADC   A6 0C      LDX &0C
+     3ADE   75 3E      ADC &3E,X
+     3AE0   95 3F      STA &3F,X
+     3AE2   E6 0C      INC &0C
+.nobars
+     3AE4   60         RTS
+.startandendsame
+     3AE5   B5 3F      LDA &3F,X
+     3AE7   29 03      AND #&03
+     3AE9   AA         TAX
+     3AEA   BD 84 2D   LDA &2D84,X
+     3AED   85 26      STA &26
+     3AEF   A6 25      LDX &25
+     3AF1   3D 80 2D   AND &2D80,X
+     3AF4   85 25      STA &25
+     3AF6   A6 27      LDX &27
+     3AF8   A5 26      LDA &26
+     3AFA   3D BC 2D   AND &2DBC,X
+     3AFD   51 21      EOR (&21),Y
+     3AFF   25 25      AND &25
+     3B01   51 21      EOR (&21),Y
+     3B03   91 21      STA (&21),Y
+     3B05   C8         INY
+     3B06   C8         INY
+     3B07   91 21      STA (&21),Y
+     3B09   C8         INY
+     3B0A   A5 26      LDA &26
+     3B0C   3D C3 2D   AND &2DC3,X
+     3B0F   51 21      EOR (&21),Y
+     3B11   25 25      AND &25
+     3B13   51 21      EOR (&21),Y
+     3B15   91 21      STA (&21),Y
+     3B17   88         DEY
+     3B18   88         DEY
+     3B19   91 21      STA (&21),Y
+     3B1B   88         DEY
+     3B1C   4C 97 3B   JMP &3B97
+.plottimerbar
+     3B1F   A5 0C      LDA &0C
+     3B21   F0 C1      BEQ &3AE4
+     3B23   20 C7 3A   JSR &3AC7
+     3B26   A2 00      LDX #&00
+     3B28   A0 00      LDY #&00
+.foreachbar
+     3B2A   86 27      STX &27
+     3B2C   B5 3E      LDA &3E,X
+     3B2E   D5 3F      CMP &3F,X
+     3B30   F0 65      BEQ &3B97
+     3B32   29 03      AND #&03
+     3B34   F0 30      BEQ &3B66
+     3B36   85 25      STA &25
+     3B38   B5 3E      LDA &3E,X
+     3B3A   55 3F      EOR &3F,X
+     3B3C   29 FC      AND #&FC
+     3B3E   F0 A5      BEQ &3AE5
+     3B40   BD BC 2D   LDA &2DBC,X
+     3B43   A6 25      LDX &25
+     3B45   3D 80 2D   AND &2D80,X
+     3B48   11 21      ORA (&21),Y
+     3B4A   91 21      STA (&21),Y
+     3B4C   C8         INY
+     3B4D   C8         INY
+     3B4E   91 21      STA (&21),Y
+     3B50   88         DEY
+     3B51   BD 80 2D   LDA &2D80,X
+     3B54   A6 27      LDX &27
+     3B56   3D C3 2D   AND &2DC3,X
+     3B59   11 21      ORA (&21),Y
+     3B5B   91 21      STA (&21),Y
+     3B5D   C8         INY
+     3B5E   C8         INY
+     3B5F   91 21      STA (&21),Y
+     3B61   18         CLC
+     3B62   98         TYA
+     3B63   69 05      ADC #&05
+     3B65   A8         TAY
+.plotmain
+     3B66   B5 3F      LDA &3F,X
+     3B68   29 FC      AND #&FC
+     3B6A   38         SEC
+     3B6B   F5 3E      SBC &3E,X
+     3B6D   90 22      BCC &3B91
+     3B6F   4A         LSR A
+     3B70   4A         LSR A
+     3B71   F0 1E      BEQ &3B91
+     3B73   85 25      STA &25
+     3B75   18         CLC
+.plotmainloop
+     3B76   BD BC 2D   LDA &2DBC,X
+     3B79   91 21      STA (&21),Y
+     3B7B   C8         INY
+     3B7C   C8         INY
+     3B7D   91 21      STA (&21),Y
+     3B7F   88         DEY
+     3B80   BD C3 2D   LDA &2DC3,X
+     3B83   91 21      STA (&21),Y
+     3B85   C8         INY
+     3B86   C8         INY
+     3B87   91 21      STA (&21),Y
+     3B89   98         TYA
+     3B8A   69 05      ADC #&05
+     3B8C   A8         TAY
+     3B8D   C6 25      DEC &25
+     3B8F   D0 E5      BNE &3B76
+.checkrightsliver
+     3B91   B5 3F      LDA &3F,X
+     3B93   29 03      AND #&03
+     3B95   D0 40      BNE &3BD7
+.donextbar
+     3B97   E8         INX
+     3B98   E4 0C      CPX &0C
+     3B9A   90 8E      BCC &3B2A
+     3B9C   D0 08      BNE &3BA6
+     3B9E   20 D0 3A   JSR &3AD0
+     3BA1   C6 0C      DEC &0C
+     3BA3   4C 2A 3B   JMP &3B2A
+.verylastbar
+     3BA6   B5 3E      LDA &3E,X
+     3BA8   C5 46      CMP &46
+     3BAA   B0 2A      BCS &3BD6
+     3BAC   29 03      AND #&03
+     3BAE   F0 05      BEQ &3BB5
+     3BB0   98         TYA
+     3BB1   18         CLC
+     3BB2   69 08      ADC #&08
+     3BB4   A8         TAY
+.aligned
+     3BB5   A5 46      LDA &46
+     3BB7   29 FC      AND #&FC
+     3BB9   38         SEC
+     3BBA   F5 3E      SBC &3E,X
+     3BBC   90 18      BCC &3BD6
+     3BBE   4A         LSR A
+     3BBF   4A         LSR A
+     3BC0   AA         TAX
+     3BC1   18         CLC
+.blankloop
+     3BC2   A9 00      LDA #&00
+     3BC4   91 21      STA (&21),Y
+     3BC6   C8         INY
+     3BC7   91 21      STA (&21),Y
+     3BC9   C8         INY
+     3BCA   91 21      STA (&21),Y
+     3BCC   C8         INY
+     3BCD   91 21      STA (&21),Y
+     3BCF   98         TYA
+     3BD0   69 05      ADC #&05
+     3BD2   A8         TAY
+     3BD3   CA         DEX
+     3BD4   10 EC      BPL &3BC2
+.finished
+     3BD6   60         RTS
+.plotrightsliver
+     3BD7   AA         TAX
+     3BD8   BD 84 2D   LDA &2D84,X
+     3BDB   85 25      STA &25
+     3BDD   A6 27      LDX &27
+     3BDF   3D BC 2D   AND &2DBC,X
+     3BE2   91 21      STA (&21),Y
+     3BE4   C8         INY
+     3BE5   C8         INY
+     3BE6   91 21      STA (&21),Y
+     3BE8   C8         INY
+     3BE9   A5 25      LDA &25
+     3BEB   3D C3 2D   AND &2DC3,X
+     3BEE   91 21      STA (&21),Y
+     3BF0   88         DEY
+     3BF1   88         DEY
+     3BF2   91 21      STA (&21),Y
+     3BF4   88         DEY
+     3BF5   4C 97 3B   JMP &3B97
+.initialise_map
+     3BF8   A0 00      LDY #&00
+     3BFA   84 2E      STY &2E
+     3BFC   84 31      STY &31
+     3BFE   B1 1F      LDA (&1F),Y
+     3C00   85 30      STA &30
+     3C02   A9 00      LDA #&00
+     3C04   46 30      LSR &30
+     3C06   6A         ROR A
+     3C07   46 30      LSR &30
+     3C09   6A         ROR A
+     3C0A   46 30      LSR &30
+     3C0C   6A         ROR A
+     3C0D   85 2F      STA &2F
+     3C0F   C8         INY
+     3C10   B1 1F      LDA (&1F),Y
+     3C12   85 33      STA &33
+     3C14   A9 00      LDA #&00
+     3C16   46 33      LSR &33
+     3C18   6A         ROR A
+     3C19   46 33      LSR &33
+     3C1B   6A         ROR A
+     3C1C   46 33      LSR &33
+     3C1E   6A         ROR A
+     3C1F   85 32      STA &32
+     3C21   C8         INY
+     3C22   B1 1F      LDA (&1F),Y
+     3C24   85 36      STA &36
+     3C26   A9 00      LDA #&00
+     3C28   06 36      ASL &36
+     3C2A   2A         ROL A
+     3C2B   06 36      ASL &36
+     3C2D   2A         ROL A
+     3C2E   85 37      STA &37
+     3C30   C8         INY
+     3C31   B1 1F      LDA (&1F),Y
+     3C33   85 38      STA &38
+     3C35   C8         INY
+     3C36   A2 00      LDX #&00
+.initmapoffsets
+     3C38   18         CLC
+     3C39   B1 1F      LDA (&1F),Y
+     3C3B   65 1F      ADC &1F
+     3C3D   95 4F      STA &4F,X
+     3C3F   C8         INY
+     3C40   E8         INX
+     3C41   B1 1F      LDA (&1F),Y
+     3C43   65 20      ADC &20
+     3C45   95 4F      STA &4F,X
+     3C47   C8         INY
+     3C48   E8         INX
+     3C49   E0 0C      CPX #&0C
+     3C4B   D0 EB      BNE &3C38
+     3C4D   A2 00      LDX #&00
+     3C4F   A9 FF      LDA #&FF
+.initsubzonecache
+     3C51   9D 00 03   STA &0300,X
+     3C54   E8         INX
+     3C55   D0 FA      BNE &3C51
+     3C57   A4 38      LDY &38
+     3C59   B1 5B      LDA (&5B),Y
+     3C5B   85 39      STA &39
+     3C5D   A8         TAY
+     3C5E   B1 5F      LDA (&5F),Y
+     3C60   38         SEC
+     3C61   E9 29      SBC #&29
+     3C63   85 34      STA &34
+     3C65   60         RTS
+.initialise_subzone
+     3C66   18         CLC
+     3C67   B1 59      LDA (&59),Y
+     3C69   AA         TAX
+     3C6A   65 55      ADC &55
+     3C6C   85 67      STA &67
+     3C6E   A5 56      LDA &56
+     3C70   69 00      ADC #&00
+     3C72   85 68      STA &68
+     3C74   8A         TXA
+     3C75   65 57      ADC &57
+     3C77   85 69      STA &69
+     3C79   A5 58      LDA &58
+     3C7B   69 00      ADC #&00
+     3C7D   85 6A      STA &6A
+     3C7F   B1 5D      LDA (&5D),Y
+     3C81   85 6B      STA &6B
+     3C83   BE 00 03   LDX &0300,Y
+     3C86   10 0D      BPL &3C95
+     3C88   A5 0E      LDA &0E
+     3C8A   99 00 03   STA &0300,Y
+     3C8D   AA         TAX
+     3C8E   E6 0E      INC &0E
+     3C90   98         TYA
+     3C91   9D 00 28   STA &2800,X
+     3C94   38         SEC
+.finished
+     3C95   60         RTS
+.clear_world_angle_cache
+     3C96   A6 6B      LDX &6B
+     3C98   A9 FF      LDA #&FF
+.loop
+     3C9A   9D F8 01   STA &01F8,X
+     3C9D   CA         DEX
+     3C9E   10 FA      BPL &3C9A
+     3CA0   60         RTS
+.clear_subzone_cache
+     3CA1   A6 0E      LDX &0E
+     3CA3   CA         DEX
+     3CA4   A9 FF      LDA #&FF
+.loop
+     3CA6   BC 00 28   LDY &2800,X
+     3CA9   99 00 03   STA &0300,Y
+     3CAC   CA         DEX
+     3CAD   10 F7      BPL &3CA6
+     3CAF   60         RTS
+.demomap
+.start_x
+     3CB0   0F
+.start_y
+     3CB1   07
+.start_angle
+     3CB2   00
+.start_subzone
+     3CB3   00
+.offsets_start
+     3CB4   1C 00
+     3CB6   27 00
+     3CB8   31 00
+     3CBA   38 00
+     3CBC   3E 00
+     3CBE   43 00
+     3CC0   44 00
+     3CC2   45 00
+     3CC4   47 00
+     3CC6   48 00
+     3CC8   49 00
+     3CCA   4A 00
+.vertex_x
+     3CCC   18
+     3CCD   18
+     3CCE   0C
+     3CCF   09
+     3CD0   09
+     3CD1   0C
+     3CD2   14
+     3CD3   13
+     3CD4   0F
+     3CD5   0E
+     3CD6   12
+.vertex_y
+     3CD7   03
+     3CD8   11
+     3CD9   14
+     3CDA   0C
+     3CDB   08
+     3CDC   00
+     3CDD   09
+     3CDE   0D
+     3CDF   0D
+     3CE0   09
+     3CE1   08
+.edge_colour
+     3CE2   02
+     3CE3   04
+     3CE4   0D
+     3CE5   0E
+     3CE6   0D
+     3CE7   01
+.subzone_vertex_lists
+.subzone_1_verts
+     3CE8   05
+     3CE9   04
+     3CEA   03
+     3CEB   02
+     3CEC   01
+     3CED   00
+.subzone_edge_lists
+.subzone_1_edges
+     3CEE   06
+     3CEF   05
+     3CF0   04
+     3CF1   03
+     3CF2   02
+     3CF3   01
+.subzone_list_start_index
+     3CF4   00
+.subzone_zone_index
+     3CF5   00
+.subzone_num_verts
+     3CF6   05
+.zone_floor_height
+     3CF7   D1
+.zone_ceiling_height
+     3CF8   89
+.zone_floor_colour
+     3CF9   06
+.zone_ceiling_colour
+     3CFA   05
+.entry
+     3D00   D8         CLD
+     3D01   58         CLI
+     3D02   AD B7 FF   LDA &FFB7
+     3D05   85 00      STA &00
+     3D07   AD B8 FF   LDA &FFB8
+     3D0A   85 01      STA &01
+     3D0C   A0 0A      LDY #&0A
+     3D0E   B1 00      LDA (&00),Y
+     3D10   8D 0A 02   STA &020A
+     3D13   C8         INY
+     3D14   B1 00      LDA (&00),Y
+     3D16   8D 0B 02   STA &020B
+     3D19   A9 10      LDA #&10
+     3D1B   A2 00      LDX #&00
+     3D1D   20 F4 FF   JSR &FFF4
+     3D20   A9 13      LDA #&13
+     3D22   20 F4 FF   JSR &FFF4
+     3D25   78         SEI
+     3D26   A2 7F      LDX #&7F
+     3D28   9A         TXS
+     3D29   8E 4E FE   STX &FE4E
+     3D2C   8E 6E FE   STX &FE6E
+     3D2F   8E 4D FE   STX &FE4D
+     3D32   8E 6D FE   STX &FE6D
+     3D35   8E 43 FE   STX &FE43
+     3D38   A9 C0      LDA #&C0
+     3D3A   8D 4E FE   STA &FE4E
+     3D3D   A9 40      LDA #&40
+     3D3F   8D 4B FE   STA &FE4B
+     3D42   8D 6B FE   STA &FE6B
+     3D45   A9 0F      LDA #&0F
+     3D47   8D 42 FE   STA &FE42
+     3D4A   A9 03      LDA #&03
+     3D4C   8D 40 FE   STA &FE40
+     3D4F   A2 0D      LDX #&0D
+.crtcloop
+     3D51   8E 00 FE   STX &FE00
+     3D54   BD 30 3E   LDA &3E30,X
+     3D57   8D 01 FE   STA &FE01
+     3D5A   CA         DEX
+     3D5B   10 F4      BPL &3D51
+     3D5D   A9 C4      LDA #&C4
+     3D5F   8D 20 FE   STA &FE20
+     3D62   A9 07      LDA #&07
+     3D64   8D 21 FE   STA &FE21
+     3D67   A9 17      LDA #&17
+     3D69   8D 21 FE   STA &FE21
+     3D6C   A9 47      LDA #&47
+     3D6E   8D 21 FE   STA &FE21
+     3D71   A9 57      LDA #&57
+     3D73   8D 21 FE   STA &FE21
+     3D76   A9 00      LDA #&00
+     3D78   8D 34 FE   STA &FE34
+     3D7B   A9 1B      LDA #&1B
+     3D7D   8D 04 02   STA &0204
+     3D80   A9 33      LDA #&33
+     3D82   8D 05 02   STA &0205
+     3D85   A9 02      LDA #&02
+     3D87   8D 4D FE   STA &FE4D
+.waitforvsync
+     3D8A   2C 4D FE   BIT &FE4D
+     3D8D   F0 FB      BEQ &3D8A
+.syncloop
+     3D8F   8D 4D FE   STA &FE4D
+     3D92   A2 D1      LDX #&D1
+.outerloop
+     3D94   A0 25      LDY #&25
+.innerloop
+     3D96   88         DEY
+     3D97   D0 FD      BNE &3D96
+     3D99   CA         DEX
+     3D9A   D0 F8      BNE &3D94
+     3D9C   2C 4D FE   BIT &FE4D
+     3D9F   D0 EE      BNE &3D8F
+     3DA1   A9 25      LDA #&25
+     3DA3   8D 44 FE   STA &FE44
+     3DA6   A9 0F      LDA #&0F
+     3DA8   8D 45 FE   STA &FE45
+     3DAB   A9 FE      LDA #&FE
+     3DAD   8D 46 FE   STA &FE46
+     3DB0   A9 23      LDA #&23
+     3DB2   8D 47 FE   STA &FE47
+     3DB5   58         CLI
+     3DB6   A2 0F      LDX #&0F
+.zpinitloop
+     3DB8   BD 3E 3E   LDA &3E3E,X
+     3DBB   95 00      STA &00,X
+     3DBD   CA         DEX
+     3DBE   10 F8      BPL &3DB8
+     3DC0   A9 82      LDA #&82
+     3DC2   85 21      STA &21
+     3DC4   A9 6C      LDA #&6C
+     3DC6   85 22      STA &22
+     3DC8   A9 18      LDA #&18
+     3DCA   85 23      STA &23
+     3DCC   20 9B 3F   JSR &3F9B
+     3DCF   A9 0D      LDA #&0D
+     3DD1   85 21      STA &21
+     3DD3   A9 6E      LDA #&6E
+     3DD5   85 22      STA &22
+     3DD7   A9 70      LDA #&70
+     3DD9   85 23      STA &23
+     3DDB   20 9B 3F   JSR &3F9B
+     3DDE   A9 98      LDA #&98
+     3DE0   85 21      STA &21
+     3DE2   A9 6F      LDA #&6F
+     3DE4   85 22      STA &22
+     3DE6   A9 18      LDA #&18
+     3DE8   85 23      STA &23
+     3DEA   20 C5 3F   JSR &3FC5
+     3DED   A9 CC      LDA #&CC
+     3DEF   85 21      STA &21
+     3DF1   A9 6F      LDA #&6F
+     3DF3   85 22      STA &22
+     3DF5   A9 70      LDA #&70
+     3DF7   85 23      STA &23
+     3DF9   20 C5 3F   JSR &3FC5
+     3DFC   20 4E 3E   JSR &3E4E
+     3DFF   A2 03      LDX #&03
+     3E01   A9 00      LDA #&00
+     3E03   A8         TAY
+.hudclear
+     3E04   99 00 08   STA &0800,Y
+     3E07   C8         INY
+     3E08   D0 FA      BNE &3E04
+     3E0A   EE 06 3E   INC &3E06
+     3E0D   CA         DEX
+     3E0E   D0 F4      BNE &3E04
+     3E10   A9 00      LDA #&00
+     3E12   A8         TAY
+     3E13   85 21      STA &21
+     3E15   A9 08      LDA #&08
+     3E17   85 22      STA &22
+     3E19   A2 06      LDX #&06
+     3E1B   18         CLC
+.hudbardots
+     3E1C   A9 80      LDA #&80
+     3E1E   91 21      STA (&21),Y
+     3E20   98         TYA
+     3E21   69 28      ADC #&28
+     3E23   A8         TAY
+     3E24   CA         DEX
+     3E25   10 F5      BPL &3E1C
+     3E27   A9 00      LDA #&00
+     3E29   85 3E      STA &3E
+     3E2B   85 3F      STA &3F
+     3E2D   4C DC 38   JMP &38DC
+.crtcvals
+     3E30   3F
+     3E31   20
+     3E32   2D
+     3E33   24
+     3E34   26
+     3E35   00
+     3E36   10
+     3E37   1F
+     3E38   F0
+     3E39   07
+     3E3A   20
+     3E3B   07
+     3E3C   0E
+     3E3D   00
+.zpinitvals
+.multablo_ptr
+     3E3E   00 04
+.multabneglo_ptr
+     3E40   00 0B
+.multabhi_ptr
+     3E42   00 06
+.multabneghi_ptr
+     3E44   00 11
+.scrnbase
+     3E46   70
+.dispscrnhi
+     3E47   0E
+     3E48   00
+.scrnswapflag
+     3E49   00
+.numbars
+     3E4A   00
+.numlines
+     3E4B   00
+.numcachedsubzones
+     3E4C   00
+.startcontindex
+     3E4D   00
+.buildtables
+.buildmultables
+     3E4E   A9 00      LDA #&00
+     3E50   AA         TAX
+     3E51   A8         TAY
+.buildmultabloop
+     3E52   18         CLC
+.buildmultabloop2
+     3E53   98         TYA
+     3E54   69 00      ADC #&00
+.setmultabhi
+     3E56   9D 00 06   STA &0600,X
+     3E59   C9 40      CMP #&40
+     3E5B   A8         TAY
+     3E5C   8A         TXA
+     3E5D   6A         ROR A
+.setadd
+     3E5E   69 00      ADC #&00
+     3E60   8D 5F 3E   STA &3E5F
+     3E63   E8         INX
+.setmultablo
+     3E64   9D 00 04   STA &0400,X
+     3E67   D0 EA      BNE &3E53
+     3E69   EE 58 3E   INC &3E58
+     3E6C   EE 66 3E   INC &3E66
+     3E6F   C8         INY
+     3E70   D0 E0      BNE &3E52
+     3E72   88         DEY
+.buildmultabnegloop
+     3E73   BD 00 04   LDA &0400,X
+     3E76   99 00 0B   STA &0B00,Y
+     3E79   BD 00 06   LDA &0600,X
+     3E7C   99 00 11   STA &1100,Y
+     3E7F   BD 01 04   LDA &0401,X
+     3E82   9D 00 0C   STA &0C00,X
+     3E85   BD 01 06   LDA &0601,X
+     3E88   9D 00 12   STA &1200,X
+     3E8B   88         DEY
+     3E8C   E8         INX
+     3E8D   D0 E4      BNE &3E73
+.buildreciptables
+     3E8F   A2 00      LDX #&00
+.reciploop
+     3E91   8E 9C 3E   STX &3E9C
+     3E94   A9 01      LDA #&01
+     3E96   A0 10      LDY #&10
+.divloop
+     3E98   0A         ASL A
+     3E99   B0 04      BCS &3E9F
+.denom
+     3E9B   C9 00      CMP #&00
+     3E9D   90 04      BCC &3EA3
+.subtract
+     3E9F   ED 9C 3E   SBC &3E9C
+     3EA2   38         SEC
+.skip
+     3EA3   3E 00 15   ROL &1500,X
+     3EA6   3E 00 16   ROL &1600,X
+     3EA9   88         DEY
+     3EAA   D0 EC      BNE &3E98
+     3EAC   E8         INX
+     3EAD   D0 E2      BNE &3E91
+.buildsintable
+     3EAF   A9 00      LDA #&00
+     3EB1   A8         TAY
+     3EB2   A2 1F      LDX #&1F
+     3EB4   18         CLC
+     3EB5   90 06      BCC &3EBD
+.loop
+     3EB7   69 00      ADC #&00
+     3EB9   E0 0D      CPX #&0D
+     3EBB   69 00      ADC #&00
+.start
+     3EBD   99 00 13   STA &1300,Y
+     3EC0   C8         INY
+.cont
+     3EC1   7E F2 3E   ROR &3EF2,X
+     3EC4   D0 F1      BNE &3EB7
+     3EC6   CA         DEX
+     3EC7   10 F8      BPL &3EC1
+.buildatantable
+     3EC9   98         TYA
+     3ECA   A2 1F      LDX #&1F
+     3ECC   18         CLC
+     3ECD   90 02      BCC &3ED1
+.loop
+     3ECF   69 00      ADC #&00
+.start
+     3ED1   99 00 14   STA &1400,Y
+     3ED4   C8         INY
+.cont
+     3ED5   7E 12 3F   ROR &3F12,X
+     3ED8   D0 F5      BNE &3ECF
+     3EDA   CA         DEX
+     3EDB   10 F8      BPL &3ED5
+.buildangletocolumntable
+     3EDD   98         TYA
+     3EDE   A2 1F      LDX #&1F
+     3EE0   18         CLC
+     3EE1   90 02      BCC &3EE5
+.loop
+     3EE3   69 00      ADC #&00
+.start
+     3EE5   99 00 17   STA &1700,Y
+     3EE8   C8         INY
+.cont
+     3EE9   7E 32 3F   ROR &3F32,X
+     3EEC   D0 F5      BNE &3EE3
+     3EEE   CA         DEX
+     3EEF   10 F8      BPL &3EE9
+     3EF1   60         RTS
+.sindeltas
+     3EF2   00
+     3EF3   40
+     3EF4   84
+     3EF5   44
+     3EF6   92
+     3EF7   54
+     3EF8   AA
+     3EF9   D5
+     3EFA   B6
+     3EFB   DB
+     3EFC   BD
+     3EFD   F7
+     3EFE   FB
+     3EFF   00
+     3F00   00
+     3F01   40
+     3F02   10
+     3F03   42
+     3F04   22
+     3F05   22
+     3F06   49
+     3F07   29
+     3F08   2A
+     3F09   54
+     3F0A   AA
+     3F0B   AA
+     3F0C   AA
+     3F0D   AD
+     3F0E   55
+     3F0F   AA
+     3F10   D5
+     3F11   D5
+.atandeltas
+     3F12   24
+     3F13   92
+     3F14   4A
+     3F15   49
+     3F16   29
+     3F17   29
+     3F18   29
+     3F19   4A
+     3F1A   54
+     3F1B   A5
+     3F1C   52
+     3F1D   A9
+     3F1E   55
+     3F1F   54
+     3F20   AA
+     3F21   AA
+     3F22   B5
+     3F23   55
+     3F24   5A
+     3F25   AB
+     3F26   56
+     3F27   AD
+     3F28   5A
+     3F29   D6
+     3F2A   B5
+     3F2B   AD
+     3F2C   AD
+     3F2D   6D
+     3F2E   6D
+     3F2F   AD
+     3F30   B5
+     3F31   DA
+.angletocolumndeltas
+     3F32   F6
+     3F33   ED
+     3F34   B5
+     3F35   AD
+     3F36   5A
+     3F37   AA
+     3F38   AA
+     3F39   AA
+     3F3A   55
+     3F3B   2A
+     3F3C   94
+     3F3D   A9
+     3F3E   4A
+     3F3F   52
+     3F40   94
+     3F41   A4
+     3F42   A5
+     3F43   29
+     3F44   4A
+     3F45   52
+     3F46   95
+     3F47   29
+     3F48   54
+     3F49   AA
+     3F4A   55
+     3F4B   55
+     3F4C   55
+     3F4D   5A
+     3F4E   B5
+     3F4F   AD
+     3F50   B7
+     3F51   B7
+.copysnippet
+     3F52   BD 68 3F   LDA &3F68,X
+     3F55   E8         INX
+     3F56   C9 FE      CMP #&FE
+     3F58   90 04      BCC &3F5E
+     3F5A   F0 0B      BEQ &3F67
+     3F5C   A5 23      LDA &23
+.gotit
+     3F5E   91 21      STA (&21),Y
+     3F60   C8         INY
+     3F61   D0 EF      BNE &3F52
+     3F63   E6 22      INC &22
+     3F65   D0 EB      BNE &3F52
+.exit
+     3F67   60         RTS
+.snippets
+.fill_pre
+     3F68   BD 00 FF   LDA &FF00,X
+     3F6B   FE
+.fill_main
+     3F6C   5D 00 FF   EOR &FF00,X
+     3F6F   9D 00 FF   STA &FF00,X
+.fill_pre_2
+     3F72   5D 02 FF   EOR &FF02,X
+     3F75   9D 02 FF   STA &FF02,X
+     3F78   5D 04 FF   EOR &FF04,X
+     3F7B   9D 04 FF   STA &FF04,X
+     3F7E   5D 06 FF   EOR &FF06,X
+     3F81   9D 06 FF   STA &FF06,X
+     3F84   FE
+.fill_post
+     3F85   8A         TXA
+     3F86   69 08      ADC #&08
+     3F88   69 00      ADC #&00
+     3F8A   AA         TAX
+     3F8B   49 02      EOR #&02
+     3F8D   D0 01      BNE &3F90
+     3F8F   60         RTS
+.fill_reloop
+     3F90   4C
+     3F91   FE
+.cls_main
+     3F92   9D 00 FF   STA &FF00,X
+     3F95   FE
+.cls_post
+     3F96   E8         INX
+     3F97   D0 CD      BNE &3F66
+     3F99   60         RTS
+     3F9A   FE
+.buildfill
+     3F9B   A0 00      LDY #&00
+     3F9D   A2 00      LDX #&00
+     3F9F   20 52 3F   JSR &3F52
+     3FA2   A2 0A      LDX #&0A
+     3FA4   20 52 3F   JSR &3F52
+     3FA7   A9 0F      LDA #&0F
+     3FA9   85 29      STA &29
+.loop
+     3FAB   E6 23      INC &23
+     3FAD   A2 04      LDX #&04
+     3FAF   20 52 3F   JSR &3F52
+     3FB2   C6 29      DEC &29
+     3FB4   D0 F5      BNE &3FAB
+     3FB6   20 52 3F   JSR &3F52
+     3FB9   A5 21      LDA &21
+     3FBB   91 21      STA (&21),Y
+     3FBD   C8         INY
+     3FBE   A5 22      LDA &22
+     3FC0   E9 01      SBC #&01
+     3FC2   91 21      STA (&21),Y
+     3FC4   60         RTS
+.buildcls
+     3FC5   A0 00      LDY #&00
+     3FC7   A9 10      LDA #&10
+     3FC9   85 29      STA &29
+.loop
+     3FCB   A2 2A      LDX #&2A
+     3FCD   20 52 3F   JSR &3F52
+     3FD0   E6 23      INC &23
+     3FD2   C6 29      DEC &29
+     3FD4   D0 F5      BNE &3FCB
+     3FD6   4C 52 3F   JMP &3F52
+Saving file 'DOOM'

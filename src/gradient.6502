@@ -1,0 +1,29 @@
+
+
+\\ Calculate the gradient of a line delta dx,dy
+\\
+\\ Inputs:
+\\   A      = dy (lsb)
+\\   X      = dx
+\\
+\\ Result:
+\\   A/X    = gradient (lsb/msb)
+
+\\ todo: gradient sign, 16-bit dy, clamp abs(gradient) to &7FFF
+.calc_gradient
+{
+	STA multablo_ptr:STA multabhi_ptr
+	EOR #255:STA multabneglo_ptr:STA multabneghi_ptr
+	
+	LDY reciptabhi,X
+	SEC
+	LDA (multablo_ptr),Y:SBC (multabneglo_ptr),Y:STA dydxlo	; todo: just use some safe temp location
+	LDA (multabhi_ptr),Y:SBC (multabneghi_ptr),Y
+	
+	LDY reciptablo,X
+	TAX
+	LDA (multabhi_ptr),Y:SBC (multabneghi_ptr),Y
+	
+	CLC:ADC dydxlo:BCC P%+3:INX
+	RTS
+}

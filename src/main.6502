@@ -1,0 +1,68 @@
+
+.main
+
+	\\ Clear screen
+
+	JSR screenclear
+	LDA #8:STA &FE00:LDA #&C0:STA &FE01
+	JSR swap_screen
+
+	JSR initialise_map
+	JSR clear_world_angle_cache
+	
+	\\ test code for now
+	
+	LDA #75:STA &FF
+	
+.mainloop
+
+	JSR inittimerbar
+
+	\\ This is the update phase - do anything here which doesn't require rendering to the back buffer
+	
+	JSR starttimer
+	JSR capture_test
+	JSR endtimer
+
+	\\ Before we can start rendering, we need to ensure that the back buffer is not still being rasterised
+	\\ This will not wait provided enough work has been done between swap_screen and now
+
+;	JSR starttimer
+	JSR wait_screen
+;	JSR endtimer	
+	
+	\\ This is the render phase
+	
+	JSR starttimer
+	JSR screenclear
+	JSR endtimer	
+	
+	JSR starttimer
+	JSR renderlines
+;	JSR renderlines
+;	JSR renderlines
+;	JSR renderlines
+;	JSR renderlines
+	JSR endtimer
+	
+	JSR starttimer
+	JSR screenfill
+	JSR endtimer
+	
+	SEC:LDA &FF:SBC #1:BNE P%+4:LDA #127:STA &FF
+;	LDA #98:STA &FE4F:BIT &FE4F:BPL P%-3:BIT &FE4F:BMI P%-3		; single step with spacebar
+	
+	JSR swap_screen
+
+	JSR starttimer
+	\\ JSR moveplayer
+	JSR endtimer
+
+	\\ Display the timer bars
+	
+	LDA #3:STA write
+	LDA #HI(screenaddrhud):STA write+1
+	JSR plottimerbar
+	
+	JMP mainloop
+	

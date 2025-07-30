@@ -1,0 +1,288 @@
+\\ Some compact code to build all the tables required.
+\\
+\\ The tables based around compressed tables of deltas all work on a similar principle:
+\\
+\\ We start with a known value for table[0], and rotate a bit out of the compressed delta tables,
+\\ which is added to that current value, thus accumulating the value.
+\\
+\\ When we shift the final bit out of the byte being consumed (and thus becomes zero),
+\\ we load a new byte from the compressed tables.
+\\ 
+\\ The C flag is used as a sentinel between bytes. We ensure that the topmost bit of a byte
+\\ being consumed is set, so that leading zeroes in a byte are preserved.
+\\
+\\ In the case of the first byte being consumed, we only have 7 bits of data, as the first is
+\\ the start value itself; therefore bit 7 is set.
+\\
+\\ In subsequent bytes, this bit which is rotated out is subsequently rotated back into the next
+\\ byte (as "bit 8"), thus propagating the sentinel between blocks of 8 bits.
+
+
+.buildtables
+
+\\ Build multiplication tables
+\\ This builds the f(x) = x*x / 4 tables required for the fast multiplication.
+\\ It also builds parallel tables of f(x) = (x-255)*(x-255) / 4, used as an optimization.
+\\
+\\ This makes use of the fact that
+\\   f(0) = 0
+\\   f(x+1) = floor[(x+1)/2] + f(x)
+
+.buildmultables
+{
+	LDA #0:TAX:TAY
+	.buildmultabloop
+	CLC
+	.buildmultabloop2
+	TYA:ADC #0
+	.setmultabhi STA multabhi,X
+	CMP #&40	; when X>=256, f(X)>=&4000
+	TAY:TXA		; A+256*C = table index
+	ROR A
+	.setadd ADC #0
+	STA setadd+1
+	INX
+	.setmultablo STA multablo,X
+	BNE buildmultabloop2
+	INC setmultabhi+2
+	INC setmultablo+2
+	INY
+	BNE buildmultabloop
+	
+	DEY
+	.buildmultabnegloop
+	LDA multablo,X:STA multabneglo,Y
+	LDA multabhi,X:STA multabneghi,Y
+	LDA multablo+1,X:STA multabneglo+&100,X
+	LDA multabhi+1,X:STA multabneghi+&100,X
+	DEY:INX
+	BNE buildmultabnegloop
+}
+
+\\ Build reciprocal tables
+\\ This builds the 16-bit result of 65536/x.
+\\ This is just a standard 6502 division routine specialised to perform (&10000/x)
+
+.buildreciptables
+{
+	LDX #0                    ; denominator
+	.reciploop
+	STX denom+1
+	LDA #1                    ; top byte of the numerator
+	LDY #16                   ; because result is 16-bit
+	.divloop
+	ASL A:BCS subtract
+	.denom CMP #0:BCC skip    ; this comes from X
+	.subtract
+	SBC denom+1:SEC
+	.skip
+	ROL reciptablo,X:ROL reciptabhi,X
+	DEY:BNE divloop
+	INX:BNE reciploop
+}
+
+\\ Generate sine table between 0 and 90 degrees (0...1)
+\\ This will be variously mirrored and shifted to get sines and cosines in the full domain
+
+.buildsintable
+{
+	LDA #0:TAY:LDX #31
+	CLC:BCC start                     ; clear C first time round as the first sentinel comes from bit 7 of the first table value
+	.loop
+	ADC #0                            ; apply delta from table
+	CPX #32-19:ADC #0                 ; at the beginning, apply an extra 1 to the delta
+	.start
+	STA sintable,Y:INY
+	.cont ROR sindeltas,X:BNE loop    ; we recognise when all the bits are consumed when the byte becomes zero
+	DEX:BPL cont
+}
+
+\\ Generate arctan table between 0 and 1 (corresponding to angles of 0...128)
+\\ The 256th element doesn't fit into an 8 bit index, so we will special-case it (it will yield 128)
+
+.buildatantable
+{
+	; On entry from above: Y=0
+	TYA:LDX #31
+	CLC:BCC start
+	.loop
+	ADC #0
+	.start
+	STA atantable,Y:INY
+	.cont ROR atandeltas,X:BNE loop
+	DEX:BPL cont
+}
+
+\\ Generate table converting angle to screen column
+
+.buildangletocolumntable
+{
+	; On entry from above: Y=0
+	TYA:LDX #31
+	CLC:BCC start
+	.loop
+	ADC #0
+	.start
+	STA angletocolumn,Y:INY
+	.cont ROR angletocolumndeltas,X:BNE loop
+	DEX:BPL cont
+}
+
+IF 0
+
+\\ Generate column to angle table
+\\ This needs to generate 129 entries
+.buildcolumntoangletable
+{
+	; On entry from above: Y=0
+	TYA:LDX #256-8
+	CLC:BCC start
+	.loop
+	ADC #0                            ; apply delta from table
+	CPX #256-4:ADC #0                 ; at the end, apply an extra 1 to the delta
+	ADC #1                            ; plus an extra 1 always 
+	.start
+	STA columntoangle,Y:INY
+	.cont ROR columntoangledeltas-(256-8),X
+	BNE loop                          ; we recognise when all the bits are consumed when the byte becomes zero
+	INX:BNE cont
+
+	; X=0, Y=64, C=1
+	LDA #255:BNE reflectstart
+	.reflect
+	LDA #254:SBC columntoangle,X:INX
+	.reflectstart
+	STA columntoangle+64,Y:DEY
+	BPL reflect
+}
+
+ENDIF
+
+RTS
+
+
+sin_1_index = INT(ASN(255.5/256) / (PI * 2.0) * 1024 + 0.5)
+
+\\ Store deltas from one sine value to the next, 1 bit per delta.
+\\ Note we store the table upside down so we can use descending indexing.
+\\ Additionally this allows the CPX hack above to add an extra 1 to the delta when the angle is between 0 and 151.
+.sindeltas
+	\\ From angle 152 onwards, the delta is either 0 or 1
+	FOR n, 31, 19, -1
+		s0 = INT(SIN((n*8-1) / 256 * (PI*0.5)) * 256 + 0.5)
+		s1 = INT(SIN((n*8+0) / 256 * (PI*0.5)) * 256 + 0.5)
+		s2 = INT(SIN((n*8+1) / 256 * (PI*0.5)) * 256 + 0.5)
+		s3 = INT(SIN((n*8+2) / 256 * (PI*0.5)) * 256 + 0.5)
+		s4 = INT(SIN((n*8+3) / 256 * (PI*0.5)) * 256 + 0.5)
+		s5 = INT(SIN((n*8+4) / 256 * (PI*0.5)) * 256 + 0.5)
+		s6 = INT(SIN((n*8+5) / 256 * (PI*0.5)) * 256 + 0.5)
+		s7 = INT(SIN((n*8+6) / 256 * (PI*0.5)) * 256 + 0.5)
+		s8 = INT(SIN((n*8+7) / 256 * (PI*0.5)) * 256 + 0.5)
+		EQUB (s1-s0)*1 + (s2-s1)*2 + (s3-s2)*4 + (s4-s3)*8 + (s5-s4)*16 + (s6-s5)*32 + (s7-s6)*64 + (s8-s7)*128
+	NEXT
+	\\ For angles 0-151, the delta is either 1 or 2
+	FOR n, 18, 0, -1
+		s0 = INT(SIN((n*8-1) / 256 * (PI*0.5)) * 256 + 0.5)
+		s1 = INT(SIN((n*8+0) / 256 * (PI*0.5)) * 256 + 0.5)
+		s2 = INT(SIN((n*8+1) / 256 * (PI*0.5)) * 256 + 0.5)
+		s3 = INT(SIN((n*8+2) / 256 * (PI*0.5)) * 256 + 0.5)
+		s4 = INT(SIN((n*8+3) / 256 * (PI*0.5)) * 256 + 0.5)
+		s5 = INT(SIN((n*8+4) / 256 * (PI*0.5)) * 256 + 0.5)
+		s6 = INT(SIN((n*8+5) / 256 * (PI*0.5)) * 256 + 0.5)
+		s7 = INT(SIN((n*8+6) / 256 * (PI*0.5)) * 256 + 0.5)
+		s8 = INT(SIN((n*8+7) / 256 * (PI*0.5)) * 256 + 0.5)
+		IF n > 0
+			EQUB (s1-s0-1)*1 + (s2-s1-1)*2 + (s3-s2-1)*4 + (s4-s3-1)*8 + (s5-s4-1)*16 + (s6-s5-1)*32 + (s7-s6-1)*64 + (s8-s7-1)*128
+		ELSE
+			\\ First byte is special as it only has 7 bits to consume
+			EQUB (s2-s1-1)*1 + (s3-s2-1)*2 + (s4-s3-1)*4 + (s5-s4-1)*8 + (s6-s5-1)*16 + (s7-s6-1)*32 + (s8-s7-1)*64 + 128
+		ENDIF
+	NEXT
+
+
+.atandeltas
+	FOR n, 31, 0, -1
+		s0 = INT(ATN((n*8-1) / 256) * 128 / (PI*0.25))
+		s1 = INT(ATN((n*8+0) / 256) * 128 / (PI*0.25))
+		s2 = INT(ATN((n*8+1) / 256) * 128 / (PI*0.25))
+		s3 = INT(ATN((n*8+2) / 256) * 128 / (PI*0.25))
+		s4 = INT(ATN((n*8+3) / 256) * 128 / (PI*0.25))
+		s5 = INT(ATN((n*8+4) / 256) * 128 / (PI*0.25))
+		s6 = INT(ATN((n*8+5) / 256) * 128 / (PI*0.25))
+		s7 = INT(ATN((n*8+6) / 256) * 128 / (PI*0.25))
+		s8 = INT(ATN((n*8+7) / 256) * 128 / (PI*0.25))
+		IF n > 0
+			EQUB (s1-s0)*1 + (s2-s1)*2 + (s3-s2)*4 + (s4-s3)*8 + (s5-s4)*16 + (s6-s5)*32 + (s7-s6)*64 + (s8-s7)*128
+		ELSE
+			\\ First byte is special as it only has 7 bits to consume
+			EQUB (s2-s1)*1 + (s3-s2)*2 + (s4-s3)*4 + (s5-s4)*8 + (s6-s5)*16 + (s7-s6)*32 + (s8-s7)*64 + 128
+		ENDIF
+	NEXT
+
+
+.angletocolumndeltas
+{
+	fov = player_fov / 256 * (PI * 0.5)
+	dist = (screen_width / 2) / TAN(fov)
+
+	FOR n, 31, 0, -1
+		s0 = INT(TAN((n*8-127-1) / 256 * (PI * 0.5)) * dist + 64)
+		s1 = INT(TAN((n*8-127+0) / 256 * (PI * 0.5)) * dist + 64)
+		s2 = INT(TAN((n*8-127+1) / 256 * (PI * 0.5)) * dist + 64)
+		s3 = INT(TAN((n*8-127+2) / 256 * (PI * 0.5)) * dist + 64)
+		s4 = INT(TAN((n*8-127+3) / 256 * (PI * 0.5)) * dist + 64)
+		s5 = INT(TAN((n*8-127+4) / 256 * (PI * 0.5)) * dist + 64)
+		s6 = INT(TAN((n*8-127+5) / 256 * (PI * 0.5)) * dist + 64)
+		s7 = INT(TAN((n*8-127+6) / 256 * (PI * 0.5)) * dist + 64)
+		s8 = INT(TAN((n*8-127+7) / 256 * (PI * 0.5)) * dist + 64)
+		IF n > 0
+			EQUB (s1-s0)*1 + (s2-s1)*2 + (s3-s2)*4 + (s4-s3)*8 + (s5-s4)*16 + (s6-s5)*32 + (s7-s6)*64 + (s8-s7)*128
+		ELSE
+			\\ First byte is special as it only has 7 bits to consume
+			EQUB (s2-s1)*1 + (s3-s2)*2 + (s4-s3)*4 + (s5-s4)*8 + (s6-s5)*16 + (s7-s6)*32 + (s8-s7)*64 + 128
+		ENDIF
+	NEXT
+}
+
+
+IF 0
+
+.columntoangledeltas
+{
+	fov = player_fov / 256 * (PI * 0.5)
+	dist = (screen_width / 2) / TAN(fov)
+
+	FOR i, 0, 3
+		s0 = INT(ATN((i*8-63.5-1)/dist) * 128 / (PI * 0.25)) + 127
+		s1 = INT(ATN((i*8-63.5+0)/dist) * 128 / (PI * 0.25)) + 127
+		s2 = INT(ATN((i*8-63.5+1)/dist) * 128 / (PI * 0.25)) + 127
+		s3 = INT(ATN((i*8-63.5+2)/dist) * 128 / (PI * 0.25)) + 127
+		s4 = INT(ATN((i*8-63.5+3)/dist) * 128 / (PI * 0.25)) + 127
+		s5 = INT(ATN((i*8-63.5+4)/dist) * 128 / (PI * 0.25)) + 127
+		s6 = INT(ATN((i*8-63.5+5)/dist) * 128 / (PI * 0.25)) + 127
+		s7 = INT(ATN((i*8-63.5+6)/dist) * 128 / (PI * 0.25)) + 127
+		s8 = INT(ATN((i*8-63.5+7)/dist) * 128 / (PI * 0.25)) + 127
+
+		IF i > 0
+			EQUB (s1-s0-1)*1 + (s2-s1-1)*2 + (s3-s2-1)*4 + (s4-s3-1)*8 + (s5-s4-1)*16 + (s6-s5-1)*32 + (s7-s6-1)*64 + (s8-s7-1)*128
+		ELSE
+			EQUB (s2-s1-1)*1 + (s3-s2-1)*2 + (s4-s3-1)*4 + (s5-s4-1)*8 + (s6-s5-1)*16 + (s7-s6-1)*32 + (s8-s7-1)*64 + 128
+		ENDIF
+	NEXT
+
+	FOR i, 4, 7
+		s0 = INT(ATN((i*8-63.5-1)/dist) * 128 / (PI * 0.25)) + 127
+		s1 = INT(ATN((i*8-63.5+0)/dist) * 128 / (PI * 0.25)) + 127
+		s2 = INT(ATN((i*8-63.5+1)/dist) * 128 / (PI * 0.25)) + 127
+		s3 = INT(ATN((i*8-63.5+2)/dist) * 128 / (PI * 0.25)) + 127
+		s4 = INT(ATN((i*8-63.5+3)/dist) * 128 / (PI * 0.25)) + 127
+		s5 = INT(ATN((i*8-63.5+4)/dist) * 128 / (PI * 0.25)) + 127
+		s6 = INT(ATN((i*8-63.5+5)/dist) * 128 / (PI * 0.25)) + 127
+		s7 = INT(ATN((i*8-63.5+6)/dist) * 128 / (PI * 0.25)) + 127
+		s8 = INT(ATN((i*8-63.5+7)/dist) * 128 / (PI * 0.25)) + 127
+
+		EQUB (s1-s0-2)*1 + (s2-s1-2)*2 + (s3-s2-2)*4 + (s4-s3-2)*8 + (s5-s4-2)*16 + (s6-s5-2)*32 + (s7-s6-2)*64 + (s8-s7-2)*128
+	NEXT
+}
+
+ENDIF

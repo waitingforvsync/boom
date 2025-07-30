@@ -1,0 +1,193 @@
+screen_width = 128				; screen width in pixels
+screen_height = 128				; screen height in pixels
+
+player_fov = 128				; half horizontal field of view angle
+player_radius = 15
+player_height = 41
+
+screen_hsync_pos = 45
+screen_vsync_pos = 31
+screen_vsync_width = 2
+hud_rows = 3
+
+max_lines = 128
+max_subzones = 64
+
+world_angle_cache_lo = &1F0
+world_angle_cache_hi = &1F8
+sz_cache_indices = &300
+
+ORG &400
+.multablo		SKIP &200				; &400
+.multabhi		SKIP &200				; &600
+.screenaddrhud	SKIP &100 * hud_rows	; &800
+.multabneglo	SKIP &200				; &B00
+
+; for now skip over pages &D-&10
+ORG &1100
+.multabneghi	SKIP &200				; &1100
+.sintable		SKIP &100				; &1300
+.atantable		SKIP &100				; &1400
+.reciptablo		SKIP &100				; &1500
+.reciptabhi		SKIP &100				; &1600
+.angletocolumn	SKIP &100				; &1700
+IF 0
+.columntoangle	SKIP &100
+ENDIF
+
+.screenaddr1	SKIP &1000				; &1800
+.tempbuffer		SKIP &100				; &2800		; line rendering can corrupt the row below the screen, use it as scratch space
+
+
+.line_x0		SKIP max_lines			; &2900
+.line_x1		SKIP max_lines			; &2980
+.line_y0		SKIP max_lines			; &2A00
+.line_dydxlo	SKIP max_lines			; &2A80
+.line_dydxhi	SKIP max_lines			; &2B00
+.line_colour0	SKIP max_lines			; &2B80
+.line_colour1	SKIP max_lines			; &2C00
+.line_next		SKIP max_lines			; &2C80
+
+
+szc_subzone_indices = tempbuffer + &00
+szc_vert_indices = tempbuffer + &40
+szc_upper_bounds = tempbuffer + &80
+szc_lower_bounds = tempbuffer + &C0
+
+
+.codestart								; &2D00
+
+
+screenaddr2 = &7000
+
+\\ Make sure the screen buffers are &800-aligned, so their (addr DIV 8) fits into R12 alone
+IF (screenaddr1 AND &7FF) OR (screenaddr2 AND &7FF) OR (screenaddrhud AND &7FF)
+	ERROR "Screen buffer is misaligned"
+ENDIF
+
+
+IF DITHER2
+	screenfillsize = &18B
+	screenclearsize = &34
+ELSE
+	screenfillsize = &CB
+	screenclearsize = &34
+ENDIF
+
+screenclear2 = screenaddr2 - screenclearsize
+screenclear1 = screenclear2 - screenclearsize
+screenfill2 = screenclear1 - screenfillsize
+screenfill1 = screenfill2 - screenfillsize
+
+
+
+ORG 0
+GUARD &FC
+
+\\ variables which need to be initialized to something
+\\ remember to update entry.6502 as more are added
+.zpinit_start
+.multablo_ptr		SKIP 2
+.multabneglo_ptr	SKIP 2
+.multabhi_ptr		SKIP 2
+.multabneghi_ptr	SKIP 2
+.scrnbase			SKIP 1
+.dispscrnhi			SKIP 2
+
+\\ put zero-initialized ones at the end in case we want to do a special path to initialize them
+.scrnswapflag		SKIP 1
+.numbars			SKIP 1
+.numlines			SKIP 1
+.numcachedsubzones	SKIP 1
+.startcontindex		SKIP 1
+.zpinit_end
+
+
+; distancealongray, clippeddistance, getworldangle, calcworldnormalquadrant, drawline
+.dx					SKIP 2
+.dy					SKIP 2
+
+; getworldangle
+.angle				SKIP 2
+
+; distancealongray
+.xc					SKIP 2
+.ys					SKIP 2
+
+; normalise_z, applyperspective, clippeddistance, distancealongray
+.distance			SKIP 2
+
+; normalise_z, applyperspective
+.zshift				SKIP 1
+.result				SKIP 2
+
+; generic
+.read				SKIP 2
+.write				SKIP 2
+.addr				SKIP 2
+.temp				SKIP 2
+.savex				SKIP 1
+.savey				SKIP 1
+.count				SKIP 1
+.tempangle			SKIP 2
+.anglediff			SKIP 2
+
+; game
+.playerx			SKIP 3
+.playery			SKIP 3
+.playerz			SKIP 2
+.playerangle		SKIP 2
+.playersubzone		SKIP 1
+.playerzone			SKIP 1
+
+; clippeddistance
+.clipangle			SKIP 2
+.normalangle		SKIP 2
+
+; timerbars
+.barpos				SKIP 8
+.oldbarend			SKIP 1
+
+; drawline
+.x0					SKIP 1
+.x1					SKIP 1
+.y0					SKIP 1
+.y1					SKIP 1
+.acc				SKIP 1
+.state				SKIP 1
+.dydxlo				SKIP 1
+.dydxhi				SKIP 1
+
+; map related:
+; vert_ = vertex data
+; edge_ = edge data
+; cont_ = contour data
+; sz_   = subzone data
+; zone_ = zone data
+.map_ptrs
+.vert_xs				SKIP 2
+.vert_ys				SKIP 2
+.edge_colours			SKIP 2
+.cont_vertices_base		SKIP 2
+.cont_edges_base		SKIP 2
+.sz_cont_indices		SKIP 2
+.sz_zone_indices		SKIP 2
+.sz_vert_counts			SKIP 2
+.zone_floor_heights		SKIP 2
+.zone_ceiling_heights	SKIP 2
+.zone_floor_colours		SKIP 2
+.zone_ceiling_colours	SKIP 2
+num_map_offsets = (P%-map_ptrs) DIV 2
+
+.cont_vertices			SKIP 2
+.cont_edges				SKIP 2
+.cont_num_verts			SKIP 1
+
+.start
+
+SKIPTO &78
+.linecolours		SKIP 8
+
+
+
+GUARD screenfill1

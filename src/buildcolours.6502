@@ -1,0 +1,47 @@
+.buildcolours
+{
+	LDX #0
+	LDY #3:.loop1 STY temp				; temp is the background colour
+	STY temp+1:.loop2					; temp+1 is the foreground colour
+	LDA cols,Y:STA eorval+1				; background
+	LDY temp+1:EOR cols,Y:STA andval+1	; foreground
+	
+	; if background and foreground are the same, just write one block instead of all the patterns
+	CPY temp:LDY #2:BCC writedata
+	LDY #0:CLC
+	
+	; iterate through all the patterns
+	.writedata
+	LDA data1,Y:JSR write1
+	LDA data2,Y:JSR write2
+	LDA data3,Y:JSR write1
+	TXA:ADC #5:TAX
+	DEY
+	BPL writedata
+	
+	LDY temp:DEC temp+1:BPL loop2
+	DEY:BPL loop1
+	RTS
+	
+	.write1
+	.andval AND #&FF
+	.eorval EOR #&FF
+	STA colourtab,X:STA colourtab+4,X:INX
+	RTS
+	
+	.write2
+	JSR write1
+	STA colourtab+1,X:STA colourtab+5,X
+	RTS
+	
+.cols
+	EQUB &FF, &F0, &0F, &00
+.data1
+	EQUB &AA, &AA, &55	; 2 pixel high version
+\\	EQUB &77, &AA, &88
+.data2
+	EQUB &FF, &55, &00
+.data3
+	EQUB &AA, &AA, &55	; 2 pixel high version
+\\	EQUB &DD, &AA, &22
+}
