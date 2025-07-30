@@ -95,7 +95,7 @@
 	
 	; get the angle of the second column of the screen
 	SEC
-	LDA playerangle:SBC #127:STA tempangle
+	LDA playerangle:SBC #126:STA tempangle
 	LDA playerangle+1:SBC #0:AND #3:STA tempangle+1
 	
 	
