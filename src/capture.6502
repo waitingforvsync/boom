@@ -3,7 +3,7 @@
 
 .capture_test
 {
-	LDY #0
+	LDY #1
 	LDA #0:STA line_x0,Y
 	LDA &FF:STA line_x1,Y
 	LDA #5:STA line_y0,Y
@@ -59,6 +59,7 @@
 	STA line_dydxlo,Y
 	TXA:STA line_dydxhi,Y
 
+	LDA #5:STA numlines
 	RTS
 }
 

@@ -1,10 +1,3 @@
-.renderlines
-
-	LDX #0:JSR drawline
-	LDX #1:JSR drawline
-	LDX #2:JSR drawline
-	LDX #3:JSR drawline
-	RTS
 
 .plotpoint
 
@@ -13,42 +6,63 @@
 	LDA y0:AND #7:TAY
 	LDA x0:AND #3:TAX
 	LDA (write),Y:EOR pixelmask,X:STA (write),Y
-.abortline
 	RTS
 
 
-; Draws the line indexed by X
+; Render all the lines in the buffer
+; (apart from the first (index 0) which is the dummy line inserted to clip off the bottom of the screen)
 
-.drawline
+.renderlines
 
-	\\ Initialize the colour
-	\\ Feels like a big initial hit but the savings are worthwhile
-	
+	LDX numlines:DEX
+
+.renderlineloop
+	STX renderlineloopx+1
+
+	; initialise the first colour byte (even scanlines)
 	LDA line_colour0,X:STA linecolours:STA linecolours+2:STA linecolours+4:STA linecolours+6
+	
+	; if both colours are black, don't render anything
 	ORA line_colour1,X
-	BEQ abortline
+	BEQ nextline
+
+	; if line is off screen, skip this line
+	LDA line_y0,X:BMI nextline
+
+	; initialise the second colour byte (odd scanlines)
 	LDA line_colour1,X:STA linecolours+1:STA linecolours+3:STA linecolours+5:STA linecolours+7
 	
-	LDA line_dydxlo,X:STA dydxlo
+	; initialise line properties common to up and down lines
 	LDA #&80:STA acc
+	LDA line_dydxlo,X:STA dydxlo
+	LDA line_dydxhi,X:CMP #&80:AND #&7F:STA dydxhi 	; set C for line up
 	
-	LDA line_dydxhi,X
-	BMI line_up:JMP line_down
+	LDA line_x1,X:STA x1
+	LDA line_x0,X:STA x0
+
+	BCS line_up:JMP line_down
+
+.nextline
+	.renderlineloopx LDX #0
+	DEX
+	BNE renderlineloop		; don't render index 0
+	RTS
 
 
 \\ line going up
 
 .line_up
 {
-	AND #&7F:STA dydxhi
-	
 	; todo: subtract 1 from dydx because we SBC with C=0.
 	; in practice the difference is probably unnoticeable.
 
 	; get address of the pixel below as we are plotting upwards
 
-	LDA line_x1,X:STA x1
-	LDA line_x0,X:STA x0:AND #&7C:ASL A:STA write
+	; on entry:
+	; A = x0
+	; dydxlo/hi, x0, x1, acc initialised
+
+	AND #&7C:ASL A:STA write
 	LDA line_y0,X:ADC #1:LSR A:LSR A:LSR A:CLC:ADC scrnbase:STA write+1
 	LDA line_y0,X:ADC #1:AND #7:TAY
 
@@ -62,7 +76,8 @@
 	DEC dydxhi
 
 	; Get pixel count
-	SEC:LDA x1:SBC x0:STA count
+	; C already set here
+	LDA x1:SBC x0:STA count
 
 	; Get initial mask
 	LDA x0:AND #3:TAX
@@ -84,7 +99,7 @@
 	STA (write),Y
 	.backfromcrossedrow
 	
-	DEC count:BEQ finishedsteepline
+	DEC count:BEQ nextline
 	
 	; C clear here
 	LDA acc:SBC dydxlo:STA acc
@@ -114,8 +129,6 @@
 		ERROR "Hot loop crosses page boundary"
 	ENDIF
 
-	.finishedsteepline
-	RTS
 
 .line_up_shallow
 
@@ -258,7 +271,7 @@
 	.finishedsliver
 	; put the self-modified branches back to their defaults (for gradient 0-1)
 	LDX #finishedblock-finish_branch-2:STX finish_branch+1
-	RTS
+	JMP nextline
 	
 	.slivercrossedrow
 	LDY #7:DEC write+1
@@ -274,13 +287,14 @@
 
 .line_down
 {
-	STA dydxhi
-	
+	; on entry:
+	; A = x0
+	; dydxlo/hi, x0, x1, acc initialised
+
 	; offset (write) by -&78 and Y by +&78
 	; so we can test Y passing a row boundary by checking the N flag
 
-	LDA line_x1,X:STA x1
-	LDA line_x0,X:STA x0:AND #&7C:ASL A:SBC #&77:PHP:STA write
+	AND #&7C:ASL A:SBC #&77:PHP:STA write
 	LDA line_y0,X:LSR A:LSR A:LSR A:PLP:SBC #0:CLC:ADC scrnbase:STA write+1
 	LDA line_y0,X:ORA #&78:TAY
 
@@ -348,7 +362,7 @@
 	ENDIF
 
 	.finishedsteepline
-	RTS
+	JMP nextline
 
 .line_down_shallow
 
@@ -492,7 +506,7 @@
 	.finishedsliver
 	; put the self-modified branches back to their defaults (for gradient 0-1)
 	LDX #finishedblock-finish_branch-2:STX finish_branch+1
-	RTS
+	JMP nextline
 	
 	.slivercrossedrow
 	LDY #&78:INC write+1
