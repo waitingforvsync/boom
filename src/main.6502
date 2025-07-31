@@ -7,6 +7,8 @@
 	LDA #8:STA &FE00:LDA #&C0:STA &FE01
 	JSR swap_screen
 
+	LDA #LO(demomap):STA read
+	LDA #HI(demomap):STA read+1
 	JSR initialise_map
 	JSR clear_world_angle_cache
 	
@@ -21,7 +23,8 @@
 	\\ This is the update phase - do anything here which doesn't require rendering to the back buffer
 	
 	JSR starttimer
-	JSR capture_test
+	JSR capture;_test
+	JSR clear_subzone_cache
 	JSR endtimer
 
 	\\ Before we can start rendering, we need to ensure that the back buffer is not still being rasterised

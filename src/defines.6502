@@ -2,6 +2,7 @@ screen_width = 128				; screen width in pixels
 screen_height = 128				; screen height in pixels
 
 player_fov = 128				; half horizontal field of view angle
+fov_offset = player_fov - 1		; offset of the leftmost angle in the view
 player_radius = 15
 player_height = 41
 
@@ -177,7 +178,7 @@ GUARD &FC
 .zone_ceiling_heights	SKIP 2
 .zone_floor_colours		SKIP 2
 .zone_ceiling_colours	SKIP 2
-num_map_offsets = (P%-map_ptrs) DIV 2
+num_map_offsets = P%-map_ptrs
 
 .cont_vertices			SKIP 2
 .cont_edges				SKIP 2

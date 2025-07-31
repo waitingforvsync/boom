@@ -2,7 +2,7 @@ INCLUDE "boot.6502"
 
 \\ If FALSE, we have 4 pixel high dither blocks (slower)
 \\ If TRUE, we have 2 pixel high dither blocks (faster)
-DITHER2 = TRUE
+DITHER2 = TRUE	; FALSE is not supported for the moment
 
 INCLUDE "defines.6502"
 

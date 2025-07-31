@@ -33,6 +33,10 @@
 	LDA (read),Y:ADC read+1:STA map_ptrs,X:INY:INX
 	CPX #num_map_offsets
 	BNE initmapoffsets
+	LDA vert_xs:STA vert_xs_inline+1
+	LDA vert_xs+1:STA vert_xs_inline+2
+	LDA vert_ys:STA vert_ys_inline+1
+	LDA vert_ys+1:STA vert_ys_inline+2
 	
 	\\ Initialize subzone cache indices to invalid
 	LDX #0:TXA		; 0 is an invalid subzone index
@@ -111,3 +115,25 @@
 	BPL loop
 	RTS
 }
+
+
+.get_relative_vertex_pos
+
+	; on entry:
+	; Y = contour point index
+	; on exit:
+	; dx,dy = relative position of point
+
+	LDA (cont_vertices),Y:TAX
+
+	.vert_xs_inline LDA &FFFF,X:STA dx+1
+	LDA #0:LSR dx+1:ROR A:LSR dx+1:ROR A:LSR dx+1:ROR A
+	SEC:SBC playerx+1:STA dx
+	LDA dx+1:SBC playerx+2:STA dx+1
+
+	.vert_ys_inline LDA &FFFF,X:STA dy+1
+	LDA #0:LSR dy+1:ROR A:LSR dy+1:ROR A:LSR dy+1:ROR A
+	SEC:SBC playery+1:STA dy
+	LDA dy+1:SBC playery+2:STA dy+1
+
+	RTS

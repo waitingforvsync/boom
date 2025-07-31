@@ -53,7 +53,8 @@
 		
 	; A reversed list of all the edge indices
 	.subzone_edge_lists
-		.subzone_1_edges EQUB 6, 5, 4, 3, 2, 1
+		.subzone_1_edges EQUB 0, 0, 0, 0, 0, 0		; all solid walls
+;		.subzone_1_edges EQUB 6, 5, 4, 3, 2, 1
 
 
 	\\ Subzone data (index 0 is invalid)
