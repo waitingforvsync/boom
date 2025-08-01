@@ -114,6 +114,8 @@ GUARD &FC
 
 ; getworldangle
 .angle				SKIP 2
+.angle0				SKIP 2
+.angle1				SKIP 2
 
 ; distancealongray
 .xc					SKIP 2
