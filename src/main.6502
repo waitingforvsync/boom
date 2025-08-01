@@ -23,7 +23,7 @@
 	\\ This is the update phase - do anything here which doesn't require rendering to the back buffer
 	
 	JSR starttimer
-	JSR capture;_test
+	JSR capture_test
 	JSR clear_subzone_cache
 	JSR endtimer
 

@@ -43,4 +43,4 @@ ELSE
 ENDIF
 ;INCLUDE "buildcolours.6502"
 
-SAVE "DOOM", codestart, P%, entry
+SAVE "BOOM", codestart, P%, entry

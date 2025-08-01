@@ -27,7 +27,7 @@
                 "-opt",
                 "2",
                 "-title",
-                "DOOM"
+                "BOOM"
             ],
             "group": {
                 "kind": "build",
@@ -37,11 +37,11 @@
         {
             "label": "BeebVSC Test Target",
             "type": "shell",
-            "command": "beebjit",
+            "command": "b2",
             "args": [
                 "-0",
                 "doom.ssd",
-                "-autoboot"
+                "--boot"
             ],
             "group": {
                 "kind": "test",

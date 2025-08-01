@@ -29,62 +29,62 @@
 
 \\ Colour tables
 
-colour_left_black  = %00000000
-colour_left_blue   = %00001010
-colour_left_red    = %10100000
-colour_left_green  = %10101010
-colour_right_black = %00000000
-colour_right_blue  = %00000101
-colour_right_red   = %01010000
-colour_right_green = %01010101
+Black = %00000000
+Blue  = %00001111
+Red   = %11110000
+Green = %11111111
+
+MACRO COL c0, c1, c2, c3
+	EQUB (c0 AND &88)+(c1 AND &44)+(c2 AND &22)+(c3 AND &11)
+ENDMACRO
 
 .colourtab0
-	EQUB colour_left_black + colour_right_black		: colour_black = 0
-	EQUB colour_left_blue  + colour_right_black		: colour_deep_blue = 1
-	EQUB colour_left_blue  + colour_right_black		: colour_dark_blue = 2
-	EQUB colour_left_blue  + colour_right_black		: colour_medium_blue = 3
-	EQUB colour_left_blue  + colour_right_blue		: colour_bright_blue = 4
-	EQUB colour_left_red   + colour_right_black		: colour_deep_red = 5
-	EQUB colour_left_red   + colour_right_black		: colour_dark_red = 6
-	EQUB colour_left_red   + colour_right_black		: colour_medium_red = 7
-	EQUB colour_left_red   + colour_right_red		: colour_bright_red = 8
-	EQUB colour_left_green + colour_right_black		: colour_deep_green = 9
-	EQUB colour_left_green + colour_right_black		: colour_dark_green = 10
-	EQUB colour_left_green + colour_right_black		: colour_medium_green = 11
-	EQUB colour_left_green + colour_right_green		: colour_bright_green = 12
-	EQUB colour_left_blue  + colour_right_red		: colour_violet = 13
-	EQUB colour_left_blue  + colour_right_red		: colour_purple = 14
-	EQUB colour_left_blue  + colour_right_red		: colour_fuchsia = 15
-	EQUB colour_left_blue  + colour_right_green		: colour_teal = 16
-	EQUB colour_left_blue  + colour_right_green		: colour_sky_blue = 17
-	EQUB colour_left_blue  + colour_right_green		: colour_turquoise = 18
-	EQUB colour_left_red   + colour_right_green		: colour_orange= 19
-	EQUB colour_left_red   + colour_right_green		: colour_olive = 20
-	EQUB colour_left_red   + colour_right_green		: colour_autumn_green = 21
+	COL Black, Black, Black, Black      : colour_black = 0
+	COL Blue,  Black, Black, Black      : colour_deep_blue = 1
+	COL Blue,  Black, Blue,  Black      : colour_dark_blue = 2
+	COL Blue,  Blue,  Blue,  Black      : colour_medium_blue = 3
+	COL Blue,  Blue,  Blue,  Blue       : colour_bright_blue = 4
+	COL Red,   Black, Black, Black      : colour_deep_red = 5
+	COL Red,   Black, Red,   Black      : colour_dark_red = 6
+	COL Red,   Red,   Red,   Black      : colour_medium_red = 7
+	COL Red,   Red,   Red,   Red        : colour_bright_red = 8
+	COL Green, Black, Black, Black      : colour_deep_green = 9
+	COL Green, Black, Green, Black      : colour_dark_green = 10
+	COL Green, Green, Green, Black      : colour_medium_green = 11
+	COL Green, Green, Green, Green      : colour_bright_green = 12
+	COL Red,   Blue,  Blue,  Blue       : colour_violet = 13
+	COL Red,   Blue,  Red,   Blue       : colour_purple = 14
+	COL Red,   Red,   Red,   Blue       : colour_fuchsia = 15
+	COL Green, Blue,  Blue,  Blue       : colour_teal = 16
+	COL Green, Blue,  Green, Blue       : colour_sky_blue = 17
+	COL Green, Green, Green, Blue       : colour_turquoise = 18
+	COL Green, Red,   Red,   Red        : colour_orange= 19
+	COL Green, Red,   Green, Red        : colour_olive = 20
+	COL Green, Green, Green, Red        : colour_autumn_green = 21
 	
 .colourtab1
-	EQUB colour_left_black + colour_right_black		; colour_black
-	EQUB colour_left_black + colour_right_black		; colour_deep_blue
-	EQUB colour_left_black + colour_right_blue		; colour_dark_blue
-	EQUB colour_left_blue  + colour_right_blue		; colour_medium_blue
-	EQUB colour_left_blue  + colour_right_blue		; colour_blue
-	EQUB colour_left_black + colour_right_black		; colour_deep_red
-	EQUB colour_left_black + colour_right_red		; colour_dark_red
-	EQUB colour_left_red   + colour_right_red		; colour_medium_red
-	EQUB colour_left_red   + colour_right_red		; colour_red
-	EQUB colour_left_black + colour_right_black		; colour_deep_green
-	EQUB colour_left_black + colour_right_green		; colour_dark_green
-	EQUB colour_left_green + colour_right_green		; colour_medium_green
-	EQUB colour_left_green + colour_right_green		; colour_bright_green
-	EQUB colour_left_blue  + colour_right_blue		; colour_violet
-	EQUB colour_left_red   + colour_right_blue		; colour_purple
-	EQUB colour_left_red   + colour_right_red		; colour_fuchsia
-	EQUB colour_left_blue  + colour_right_blue		; colour_teal
-	EQUB colour_left_green + colour_right_blue		; colour_sky_blue
-	EQUB colour_left_green + colour_right_green		; colour_turquoise
-	EQUB colour_left_red   + colour_right_red		; colour_orange
-	EQUB colour_left_green + colour_right_red		; colour_olive
-	EQUB colour_left_green + colour_right_green		; colour_autumn_green
+	COL Black, Black, Black, Black      ; colour_black
+	COL Black, Black, Blue,  Black      ; colour_deep_blue
+	COL Black, Blue,  Black, Blue       ; colour_dark_blue
+	COL Blue,  Black, Blue,  Blue       ; colour_medium_blue
+	COL Blue,  Blue,  Blue,  Blue       ; colour_blue
+	COL Black, Black, Red,   Black      ; colour_deep_red
+	COL Black, Red,   Black, Red        ; colour_dark_red
+	COL Red,   Black, Red,   Red        ; colour_medium_red
+	COL Red,   Red,   Red,   Red        ; colour_red
+	COL Black, Black, Green, Black      ; colour_deep_green
+	COL Black, Green, Black, Green      ; colour_dark_green
+	COL Green, Black, Green, Green      ; colour_medium_green
+	COL Green, Green, Green, Green      ; colour_bright_green
+	COL Blue,  Blue,  Red,   Blue       ; colour_violet
+	COL Blue,  Red,   Blue,  Red        ; colour_purple
+	COL Red,   Blue,  Red,   Red        ; colour_fuchsia
+	COL Blue,  Blue,  Green, Blue       ; colour_teal
+	COL Blue,  Green, Blue,  Green      ; colour_sky_blue
+	COL Green, Blue,  Green, Green      ; colour_turquoise
+	COL Red,   Red,   Green, Red        ; colour_orange
+	COL Red,   Green, Red,   Green      ; colour_olive
+	COL Green, Red,   Green, Green      ; colour_autumn_green
 
 
 \\ Used by timer bars

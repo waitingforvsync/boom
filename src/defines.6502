@@ -107,6 +107,10 @@ GUARD &FC
 ; distancealongray, clippeddistance, getworldangle, calcworldnormalquadrant, drawline
 .dx					SKIP 2
 .dy					SKIP 2
+.dx0				SKIP 2
+.dy0				SKIP 2
+.dx1				SKIP 2
+.dy1				SKIP 2
 
 ; getworldangle
 .angle				SKIP 2
