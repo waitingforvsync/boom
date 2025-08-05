@@ -83,7 +83,6 @@ screenfill1 = screenfill2 - screenfillsize
 
 
 ORG 0
-GUARD &FC
 
 \\ variables which need to be initialized to something
 \\ remember to update entry.6502 as more are added
@@ -194,6 +193,9 @@ num_map_offsets = P%-map_ptrs
 
 SKIPTO &78
 .linecolours		SKIP 8
+
+SKIPTO &FC
+SKIP 1
 
 
 
