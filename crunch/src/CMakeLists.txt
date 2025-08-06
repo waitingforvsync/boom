@@ -11,6 +11,7 @@ else()
 endif()
 
 # set_target_properties("crunch" PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
+# set_target_properties("crunch" PROPERTIES UNITY_BUILD ON)
 
 target_include_directories("crunch" PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 
@@ -21,6 +22,7 @@ target_sources("crunch" PRIVATE
     "bitreader.h"
     "bitwriter.c"
     "bitwriter.h"
+    "byte_array.c"
     "byte_array.h"
     "file.c"
     "file.h"
@@ -29,6 +31,10 @@ target_sources("crunch" PRIVATE
     "main.c"
     "refs.c"
     "refs.h"
+    "token.c"
+    "token.h"
+    "utils.c"
+    "utils.h"
 )
 
 set(TESTS_ENABLED ON CACHE BOOL "Whether tests are enabled on this build")
@@ -38,9 +44,9 @@ if(TESTS_ENABLED)
     add_subdirectory("test")
     add_custom_command(
         TARGET "crunch"
-        COMMENT "Run tests"
         POST_BUILD
         WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/test"
+        COMMAND echo "Run tests"
         COMMAND crunch --test
     )
 endif()

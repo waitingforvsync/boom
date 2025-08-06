@@ -56,3 +56,11 @@ uint8_t bitreader_get_elias_gamma_value(bitreader_t *bitreader) {
     }
     return value;
 }
+
+
+uint16_t bitreader_get_hybrid_value(bitreader_t *bitreader, uint32_t fixed_bits) {
+    assert(bitreader);
+    assert(bitreader->data.data);
+    uint16_t value = (bitreader_get_elias_gamma_value(bitreader) - 1) & 0xFF;
+    return (value << fixed_bits) | bitreader_get_value(bitreader, fixed_bits);
+}

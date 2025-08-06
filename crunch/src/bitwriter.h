@@ -27,5 +27,7 @@ void bitwriter_add_aligned_byte(bitwriter_t *bitwriter, uint32_t byte, arena_t *
 // Add an elias gamma value to the stream
 void bitwriter_add_elias_gamma_value(bitwriter_t *bitwriter, uint32_t value, arena_t *arena);
 
+// Add a hybrid (fixed+elias) value to the stream
+void bitwriter_add_hybrid_value(bitwriter_t *bitwriter, uint32_t value, uint32_t fixed_bits, arena_t *arena);
 
 #endif // ifndef BITWRITER_H_

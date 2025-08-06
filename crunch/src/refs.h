@@ -21,21 +21,6 @@ typedef struct index_range_view_t {
 } index_range_view_t;
 
 
-// A list of tokens
-// This is referenced by the list of index_ranges above, to give the range of tokens corresponding
-// to each source data index.
-typedef struct token_view_t {
-    const token_t *data;
-    uint32_t num;
-} token_view_t;
-
-
-static inline token_t token_view_get(token_view_t tokens, uint32_t index) {
-    assert(index < tokens.num);
-    return tokens.data[index];
-}
-
-
 // This is the manager object which maps source data indices to possible token representations
 typedef struct refs_t {
     index_range_view_t ranges;
@@ -48,6 +33,12 @@ refs_t refs_make(byte_view_t data, arena_t *arena, arena_t scratch);
 
 // Get a list of tokens for the given index
 token_view_t refs_get_tokens(const refs_t *refs, uint32_t index);
+
+// Get number of indices
+static inline uint32_t refs_num(const refs_t *refs) {
+    assert(refs);
+    return refs->ranges.num;
+}
 
 
 #endif // ifndef REFS_H_

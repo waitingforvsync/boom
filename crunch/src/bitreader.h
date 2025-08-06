@@ -28,5 +28,8 @@ uint8_t bitreader_get_aligned_byte(bitreader_t *bitreader);
 // Read an elias gamma value from the stream
 uint8_t bitreader_get_elias_gamma_value(bitreader_t *bitreader);
 
+// Read a hybrid (fixed+elias) value from the stream
+uint16_t bitreader_get_hybrid_value(bitreader_t *bitreader, uint32_t fixed_bits);
+
 
 #endif // ifndef BITREADER_H_

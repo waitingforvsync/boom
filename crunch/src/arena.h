@@ -31,7 +31,7 @@ void *arena_realloc(arena_t *arena, void *oldptr, uint32_t old_size, uint32_t ne
 // Free a block from the arena, if it's the last
 void arena_free(arena_t *arena, void *ptr, uint32_t size);
 
-// Free the arena
+// Reset the arena to empty
 void arena_reset(arena_t *arena);
 
 

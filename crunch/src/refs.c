@@ -40,51 +40,11 @@ static index_range_t index_range_view_get(index_range_view_t ranges, uint32_t in
 
 // token_array implementation
 
-typedef struct token_array_t {
-    token_t *data;
-    uint32_t num;
-    uint32_t capacity;
-} token_array_t;
 
-
-static token_array_t token_array_make(arena_t *arena, uint32_t initial_capacity) {
-    assert(arena);
-    return (token_array_t) {
-        .data = arena_alloc(arena, sizeof(token_t) * initial_capacity),
-        .num = 0,
-        .capacity = initial_capacity
-    };
-}
-
-
-static uint32_t token_array_add(token_array_t *array, token_t value, arena_t *arena) {
-    assert(array);
-    assert(array->data);
-    if (array->num < array->capacity) {
-        array->data[array->num] = value;
-        return array->num++;
-    }
-
-    if (!arena) {
-        abort();
-    }
-
-    uint32_t new_capacity = (array->capacity * 2 >= 16) ? array->capacity * 2 : 16;
-    array->data = arena_realloc(arena, array->data, sizeof(token_t) * array->capacity, sizeof(token_t) * new_capacity);
-    array->capacity = new_capacity;
-    array->data[array->num] = value;
-    return array->num++;
-}
 
 
 // token_view implementation
 
-static token_view_t token_view_make(const token_array_t *array) {
-    return (token_view_t) {
-        .data = array->data,
-        .num = array->num
-    };
-}
 
 
 // indices_array implementation
@@ -130,18 +90,14 @@ static uint32_t indices_array_find(const indices_array_t *array, uint32_t to_fin
 static uint32_t indices_array_add(indices_array_t *array, uint32_t value, arena_t *arena) {
     assert(array);
     assert(array->data);
-    if (array->num < array->capacity) {
-        array->data[array->num] = value;
-        return array->num++;
+    if (array->num >= array->capacity) {
+        if (!arena) {
+            abort();
+        }
+        uint32_t new_capacity = (array->capacity * 2 >= 16) ? array->capacity * 2 : 16;
+        array->data = arena_realloc(arena, array->data, sizeof(uint32_t) * array->capacity, sizeof(uint32_t) * new_capacity);
+        array->capacity = new_capacity;
     }
-
-    if (!arena) {
-        abort();
-    }
-
-    uint32_t new_capacity = (array->capacity * 2 >= 16) ? array->capacity * 2 : 16;
-    array->data = arena_realloc(arena, array->data, sizeof(uint32_t) * array->capacity, sizeof(uint32_t) * new_capacity);
-    array->capacity = new_capacity;
     array->data[array->num] = value;
     return array->num++;
 }
@@ -158,6 +114,7 @@ typedef struct byte_pair_cache_t {
     indices_array_t *data;
     uint32_t num;
 } byte_pair_cache_t;
+
 
 #define INITIAL_INDICES_ARRAY_CAPACITY 16
 
@@ -199,7 +156,7 @@ static byte_pair_cache_t byte_pair_cache_make(arena_t *arena, byte_view_t data) 
 // The idea here is that longer matches are better, but shorter offsets are preferable.
 // So look at all the matches backwards from the current position.
 // Only add a match if it is longer than the current longest one found.
-// We also add partial matches from the previous longest to the new longest.
+// We only add the longest match; when parsing we can look at the cost of all the shorter length matches.
 
 refs_t refs_make(byte_view_t data, arena_t *arena, arena_t scratch) {
     // Use the scratch arena for the byte_pair_cache as we discard it when we exit
@@ -224,7 +181,7 @@ refs_t refs_make(byte_view_t data, arena_t *arena, arena_t scratch) {
             uint32_t key = byte_view_get(data, i) | (byte_view_get(data, i + 1) << 8);
             const indices_array_t *indices = byte_pair_cache_element_at(byte_pair_cache, key);
 
-            uint32_t best_length_minus_one = 0;
+            uint32_t best_length = 1;
 
             // We have a list of all the indices containing the current two byte pair.
             // The current index will be in this list, so find it, and then iterate backwards to the start for previous matches.
@@ -237,15 +194,14 @@ refs_t refs_make(byte_view_t data, arena_t *arena, arena_t scratch) {
                 uint32_t dist_to_end = data.num - i;
                 uint32_t max_length = (dist_to_end < 256) ? dist_to_end : 256;
 
-                for (uint32_t n = 1; n < max_length && byte_view_get(data, i + n) == byte_view_get(data, j + n); n++) {
-                    if (n > best_length_minus_one) {
-                        token_array_add(
-                            &tokens,
-                            token_make_ref(i - j, n),
-                            arena
-                        );
-                        best_length_minus_one = n;
-                    }
+                uint32_t length = 2;
+                while (length < max_length && byte_view_get(data, i + length) == byte_view_get(data, j + length)) {
+                    length++;
+                }
+
+                if (length > best_length) {
+                    token_array_add(&tokens, token_make_ref(i - j, length - 1), arena);
+                    best_length = length;
                 }
             }
         }
@@ -263,7 +219,7 @@ refs_t refs_make(byte_view_t data, arena_t *arena, arena_t scratch) {
 
     return (refs_t) {
         .ranges = index_range_view_make(ranges),
-        .tokens = token_view_make(&tokens)
+        .tokens = token_view_from_array(&tokens)
     };
 }
 

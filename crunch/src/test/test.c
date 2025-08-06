@@ -1,4 +1,6 @@
 #include "arena.h"
+#include "bitreader.h"
+#include "bitwriter.h"
 #include "byte_array.h"
 #include "file.h"
 #include "refs.h"
@@ -6,18 +8,15 @@
 #include <stdio.h>
 
 
-#define TEST_REQUIRE_TRUE(cond) do { if (!(cond)) { fprintf(stderr, "%s:%d: error: test failed: %s\n", __FILE__, __LINE__, #cond); return 1; }} while (false)
-#define TEST_REQUIRE_EQUAL(cond, val) do { if ((cond) != (val)) { fprintf(stderr, "%s:%d: error: test failed: %s; expected %d, got %d\n", __FILE__, __LINE__, #cond, val, (cond)); return 1; }} while (false)
-
 
 int test_simple(void) {
     arena_t arena = arena_make(0x800000);
     arena_t scratch = arena_make(0x800000);
 
     byte_view_t src = {
-        //                        0123456789.123456789.1
-        .data = (const uint8_t *)"the cat sat on the mat",
-        .num = sizeof("the cat sat on the mat") - 1
+        //                        0123456789.123456789.123456789.12
+        .data = (const uint8_t *)"the cat sat on the mat singinging",
+        .num = sizeof("the cat sat on the mat singinging") - 1
     };
 
     refs_t refs = refs_make(src, &arena, scratch);
@@ -29,33 +28,47 @@ int test_simple(void) {
     }
     {
         token_view_t tv = refs_get_tokens(&refs, 15);
-        TEST_REQUIRE_EQUAL(tv.num, 4);
+        TEST_REQUIRE_EQUAL(tv.num, 2);
         TEST_REQUIRE_TRUE(token_is_literal(token_view_get(tv, 0)));
         TEST_REQUIRE_TRUE(!token_is_literal(token_view_get(tv, 1)));
-        TEST_REQUIRE_TRUE(!token_is_literal(token_view_get(tv, 2)));
-        TEST_REQUIRE_TRUE(!token_is_literal(token_view_get(tv, 3)));
-        TEST_REQUIRE_EQUAL(token_view_get(tv, 1).length_minus_one, 1); // 'th'
-        TEST_REQUIRE_EQUAL(token_view_get(tv, 2).length_minus_one, 2); // 'the'
-        TEST_REQUIRE_EQUAL(token_view_get(tv, 3).length_minus_one, 3); // 'the '
+        TEST_REQUIRE_EQUAL(token_view_get(tv, 1).offset, 15);
+        TEST_REQUIRE_EQUAL(token_view_get(tv, 1).length_minus_one, 3); // 'the '
     }
     {
         token_view_t tv = refs_get_tokens(&refs, 9);
+        TEST_REQUIRE_EQUAL(tv.num, 2);
+        TEST_REQUIRE_TRUE(token_is_literal(token_view_get(tv, 0)));
+        TEST_REQUIRE_TRUE(!token_is_literal(token_view_get(tv, 1)));
+        TEST_REQUIRE_EQUAL(token_view_get(tv, 1).offset, 4);
+        TEST_REQUIRE_EQUAL(token_view_get(tv, 1).length_minus_one, 2); // 'at '
+    }
+    {
+        token_view_t tv = refs_get_tokens(&refs, 20);
         TEST_REQUIRE_EQUAL(tv.num, 3);
         TEST_REQUIRE_TRUE(token_is_literal(token_view_get(tv, 0)));
         TEST_REQUIRE_TRUE(!token_is_literal(token_view_get(tv, 1)));
         TEST_REQUIRE_TRUE(!token_is_literal(token_view_get(tv, 2)));
-        TEST_REQUIRE_EQUAL(token_view_get(tv, 1).offset, 4);
-        TEST_REQUIRE_EQUAL(token_view_get(tv, 1).length_minus_one, 1); // 'at'
-        TEST_REQUIRE_EQUAL(token_view_get(tv, 2).length_minus_one, 2); // 'at '
+        TEST_REQUIRE_EQUAL(token_view_get(tv, 1).offset, 11);
+        TEST_REQUIRE_EQUAL(token_view_get(tv, 1).length_minus_one, 2); // 'at '
+        TEST_REQUIRE_EQUAL(token_view_get(tv, 2).offset, 15);
+        TEST_REQUIRE_EQUAL(token_view_get(tv, 2).length_minus_one, 3); // 'at s'
     }
     {
-        token_view_t tv = refs_get_tokens(&refs, 20);
+        token_view_t tv = refs_get_tokens(&refs, 27);
         TEST_REQUIRE_EQUAL(tv.num, 2);
         TEST_REQUIRE_TRUE(token_is_literal(token_view_get(tv, 0)));
         TEST_REQUIRE_TRUE(!token_is_literal(token_view_get(tv, 1)));
-        TEST_REQUIRE_EQUAL(token_view_get(tv, 1).offset, 11);
-        TEST_REQUIRE_EQUAL(token_view_get(tv, 1).length_minus_one, 1); // 'at'
-        // Note: the earlier matches are rejected for being no longer than the closer ones
+        TEST_REQUIRE_EQUAL(token_view_get(tv, 1).offset, 3);
+        TEST_REQUIRE_EQUAL(token_view_get(tv, 1).length_minus_one, 5); // 'inging'
+    }
+    {
+        token_view_t tv = refs_get_tokens(&refs, 31);
+        TEST_REQUIRE_EQUAL(tv.num, 2);
+        TEST_REQUIRE_TRUE(token_is_literal(token_view_get(tv, 0)));
+        TEST_REQUIRE_TRUE(!token_is_literal(token_view_get(tv, 1)));
+        TEST_REQUIRE_EQUAL(token_view_get(tv, 1).offset, 3);
+        TEST_REQUIRE_EQUAL(token_view_get(tv, 1).length_minus_one, 1); // 'ng'
+        // Note the earlier 'ng' is ignored for being further away than another of the same length
     }
 
     arena_deinit(&scratch);
@@ -82,7 +95,32 @@ int test_file(void) {
 }
 
 
+int test_bitstream(void) {
+    arena_t arena = arena_make(0x800000);
+
+    bitwriter_t writer = bitwriter_make(&arena, 1000);
+    bitwriter_add_value(&writer, 42, 6, &arena);
+    bitwriter_add_aligned_byte(&writer, 123, &arena);
+    bitwriter_add_elias_gamma_value(&writer, 13, &arena);
+    bitwriter_add_hybrid_value(&writer, 1234, 5, &arena);
+    bitwriter_add_hybrid_value(&writer, 0xFFF, 4, &arena);
+    bitwriter_add_elias_gamma_value(&writer, 256, &arena);
+
+    bitreader_t reader = bitreader_make(byte_view_make(&writer.data));
+    TEST_REQUIRE_EQUAL(bitreader_get_value(&reader, 6), 42);
+    TEST_REQUIRE_EQUAL(bitreader_get_aligned_byte(&reader), 123);
+    TEST_REQUIRE_EQUAL(bitreader_get_elias_gamma_value(&reader), 13);
+    TEST_REQUIRE_EQUAL(bitreader_get_hybrid_value(&reader, 5), 1234);
+    TEST_REQUIRE_EQUAL(bitreader_get_hybrid_value(&reader, 4), 0xFFF);
+    TEST_REQUIRE_EQUAL(bitreader_get_elias_gamma_value(&reader), 0);
+
+    arena_deinit(&arena);
+    return 0;
+}
+
+
 int test_run(void) {
-    return test_simple() ||
-           test_file();
+    return test_simple()
+        || test_file()
+        || test_bitstream();
 }

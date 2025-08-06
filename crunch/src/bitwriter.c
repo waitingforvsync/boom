@@ -1,4 +1,5 @@
 #include "bitwriter.h"
+#include "utils.h"
 #include <assert.h>
 
 
@@ -29,7 +30,7 @@ void bitwriter_add_bit(bitwriter_t *bitwriter, uint32_t value, arena_t *arena) {
 void bitwriter_add_value(bitwriter_t *bitwriter, uint32_t value, uint32_t numbits, arena_t *arena) {
     assert(bitwriter);
     assert(bitwriter->data.data);
-    assert(numbits <= 8);
+    assert(numbits <= 8 || (numbits == 9 && value == 256));
     for (uint32_t n = numbits; n-- > 0;) {
         bitwriter_add_bit(bitwriter, value & (1 << n), arena);
     }
@@ -43,22 +44,19 @@ void bitwriter_add_aligned_byte(bitwriter_t *bitwriter, uint32_t byte, arena_t *
 }
 
 
-static inline uint32_t bit_width(uint32_t x) {
-    assert(x > 0);
-    uint32_t n = 0;
-    while (x) {
-        n++;
-        x >>= 1;
-    }
-    return n;
-}
-
-
 void bitwriter_add_elias_gamma_value(bitwriter_t *bitwriter, uint32_t value, arena_t *arena) {
     assert(bitwriter);
     assert(bitwriter->data.data);
-    assert(value > 0);
-    uint32_t numbits = bit_width(value);
+    assert(value > 0 && value <= 256);  // 256 will be read as 0
+    uint32_t numbits = get_bit_width(value);
     bitwriter_add_value(bitwriter, 0, numbits - 1, arena);
     bitwriter_add_value(bitwriter, value, numbits, arena);
+}
+
+
+void bitwriter_add_hybrid_value(bitwriter_t *bitwriter, uint32_t value, uint32_t fixed_bits, arena_t *arena) {
+    assert(bitwriter);
+    assert(bitwriter->data.data);
+    bitwriter_add_elias_gamma_value(bitwriter, (value >> fixed_bits) + 1, arena);
+    bitwriter_add_value(bitwriter, value, fixed_bits, arena);
 }
