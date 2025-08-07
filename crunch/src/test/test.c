@@ -180,9 +180,14 @@ int test_file(void) {
 
     file_read_result_t file_result = file_read("titlescreen.bin", &arena);
     TEST_REQUIRE_EQUAL(file_result.error.type, file_error_none);
-    TEST_REQUIRE_EQUAL(file_result.data.num, 8320);
+    TEST_REQUIRE_EQUAL(file_result.contents.num, 8320);
 
-    refs_t refs = refs_make(file_result.data, &arena, scratch);
+    refs_t refs = refs_make(file_result.contents, &arena, scratch);
+    lz_result_t lz = lz_parse(&refs, 2, &arena, scratch);
+    byte_array_view_t compressed = lz_serialise(&lz, &arena);
+    byte_array_view_t expanded = lz_deserialise(compressed, &arena);
+    bool same = (memcmp(file_result.contents.data, expanded.data, file_result.contents.num) == 0);
+    TEST_REQUIRE_TRUE(same);
 
     arena_deinit(&scratch);
     arena_deinit(&arena);

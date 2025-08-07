@@ -20,7 +20,7 @@ typedef struct file_error_t {
 
 
 typedef struct file_read_result_t {
-    byte_array_view_t data;
+    byte_array_view_t contents;
     file_error_t error;
 } file_read_result_t;
 

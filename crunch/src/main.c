@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    refs_t refs = refs_make(src_file.data, &arena, scratch);
+    refs_t refs = refs_make(src_file.contents, &arena, scratch);
 
     arena_deinit(&scratch);
     arena_deinit(&arena);

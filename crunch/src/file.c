@@ -44,7 +44,7 @@ file_read_result_t file_read(const char *filename, arena_t *arena) {
 
     fclose(file);
     return (file_read_result_t) {
-        .data = {
+        .contents = {
             .data = ptr,
             .num = (uint32_t)size
         }
