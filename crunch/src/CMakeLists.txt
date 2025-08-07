@@ -10,19 +10,19 @@ else()
 	target_compile_options("crunch" PRIVATE -Wall -Wextra -Wpedantic -Werror -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function)
 endif()
 
-# set_target_properties("crunch" PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
-# set_target_properties("crunch" PROPERTIES UNITY_BUILD ON)
+set_target_properties("crunch" PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
+set_target_properties("crunch" PROPERTIES UNITY_BUILD ON)
 
 target_include_directories("crunch" PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 
 target_sources("crunch" PRIVATE
     "arena.c"
     "arena.h"
+    "array.template.h"
     "bitreader.c"
     "bitreader.h"
     "bitwriter.c"
     "bitwriter.h"
-    "byte_array.c"
     "byte_array.h"
     "file.c"
     "file.h"
@@ -31,7 +31,6 @@ target_sources("crunch" PRIVATE
     "main.c"
     "refs.c"
     "refs.h"
-    "token.c"
     "token.h"
     "utils.c"
     "utils.h"

@@ -6,7 +6,7 @@
 
 
 typedef struct bitreader_t {
-    byte_view_t data;
+    byte_array_view_t data;
     uint32_t bit;
     uint32_t cached_byte;
     uint32_t index;
@@ -14,7 +14,7 @@ typedef struct bitreader_t {
 
 
 // Make a new bitreader
-bitreader_t bitreader_make(byte_view_t data);
+bitreader_t bitreader_make(byte_array_view_t data);
 
 // Read a bit from the stream
 uint32_t bitreader_get_bit(bitreader_t *bitreader);

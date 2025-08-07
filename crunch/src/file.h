@@ -20,7 +20,7 @@ typedef struct file_error_t {
 
 
 typedef struct file_read_result_t {
-    byte_view_t data;
+    byte_array_view_t data;
     file_error_t error;
 } file_read_result_t;
 
@@ -29,7 +29,7 @@ typedef struct file_read_result_t {
 file_read_result_t file_read(const char *filename, arena_t *arena);
 
 // Write a binary file from the given memory buffer
-file_error_t file_write(const char *filename, byte_view_t data);
+file_error_t file_write(const char *filename, byte_array_view_t data);
 
 
 #endif // ifndef FILE_H_

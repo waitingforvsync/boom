@@ -3,10 +3,10 @@
 #include <assert.h>
 
 
-bitwriter_t bitwriter_make(arena_t *arena, uint32_t initial_capacity) {
+bitwriter_t bitwriter_make(uint32_t initial_capacity, arena_t *arena) {
     assert(arena);
     return (bitwriter_t) {
-        .data = byte_array_make(arena, initial_capacity),
+        .data = byte_array_make(initial_capacity, arena),
         .bit = 0,
         .index_being_built = 0
     };

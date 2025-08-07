@@ -1,7 +1,7 @@
 #include "bitreader.h"
 
 
-bitreader_t bitreader_make(byte_view_t data) {
+bitreader_t bitreader_make(byte_array_view_t data) {
     return (bitreader_t) {
         .data = data,
         .bit = 0,
@@ -15,7 +15,7 @@ uint32_t bitreader_get_bit(bitreader_t *bitreader) {
     assert(bitreader);
     assert(bitreader->data.data);
     if (bitreader->bit == 0) {
-        bitreader->cached_byte = byte_view_get(bitreader->data, bitreader->index++);
+        bitreader->cached_byte = byte_array_view_get(bitreader->data, bitreader->index++);
     }
 
     uint32_t value = !!(bitreader->cached_byte & (1 << bitreader->bit));
@@ -39,7 +39,7 @@ uint8_t bitreader_get_value(bitreader_t *bitreader, uint32_t numbits) {
 uint8_t bitreader_get_aligned_byte(bitreader_t *bitreader) {
     assert(bitreader);
     assert(bitreader->data.data);
-    return byte_view_get(bitreader->data, bitreader->index++);
+    return byte_array_view_get(bitreader->data, bitreader->index++);
 }
 
 

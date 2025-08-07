@@ -7,7 +7,7 @@
 
 
 typedef struct lz_result_t {
-    token_view_t tokens;
+    token_array_view_t tokens;
     uint32_t cost;
 } lz_result_t;
 

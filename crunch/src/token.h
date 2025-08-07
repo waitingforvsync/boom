@@ -18,70 +18,11 @@ typedef struct token_t {
 } token_t;
 
 
-// A list of tokens
-typedef struct token_view_t {
-    const token_t *data;
-    uint32_t num;
-} token_view_t;
+// Define token array types
+#define TEMPLATE_ARRAY_NAME token_array
+#define TEMPLATE_ARRAY_TYPE token_t
+#include "array.template.h"
 
-
-// A fixed array of tokens
-typedef struct token_slice_t {
-    token_t *data;
-    uint32_t num;
-} token_slice_t;
-
-
-// A dynamic array of tokens
-typedef struct token_array_t {
-    token_t *data;
-    uint32_t num;
-    uint32_t capacity;
-} token_array_t;
-
-
-// Make a token_view from an array
-static inline token_view_t token_view_from_array(const token_array_t *array) {
-    return (token_view_t) {
-        .data = array->data,
-        .num = array->num
-    };
-}
-
-// Make a token_view from a slice
-static inline token_view_t token_view_from_slice(token_slice_t slice) {
-    return (token_view_t) {
-        .data = slice.data,
-        .num = slice.num
-    };
-}
-
-// Get a token from a token_view
-static inline token_t token_view_get(token_view_t tokens, uint32_t index) {
-    assert(index < tokens.num);
-    return tokens.data[index];
-}
-
-// Make a token_slice
-token_slice_t token_slice_make(arena_t *arena, uint32_t num);
-
-// Get a token in a token_slice
-static inline token_t token_slice_get(token_slice_t tokens, uint32_t index) {
-    assert(index < tokens.num);
-    return tokens.data[index];
-}
-
-// Set a token in a token_slice
-static inline void token_slice_set(token_slice_t tokens, uint32_t index, token_t value) {
-    assert(index < tokens.num);
-    tokens.data[index] = value;
-}
-
-// Make a token_array
-token_array_t token_array_make(arena_t *arena, uint32_t initial_capacity);
-
-// Add an item to a token_array
-uint32_t token_array_add(token_array_t *array, token_t value, arena_t *arena);
 
 // Make a token literal
 static inline token_t token_make_literal(uint8_t c) {
