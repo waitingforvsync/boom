@@ -10,7 +10,7 @@
 
 
 
-int test_simple(void) {
+int test_lz_simple(void) {
     arena_t arena = arena_make(0x800000);
     arena_t scratch = arena_make(0x800000);
 
@@ -174,7 +174,7 @@ int test_simple(void) {
 }
 
 
-int test_file(void) {
+int test_lz_file(void) {
     arena_t arena = arena_make(0x800000);
     arena_t scratch = arena_make(0x800000);
 
@@ -183,11 +183,13 @@ int test_file(void) {
     TEST_REQUIRE_EQUAL(file_result.contents.num, 8320);
 
     refs_t refs = refs_make(file_result.contents, &arena, scratch);
-    lz_result_t lz = lz_parse(&refs, 2, &arena, scratch);
+    lz_result_t lz = lz_parse(&refs, 7, &arena, scratch);
     byte_array_view_t compressed = lz_serialise(&lz, &arena);
     byte_array_view_t expanded = lz_deserialise(compressed, &arena);
     bool same = (memcmp(file_result.contents.data, expanded.data, file_result.contents.num) == 0);
     TEST_REQUIRE_TRUE(same);
+    
+    printf("Compressed: %d / 8320 (%d%%)\n", compressed.num, compressed.num * 100 / file_result.contents.num);
 
     arena_deinit(&scratch);
     arena_deinit(&arena);
@@ -221,7 +223,7 @@ int test_bitstream(void) {
 
 
 int test_run(void) {
-    return test_simple()
-        || test_file()
+    return test_lz_simple()
+        || test_lz_file()
         || test_bitstream();
 }
