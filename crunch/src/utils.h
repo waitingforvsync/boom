@@ -27,12 +27,5 @@ static inline uint32_t max_uint32(uint32_t a, uint32_t b) {
 // Returns the minimum number of bits required to represent the argument
 uint32_t get_bit_width(uint32_t x);
 
-// Returns the number of bits required to represent the argument as an elias gamma value
-uint32_t get_elias_gamma_cost(uint32_t value);
-
-// Returns the number of bits required to represent the argument as a hybrid
-// (elias gamma + fixed bits) value
-uint32_t get_hybrid_cost(uint32_t value, uint32_t num_fixed_bits);
-
 
 #endif // ifndef UTILS_H_

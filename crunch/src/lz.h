@@ -6,16 +6,27 @@
 #include "token.h"
 
 
+typedef struct lz_item_t {
+    token_t token;
+    uint32_t total_cost;
+    uint32_t tally;
+} lz_item_t;
+
+
+#define TEMPLATE_ARRAY_NAME lz_item_array
+#define TEMPLATE_ARRAY_TYPE lz_item_t
+#include "array.template.h"
+
+
+
 typedef struct lz_result_t {
-    token_array_view_t tokens;
-    uint32_t cost;
+    lz_item_array_view_t items;
 } lz_result_t;
 
 
 lz_result_t lz_parse(
     const refs_t *refs,
-    uint32_t max_cost,
-    uint32_t num_fixed_offset_bits,
+    uint32_t num_fixed_bits,
     arena_t *arena,
     arena_t scratch
 );

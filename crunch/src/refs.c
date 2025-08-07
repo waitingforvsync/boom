@@ -28,7 +28,7 @@ static uint32_t indices_view_find(indices_view_t indices, uint32_t to_find) {
 
 // sequence_cache implementation
 
-// byte_pair_cache is a cache of all the occurrences of a pair of byte values in the source data.
+// sequence_cache is a cache of all the occurrences of a pair of byte values in the source data.
 // It is indexed by a 16-bit value (0...0x10000), and returns an array of indices within the source data
 // in which those two bytes occur consecutively.
 // It is used to improve the speed of match finding.

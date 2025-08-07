@@ -86,6 +86,9 @@ void *arena_realloc(arena_t *arena, void *oldptr, uint32_t old_size, uint32_t ne
         return oldptr;
     }
     else {
+        if (arena->next + new_aligned_size > arena->end) {
+            abort();
+        }
         void *newptr = (char *)arena->base + arena->next;
         arena->next += new_aligned_size;
         memcpy(newptr, oldptr, old_aligned_size);

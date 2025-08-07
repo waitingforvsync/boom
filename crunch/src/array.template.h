@@ -202,7 +202,7 @@ static inline ARRAY_TYPE_t *ARRAY_NAME_at(ARRAY_NAME_t *array, uint32_t index) {
 static inline void ARRAY_NAME_reserve(ARRAY_NAME_t *array, uint32_t capacity, arena_t *arena) {
     assert(array);
     if (capacity > array->capacity) {
-        if (!arena) abort();
+        assert(arena);
         array->data = arena_realloc(arena, array->data, array->capacity * sizeof(ARRAY_TYPE_t), capacity * sizeof(ARRAY_TYPE_t));
         array->capacity = capacity;
     }

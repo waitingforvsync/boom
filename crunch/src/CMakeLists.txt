@@ -10,8 +10,8 @@ else()
 	target_compile_options("crunch" PRIVATE -Wall -Wextra -Wpedantic -Werror -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function)
 endif()
 
-set_target_properties("crunch" PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
-set_target_properties("crunch" PROPERTIES UNITY_BUILD ON)
+# set_target_properties("crunch" PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
+# set_target_properties("crunch" PROPERTIES UNITY_BUILD ON)
 
 target_include_directories("crunch" PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 
