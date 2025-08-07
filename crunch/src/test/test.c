@@ -188,7 +188,7 @@ int test_lz_file(void) {
     byte_array_view_t expanded = lz_deserialise(compressed, &arena);
     bool same = (memcmp(file_result.contents.data, expanded.data, file_result.contents.num) == 0);
     TEST_REQUIRE_TRUE(same);
-    
+
     printf("Compressed: %d / 8320 (%d%%)\n", compressed.num, compressed.num * 100 / file_result.contents.num);
 
     arena_deinit(&scratch);
@@ -202,12 +202,24 @@ int test_bitstream(void) {
     arena_t arena = arena_make(0x800000);
 
     bitwriter_t writer = bitwriter_make(1000, &arena);
-    bitwriter_add_value(&writer, 42, 6, &arena);
-    bitwriter_add_aligned_byte(&writer, 123, &arena);
-    bitwriter_add_elias_gamma_value(&writer, 13, &arena);
-    bitwriter_add_hybrid_value(&writer, 1234, 5, &arena);
-    bitwriter_add_hybrid_value(&writer, 0xFFF, 4, &arena);
-    bitwriter_add_elias_gamma_value(&writer, 256, &arena);
+    bitwriter_add_value(&writer, 42, 6, &arena);            // 6 bits
+    TEST_REQUIRE_EQUAL(writer.data.num, 1);
+    TEST_REQUIRE_EQUAL(writer.bit, 6);
+    bitwriter_add_aligned_byte(&writer, 123, &arena);       
+    TEST_REQUIRE_EQUAL(writer.data.num, 2);
+    TEST_REQUIRE_EQUAL(writer.bit, 6);
+    bitwriter_add_elias_gamma_value(&writer, 13, &arena);   // 7 bits
+    TEST_REQUIRE_EQUAL(writer.data.num, 3);
+    TEST_REQUIRE_EQUAL(writer.bit, 5);
+    bitwriter_add_hybrid_value(&writer, 1234, 5, &arena);   // 5+11=16 bits
+    TEST_REQUIRE_EQUAL(writer.data.num, 5);
+    TEST_REQUIRE_EQUAL(writer.bit, 5);
+    bitwriter_add_hybrid_value(&writer, 0xFFF, 4, &arena);  // 4+17=21 bits
+    TEST_REQUIRE_EQUAL(writer.data.num, 8);
+    TEST_REQUIRE_EQUAL(writer.bit, 2);
+    bitwriter_add_elias_gamma_value(&writer, 256, &arena);  // 17 bits
+    TEST_REQUIRE_EQUAL(writer.data.num, 10);
+    TEST_REQUIRE_EQUAL(writer.bit, 3);
 
     bitreader_t reader = bitreader_make(writer.data.view);
     TEST_REQUIRE_EQUAL(bitreader_get_value(&reader, 6), 42);

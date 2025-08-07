@@ -57,7 +57,7 @@ lz_result_t lz_parse(const refs_t *refs, uint32_t num_fixed_bits, arena_t *arena
                         get_token_cost(token, num_fixed_bits) +
                         get_tally_cost(tally) +
                         next_item->total_cost -
-                        get_tally_cost(next_item->tally);
+                        ((tally != 1) ? get_tally_cost(next_item->tally) : 0);
                     
                     if (cost < item->total_cost) {
                         item->token = token;
@@ -142,6 +142,7 @@ byte_array_view_t lz_deserialise(byte_array_view_t compressed, arena_t *arena) {
         uint32_t num_items = bitreader_get_elias_gamma_value(&reader);
         if (num_items == 0) {
             num_items = 256;
+            is_literal = !is_literal;
         }
         if (is_literal) {
             for (uint32_t n = 0; n < num_items; n++) {
