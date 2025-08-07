@@ -1,3 +1,5 @@
+#include "bitreader.h"
+#include "bitwriter.h"
 #include "lz.h"
 #include "utils.h"
 #include <assert.h>
@@ -75,6 +77,85 @@ lz_result_t lz_parse(const refs_t *refs, uint32_t num_fixed_bits, arena_t *arena
     }
 
     return (lz_result_t) {
-        .items = result.view
+        .items = result.view,
+        .cost = lz_item_array_get(&result, 0).total_cost,
+        .num_fixed_bits = num_fixed_bits
     };
+}
+
+
+byte_array_view_t lz_serialise(const lz_result_t *lz, arena_t *arena) {
+    assert(lz);
+    assert(arena);
+
+    // Count number of blocks
+    uint32_t num_blocks = 0;
+    for (uint32_t i = 0; i < lz->items.num; i += lz_item_array_view_get(lz->items, i).tally) {
+        num_blocks++;
+    }
+
+    uint32_t num_bits = lz->cost + get_hybrid_cost(num_blocks, 8) + 4;
+    bitwriter_t writer = bitwriter_make((num_bits + 7) / 8, arena);
+
+    bitwriter_add_hybrid_value(&writer, num_blocks, 8, arena);
+    bitwriter_add_value(&writer, lz->num_fixed_bits, 4, arena);
+
+    uint32_t i = 0;
+    while (i < lz->items.num) {
+        const lz_item_t *item = lz_item_array_view_at(lz->items, i);
+        uint32_t num = item->tally;
+
+        // Write number of things in this block
+        bitwriter_add_elias_gamma_value(&writer, num, arena);
+
+        if (token_is_literal(item->token)) {
+            for (uint32_t n = 0; n < num; n++, i++) {
+                item = lz_item_array_view_at(lz->items, i);
+                assert(token_is_literal(item->token));
+                bitwriter_add_aligned_byte(&writer, item->token.value, arena);
+            }
+        }
+        else {
+            for (uint32_t n = 0; n < num; n++, i++) {
+                item = lz_item_array_view_at(lz->items, i);
+                assert(!token_is_literal(item->token));
+                bitwriter_add_hybrid_value(&writer, item->token.offset - 1, lz->num_fixed_bits, arena);
+                bitwriter_add_elias_gamma_value(&writer, item->token.length_minus_one, arena);
+            }
+        }
+    }
+
+    return writer.data.view;
+}
+
+
+byte_array_view_t lz_deserialise(byte_array_view_t compressed, arena_t *arena) {
+    assert(arena);
+    byte_array_t buffer = byte_array_make(0x1000, arena);
+    bitreader_t reader = bitreader_make(compressed);
+
+    uint32_t num_blocks = bitreader_get_hybrid_value(&reader, 8);
+    uint32_t num_fixed_bits = bitreader_get_value(&reader, 4);
+
+    bool is_literal = true;
+    while (num_blocks--) {
+        uint32_t num_items = bitreader_get_elias_gamma_value(&reader);
+        if (is_literal) {
+            for (uint32_t n = 0; n < num_items; n++) {
+                byte_array_add(&buffer, bitreader_get_aligned_byte(&reader), arena);
+            }
+        }
+        else {
+            for (uint32_t n = 0; n < num_items; n++) {
+                uint32_t offset = bitreader_get_hybrid_value(&reader, num_fixed_bits) + 1;
+                uint32_t length = bitreader_get_elias_gamma_value(&reader) + 1;
+                for (uint32_t i = 0; i < length; i++) {
+                    byte_array_add(&buffer, byte_array_get(&buffer, buffer.num - offset), arena);
+                }
+            }
+        }
+        is_literal = !is_literal;
+    }
+
+    return buffer.view;
 }

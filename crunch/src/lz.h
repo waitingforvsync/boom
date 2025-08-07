@@ -2,6 +2,7 @@
 #define LZ_H_
 
 #include "arena.h"
+#include "byte_array.h"
 #include "refs.h"
 #include "token.h"
 
@@ -21,6 +22,8 @@ typedef struct lz_item_t {
 
 typedef struct lz_result_t {
     lz_item_array_view_t items;
+    uint32_t cost;
+    uint32_t num_fixed_bits;
 } lz_result_t;
 
 
@@ -30,6 +33,11 @@ lz_result_t lz_parse(
     arena_t *arena,
     arena_t scratch
 );
+
+
+byte_array_view_t lz_serialise(const lz_result_t *lz, arena_t *arena);
+
+byte_array_view_t lz_deserialise(byte_array_view_t compressed, arena_t *arena);
 
 
 #endif // ifndef LZ_H_
