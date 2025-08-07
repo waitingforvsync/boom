@@ -140,6 +140,9 @@ byte_array_view_t lz_deserialise(byte_array_view_t compressed, arena_t *arena) {
     bool is_literal = true;
     while (num_blocks--) {
         uint32_t num_items = bitreader_get_elias_gamma_value(&reader);
+        if (num_items == 0) {
+            num_items = 256;
+        }
         if (is_literal) {
             for (uint32_t n = 0; n < num_items; n++) {
                 byte_array_add(&buffer, bitreader_get_aligned_byte(&reader), arena);
@@ -148,7 +151,7 @@ byte_array_view_t lz_deserialise(byte_array_view_t compressed, arena_t *arena) {
         else {
             for (uint32_t n = 0; n < num_items; n++) {
                 uint32_t offset = bitreader_get_hybrid_value(&reader, num_fixed_bits) + 1;
-                uint32_t length = bitreader_get_elias_gamma_value(&reader) + 1;
+                uint32_t length = (uint32_t)bitreader_get_elias_gamma_value(&reader) + 1;
                 for (uint32_t i = 0; i < length; i++) {
                     byte_array_add(&buffer, byte_array_get(&buffer, buffer.num - offset), arena);
                 }
