@@ -1,0 +1,37 @@
+ORG &1900
+.start
+
+INCLUDE "decompress.6502"
+
+.entry
+    LDX #0
+    .vduloop
+    LDA vdus,X:JSR &FFEE
+    INX
+    CPX #vdus_end-vdus
+    BNE vduloop
+
+    LDA #LO(compressed_data):STA src
+    LDA #HI(compressed_data):STA src+1
+    LDA #LO(&5800):STA dest
+    LDA #HI(&5800):STA dest+1
+    JMP decompress
+
+.vdus
+    EQUB 22, 5
+    EQUB 19, 1, 4, 0, 0, 0
+    EQUB 19, 2, 1, 0, 0, 0
+    EQUB 19, 3, 3, 0, 0, 0
+    EQUB 31, 0, 27
+    EQUB 23, 0, 10, 32, 0, 0, 0, 0, 0, 0
+    .vdus_end
+
+.compressed_data
+    INCBIN "titlescreen_compressed.bin"
+
+SAVE "TEST", start, P%, entry
+
+
+ORG &5800
+INCBIN "titlescreen.bin"
+SAVE "SCREEN", &5800, P%

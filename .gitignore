@@ -3,3 +3,4 @@ src/doom.ssd
 src/doom.bin
 crunch/build/
 crunch/src/test/titlescreen.txt
+crunch/src/test/titlescreen_compressed.bin

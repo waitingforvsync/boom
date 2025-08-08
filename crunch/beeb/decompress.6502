@@ -1,0 +1,176 @@
+src = &70
+dest = &72
+bitstream = &74
+fixedbits = &75
+numblocks = &76
+temp = &78
+count = &79
+addr = &7A
+
+
+.getbit
+    \\ Gets one bit from the bitstream
+    \\ On entry:
+    \\   Y = src byte offset
+    \\ On exit:
+    \\   A preserved
+    \\   X preserved
+    \\   Y = next src byte offset
+    \\   C = bit
+    LSR bitstream
+    BNE samebyte
+
+    PHA
+    LDA (src),Y
+    ROR A
+    STA bitstream
+    PLA
+    INY
+    BNE samebyte
+    INC src+1
+.samebyte
+    RTS
+
+
+.getbits
+    \\ Gets a value composed of a specified number of bits from the bitstream
+    \\ Note: bits must be stored reversed (most significant bit first)
+    \\ On entry:
+    \\   X = number of bits
+    \\   Y = src byte offset
+    \\ On exit:
+    \\   A = value lsb
+    \\   X = 0
+    \\   Y = next src byte offset
+    \\   temp = value msb
+    \\   C = 0
+    LDA #0
+.getbitsloop
+    JSR getbit
+    ROL A
+    ROL temp
+    DEX
+    BNE getbitsloop
+    RTS
+
+
+.getgammavalue
+    \\ Gets an Elias Gamma value from the bitstream
+    \\ On entry:
+    \\   Y = src byte offset
+    \\ On exit:
+    \\   A = value lsb
+    \\   X = 0
+    \\   Y = next src byte offset
+    \\   temp = value msb
+    \\   C = 0
+    LDX #0
+    STX temp
+    DEX
+    LDA #1
+.getgammaloop
+    JSR getbit
+    INX
+    BCC getgammaloop
+    BNE getbitsloop
+    CLC
+    RTS
+
+
+.updatedest
+    TYA:BEQ incdesthi
+    CLC
+    ADC dest:STA dest
+    BCC updateddest
+.incdesthi
+    INC dest+1
+.updateddest
+    RTS
+
+
+.getcount
+    LDA numblocks:BNE skip
+    DEC numblocks+1:BPL skip
+    PLA:PLA:RTS
+    .skip
+    DEC numblocks
+
+    JSR getgammavalue
+    STA count
+    CMP #0
+    RTS
+
+
+.decompress
+    LDY #1
+    STY bitstream
+    DEY
+
+    JSR getgammavalue:SBC #0
+    LDX #8:JSR getbitsloop
+    STA numblocks
+    LDA temp
+    STA numblocks+1
+    
+    LDX #4:JSR getbits
+    STA fixedbits
+
+    JSR getcount
+
+.literal
+    CLC
+    TYA
+    ADC src
+    STA src
+    BCC updatedsrc
+    INC src+1
+    .updatedsrc
+
+    LDY #0
+.literalloop
+    LDA (src),Y
+    STA (dest),Y
+    INY
+    CPY count
+    BNE literalloop
+
+    LDA count:BNE not256 
+    INC src+1
+    .not256
+
+    JSR updatedest
+
+    JSR getcount
+    BEQ literal
+
+.reference
+    JSR getgammavalue:SBC #0
+    LDX fixedbits
+    JSR getbitsloop
+
+    EOR #255:ADC dest:STA addr
+    LDA dest+1:SBC temp:STA addr+1
+
+    JSR getgammavalue:STA temp
+    TYA:PHA
+
+    LDY #255
+.copyloop
+    INY
+    LDA (addr),Y
+    STA (dest),Y
+    CPY temp
+    BNE copyloop
+
+    INY:JSR updatedest
+    PLA:TAY
+
+    DEC count
+    BNE reference
+
+    JSR getcount
+    BEQ reference
+    BNE literal
+
+
+PRINT "Length of decompress: ", P%-decompress, "bytes"
