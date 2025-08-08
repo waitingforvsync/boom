@@ -2,7 +2,10 @@
 #include <stdio.h>
 
 
-file_read_result_t file_read(const char *filename, arena_t *arena) {
+file_read_result_t file_read_binary(const char *filename, arena_t *arena) {
+    assert(filename);
+    assert(arena);
+    
     FILE *file = fopen(filename, "rb");
     if (!file) {
         return (file_read_result_t) {
@@ -52,6 +55,23 @@ file_read_result_t file_read(const char *filename, arena_t *arena) {
 }
 
 
-file_error_t file_write(const char *filename, byte_array_view_t data) {
-    return (file_error_t) {file_error_write};
+file_error_t file_write_binary(const char *filename, byte_array_view_t data) {
+    assert(filename);
+    assert(data.data);
+
+    FILE *file = fopen(filename, "wb");
+    if (!file) {
+        return (file_error_t) {file_error_write};
+    }
+
+    size_t bytes_written = fwrite(data.data, 1, data.num, file);
+    if (bytes_written != data.num) {
+        return (file_error_t) {file_error_write};
+    }
+
+    if (fclose(file) != 0) {
+        return (file_error_t) {file_error_write};
+    }
+
+    return (file_error_t) {file_error_none};
 }

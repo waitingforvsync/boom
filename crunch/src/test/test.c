@@ -72,7 +72,7 @@ int test_lz_simple(void) {
         // Note the earlier 'ng' is ignored for being further away than another of the same length
     }
 
-    lz_result_t lz = lz_parse(&refs, 4, &arena, scratch);
+    lz_result_t lz = lz_parse(&refs, &arena, scratch);
 
     //  0123456789.123456789.123456789.12
     // "the cat sat on the mat singinging"
@@ -178,18 +178,23 @@ int test_lz_file(void) {
     arena_t arena = arena_make(0x800000);
     arena_t scratch = arena_make(0x800000);
 
-    file_read_result_t file_result = file_read("titlescreen.bin", &arena);
+    file_read_result_t file_result = file_read_binary("titlescreen.bin", &arena);
     TEST_REQUIRE_EQUAL(file_result.error.type, file_error_none);
     TEST_REQUIRE_EQUAL(file_result.contents.num, 8320);
 
     refs_t refs = refs_make(file_result.contents, &arena, scratch);
-    lz_result_t lz = lz_parse(&refs, 7, &arena, scratch);
+    lz_result_t lz = lz_parse(&refs, &arena, scratch);
+    lz_dump(&lz, "titlescreen.txt");
     byte_array_view_t compressed = lz_serialise(&lz, &arena);
     byte_array_view_t expanded = lz_deserialise(compressed, &arena);
     bool same = (memcmp(file_result.contents.data, expanded.data, file_result.contents.num) == 0);
     TEST_REQUIRE_TRUE(same);
 
-    printf("Compressed: %d / 8320 (%d%%)\n", compressed.num, compressed.num * 100 / file_result.contents.num);
+    printf("Compressed: %d / 8320 (%d%%), %d fixed bits\n",
+        compressed.num,
+        compressed.num * 100 / file_result.contents.num,
+        lz.num_fixed_bits
+    );
 
     arena_deinit(&scratch);
     arena_deinit(&arena);

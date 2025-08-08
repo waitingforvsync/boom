@@ -27,16 +27,16 @@ typedef struct lz_result_t {
 } lz_result_t;
 
 
-lz_result_t lz_parse(
-    const refs_t *refs,
-    uint32_t num_fixed_bits,
-    arena_t *arena,
-    arena_t scratch
-);
+// Perform an optimal lz parse
+lz_result_t lz_parse(const refs_t *refs, arena_t *arena, arena_t scratch);
 
+// Dump the lz result in a readable format
+void lz_dump(const lz_result_t *lz, const char *filename);
 
+// Serialise the lz result to a bitstream
 byte_array_view_t lz_serialise(const lz_result_t *lz, arena_t *arena);
 
+// Deserialise the compressed bitstream
 byte_array_view_t lz_deserialise(byte_array_view_t compressed, arena_t *arena);
 
 

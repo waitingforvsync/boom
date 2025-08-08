@@ -26,10 +26,10 @@ typedef struct file_read_result_t {
 
 
 // Read a binary file into a memory buffer allocated from the given arena
-file_read_result_t file_read(const char *filename, arena_t *arena);
+file_read_result_t file_read_binary(const char *filename, arena_t *arena);
 
 // Write a binary file from the given memory buffer
-file_error_t file_write(const char *filename, byte_array_view_t data);
+file_error_t file_write_binary(const char *filename, byte_array_view_t data);
 
 
 #endif // ifndef FILE_H_

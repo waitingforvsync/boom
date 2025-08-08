@@ -3,6 +3,7 @@
 #include "lz.h"
 #include "utils.h"
 #include <assert.h>
+#include <stdio.h>
 
 
 uint32_t get_elias_gamma_cost(uint32_t value) {
@@ -30,47 +31,64 @@ static uint32_t get_token_cost(token_t t, uint32_t num_fixed_bits) {
 }
 
 
-lz_result_t lz_parse(const refs_t *refs, uint32_t num_fixed_bits, arena_t *arena, arena_t scratch) {
-    // Make a list of optimal tokens for each source index
-    lz_item_array_span_t items = lz_item_array_span_make(refs_num(refs) + 1, &scratch);
+lz_result_t lz_parse(const refs_t *refs, arena_t *arena, arena_t scratch) {
+    lz_item_array_span_t items_array[9] = {0};
 
-    uint32_t max_offset = 256 << num_fixed_bits;
+    for (uint32_t num_fixed_bits = 0; num_fixed_bits < 9; num_fixed_bits++) {
+        // Make a list of optimal tokens for each source index
+        lz_item_array_span_t items = lz_item_array_span_make(refs_num(refs) + 1, &scratch);
+        items_array[num_fixed_bits] = items;
 
-    for (uint32_t i = refs_num(refs); i-- > 0;) {
-        lz_item_t *item = lz_item_array_span_at(items, i);
-        item->total_cost = UINT32_MAX;
+        uint32_t max_offset = 256 << num_fixed_bits;
 
-        token_array_view_t tokens = refs_get_tokens(refs, i);
+        for (uint32_t i = refs_num(refs); i-- > 0;) {
+            lz_item_t *item = lz_item_array_span_at(items, i);
+            item->total_cost = UINT32_MAX;
 
-        for (uint32_t j = 0; j < tokens.num; j++) {
-            token_t token = token_array_view_get(tokens, j);
+            token_array_view_t tokens = refs_get_tokens(refs, i);
 
-            if (token_is_literal(token) || token.offset <= max_offset) {
-                do {
-                    const lz_item_t *next_item = lz_item_array_span_at(items, i + token_get_length(token));
+            for (uint32_t j = 0; j < tokens.num; j++) {
+                token_t token = token_array_view_get(tokens, j);
 
-                    uint32_t tally = token_are_same_type(token, next_item->token) ?
-                        (next_item->tally % 256) + 1 :
-                        1;
+                if (token_is_literal(token) || token.offset <= max_offset) {
+                    do {
+                        const lz_item_t *next_item = lz_item_array_span_at(items, i + token_get_length(token));
 
-                    uint32_t cost = 
-                        get_token_cost(token, num_fixed_bits) +
-                        get_tally_cost(tally) +
-                        next_item->total_cost -
-                        ((tally != 1) ? get_tally_cost(next_item->tally) : 0);
-                    
-                    if (cost < item->total_cost) {
-                        item->token = token;
-                        item->total_cost = cost;
-                        item->tally = tally;
+                        uint32_t tally = token_are_same_type(token, next_item->token) ?
+                            (next_item->tally % 256) + 1 :
+                            1;
+
+                        uint32_t cost = 
+                            get_token_cost(token, num_fixed_bits) +
+                            get_tally_cost(tally) +
+                            next_item->total_cost -
+                            ((tally != 1) ? get_tally_cost(next_item->tally) : 0);
+                        
+                        if (cost < item->total_cost) {
+                            item->token = token;
+                            item->total_cost = cost;
+                            item->tally = tally;
+                        }
                     }
+                    while (token.length_minus_one-- > 1);
                 }
-                while (token.length_minus_one-- > 1);
             }
         }
     }
 
+    // Find the parse with the lowest cost
+    uint32_t best_cost = UINT32_MAX;
+    uint32_t best_bit_num = 0;
+    for (uint32_t num_fixed_bits = 0; num_fixed_bits < 9; num_fixed_bits++) {
+        uint32_t cost = lz_item_array_span_get(items_array[num_fixed_bits], 0).total_cost;
+        if (cost < best_cost) {
+            best_cost = cost;
+            best_bit_num = num_fixed_bits;
+        }
+    }
+
     // Now build the final token stream by walking the token list from the first element
+    lz_item_array_span_t items = items_array[best_bit_num];
     lz_item_array_t result = lz_item_array_make(refs_num(refs), arena);
     for (uint32_t i = 0; i < refs_num(refs); i += token_get_length(lz_item_array_span_get(items, i).token)) {
         lz_item_array_add(&result, lz_item_array_span_get(items, i), arena);
@@ -79,8 +97,64 @@ lz_result_t lz_parse(const refs_t *refs, uint32_t num_fixed_bits, arena_t *arena
     return (lz_result_t) {
         .items = result.view,
         .cost = lz_item_array_get(&result, 0).total_cost,
-        .num_fixed_bits = num_fixed_bits
+        .num_fixed_bits = best_bit_num
     };
+}
+
+
+static uint32_t lz_get_block_count(const lz_result_t *lz) {
+    uint32_t num_blocks = 0;
+    for (uint32_t i = 0; i < lz->items.num; i += lz_item_array_view_get(lz->items, i).tally) {
+        num_blocks++;
+    }
+    return num_blocks;
+}
+
+
+void lz_dump(const lz_result_t *lz, const char *filename) {
+    FILE *file = 0;
+    if (filename) {
+        file = fopen(filename, "w");
+    }
+    if (!file) {
+        file = stdout;
+    }
+
+    fprintf(file, "Block count: %d\n", lz_get_block_count(lz));
+    uint32_t i = 0;
+    uint32_t addr = 0;
+    while (i < lz->items.num) {
+        const lz_item_t *item = lz_item_array_view_at(lz->items, i);
+        uint32_t num = item->tally;
+
+        if (token_is_literal(item->token)) {
+            fprintf(file, "Literals: %d\n", num);
+            for (uint32_t n = 0; n < num; n += 16) {
+                fprintf(file, "  %04X:  ", addr);
+                for (uint32_t m = n; m < min_uint32(num, n + 16); m++, i++, addr++) {
+                    item = lz_item_array_view_at(lz->items, i);
+                    assert(token_is_literal(item->token));
+                    fprintf(file, "%02X ", item->token.value);
+                }
+                fprintf(file, "\n");
+            }
+        }
+        else {
+            fprintf(file, "References: %d\n", num);
+            for (uint32_t n = 0; n < num; n++, i++) {
+                item = lz_item_array_view_at(lz->items, i);
+                assert(!token_is_literal(item->token));
+                uint32_t offset = item->token.offset;
+                uint32_t length = item->token.length_minus_one + 1;
+                fprintf(file, "  %04X:  Ref %04X, length %-3u\n", addr, addr - offset, length);
+                addr += length;
+            }
+        }
+    }
+
+    if (file) {
+        fclose(file);
+    }
 }
 
 
@@ -88,12 +162,7 @@ byte_array_view_t lz_serialise(const lz_result_t *lz, arena_t *arena) {
     assert(lz);
     assert(arena);
 
-    // Count number of blocks
-    uint32_t num_blocks = 0;
-    for (uint32_t i = 0; i < lz->items.num; i += lz_item_array_view_get(lz->items, i).tally) {
-        num_blocks++;
-    }
-
+    uint32_t num_blocks = lz_get_block_count(lz);
     uint32_t num_bits = lz->cost + get_hybrid_cost(num_blocks, 8) + 4;
     bitwriter_t writer = bitwriter_make((num_bits + 7) / 8, arena);
 
