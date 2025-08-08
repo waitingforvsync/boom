@@ -1,4 +1,3 @@
-src = &70
 dest = &72
 bitstream = &74
 fixedbits = &75
@@ -10,58 +9,52 @@ addr = &7A
 
 .getbit
     \\ Gets one bit from the bitstream
-    \\ On entry:
-    \\   Y = src byte offset
     \\ On exit:
     \\   A preserved
     \\   X preserved
-    \\   Y = next src byte offset
+    \\   Y corrupted
     \\   C = bit
     LSR bitstream
     BNE samebyte
 
-    PHA
-    LDA (src),Y
-    ROR A
-    STA bitstream
-    PLA
-    INY
-    BNE samebyte
-    INC src+1
+compressed_src = P%+1
+    LDY &FFFF
+    INC compressed_src
+    BNE P%+5
+    INC compressed_src+1
+    STY bitstream
+    ROR bitstream
 .samebyte
     RTS
 
 
+.get8bits
+    LDX #8
 .getbits
     \\ Gets a value composed of a specified number of bits from the bitstream
     \\ Note: bits must be stored reversed (most significant bit first)
     \\ On entry:
     \\   X = number of bits
-    \\   Y = src byte offset
     \\ On exit:
     \\   A = value lsb
     \\   X = 0
-    \\   Y = next src byte offset
+    \\   Y corrupted
     \\   temp = value msb
     \\   C = 0
-    LDA #0
-.getbitsloop
     JSR getbit
     ROL A
     ROL temp
     DEX
-    BNE getbitsloop
+    BNE getbits
     RTS
 
 
 .getgammavalue
     \\ Gets an Elias Gamma value from the bitstream
-    \\ On entry:
-    \\   Y = src byte offset
     \\ On exit:
     \\   A = value lsb
     \\   X = 0
-    \\   Y = next src byte offset
+    \\   Y corrupted
     \\   temp = value msb
     \\   C = 0
     LDX #0
@@ -72,19 +65,8 @@ addr = &7A
     JSR getbit
     INX
     BCC getgammaloop
-    BNE getbitsloop
+    BNE getbits
     CLC
-    RTS
-
-
-.updatedest
-    TYA:BEQ incdesthi
-    CLC
-    ADC dest:STA dest
-    BCC updateddest
-.incdesthi
-    INC dest+1
-.updateddest
     RTS
 
 
@@ -102,43 +84,31 @@ addr = &7A
 
 
 .decompress
-    LDY #1
-    STY bitstream
-    DEY
+    LDA #1
+    STA bitstream
 
     JSR getgammavalue:SBC #0
-    LDX #8:JSR getbitsloop
+    JSR get8bits
     STA numblocks
     LDA temp
     STA numblocks+1
     
+    LDA #0
     LDX #4:JSR getbits
     STA fixedbits
 
+.decompressloop
     JSR getcount
+    BEQ reference
 
 .literal
-    CLC
-    TYA
-    ADC src
-    STA src
-    BCC updatedsrc
-    INC src+1
-    .updatedsrc
-
-    LDY #0
-.literalloop
-    LDA (src),Y
-    STA (dest),Y
-    INY
-    CPY count
-    BNE literalloop
-
-    LDA count:BNE not256 
-    INC src+1
-    .not256
-
-    JSR updatedest
+    JSR get8bits
+    LDY #0:STA (dest),Y
+    INC dest
+    BNE P%+4
+    INC dest+1
+    DEC count
+    BNE literal
 
     JSR getcount
     BEQ literal
@@ -146,13 +116,12 @@ addr = &7A
 .reference
     JSR getgammavalue:SBC #0
     LDX fixedbits
-    JSR getbitsloop
+    JSR getbits
 
     EOR #255:ADC dest:STA addr
     LDA dest+1:SBC temp:STA addr+1
 
     JSR getgammavalue:STA temp
-    TYA:PHA
 
     LDY #255
 .copyloop
@@ -162,15 +131,12 @@ addr = &7A
     CPY temp
     BNE copyloop
 
-    INY:JSR updatedest
-    PLA:TAY
+    LDA dest:ADC temp:STA dest  ; C set from the CPY above
+    BCC P%+4:INC dest+1
 
     DEC count
     BNE reference
-
-    JSR getcount
-    BEQ reference
-    BNE literal
+    BEQ decompressloop
 
 
 PRINT "Length of decompress: ", P%-decompress, "bytes"

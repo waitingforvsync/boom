@@ -181,7 +181,7 @@ byte_array_view_t lz_serialise(const lz_result_t *lz, arena_t *arena) {
             for (uint32_t n = 0; n < num; n++, i++) {
                 item = lz_item_array_view_at(lz->items, i);
                 assert(token_is_literal(item->token));
-                bitwriter_add_aligned_byte(&writer, item->token.value, arena);
+                bitwriter_add_value(&writer, item->token.value, 8, arena);
             }
         }
         else {
@@ -215,7 +215,7 @@ byte_array_view_t lz_deserialise(byte_array_view_t compressed, arena_t *arena) {
         }
         if (is_literal) {
             for (uint32_t n = 0; n < num_items; n++) {
-                byte_array_add(&buffer, bitreader_get_aligned_byte(&reader), arena);
+                byte_array_add(&buffer, bitreader_get_value(&reader, 8), arena);
             }
         }
         else {

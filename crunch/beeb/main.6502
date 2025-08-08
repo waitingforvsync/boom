@@ -11,8 +11,8 @@ INCLUDE "decompress.6502"
     CPX #vdus_end-vdus
     BNE vduloop
 
-    LDA #LO(compressed_data):STA src
-    LDA #HI(compressed_data):STA src+1
+    LDA #LO(compressed_data):STA compressed_src
+    LDA #HI(compressed_data):STA compressed_src+1
     LDA #LO(&5800):STA dest
     LDA #HI(&5800):STA dest+1
     JMP decompress

@@ -13,15 +13,15 @@
 #define VERSION "0.1"
 
 
-static void display_version(const char *executable_name) {
-    printf("%s " VERSION "\n", executable_name);
+static void display_version(void) {
+    puts("crunch " VERSION);
     puts("Developed and maintained by Rich Talbot-Watkins");
     puts("github.com/waitingforvsync/boom");
 }
 
 
-static void display_help(const char *executable_name) {
-    printf("Usage: %s [OPTIONS]... <input> <output>\n", executable_name);
+static void display_help(void) {
+    puts("Usage: crunch [OPTIONS]... <input> <output>");
     puts("A tool for compressing small binary files.");
     puts("");
     puts("Possible options:");
@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
 #endif
 
     if (argc == 1) {
-        display_help(argv[0]);
+        display_help();
         return 0;
     }
 
@@ -53,11 +53,11 @@ int main(int argc, char *argv[]) {
 
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--help") == 0) {
-            display_help(argv[0]);
+            display_help();
             return 0;
         }
         else if (strcmp(argv[i], "--version") == 0) {
-            display_version(argv[0]);
+            display_version();
             return 0;
         }
         else if (strcmp(argv[i], "--verify") == 0) {
