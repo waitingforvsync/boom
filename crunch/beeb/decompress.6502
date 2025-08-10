@@ -29,23 +29,23 @@ compressed_src = P%+1
 
 
 .get8bits
-    LDX #8
+    LDX #7
 .getbits
     \\ Gets a value composed of a specified number of bits from the bitstream
     \\ Note: bits must be stored reversed (most significant bit first)
     \\ On entry:
-    \\   X = number of bits
+    \\   X = number of bits minus 1
     \\ On exit:
     \\   A = value lsb
-    \\   X = 0
+    \\   X = &FF
     \\   Y corrupted
     \\   temp = value msb
-    \\   C = 0
+    \\   C undefined
     JSR getbit
     ROL A
     ROL temp
     DEX
-    BNE getbits
+    BPL getbits
     RTS
 
 
@@ -53,20 +53,32 @@ compressed_src = P%+1
     \\ Gets an Elias Gamma value from the bitstream
     \\ On exit:
     \\   A = value lsb
-    \\   X = 0
+    \\   X = &FF
     \\   Y corrupted
     \\   temp = value msb
-    \\   C = 0
-    LDX #0
-    STX temp
-    DEX
+    \\   C undefined
+    LDX #254
     LDA #1
 .getgammaloop
     JSR getbit
     INX
     BCC getgammaloop
-    BNE getbits
-    CLC
+    BPL getbits
+    RTS
+
+
+.gethybridvaluehi
+    \\ Gets the top bits of a hybrid (gamma+fixed bits) value from the bitstream
+    \\ Call LDX #fixedbits-1:JSR getbits afterwards.
+    \\ On exit:
+    \\   A = value
+    \\   X = &FF
+    \\   C = 1
+    LDA #0
+    STA temp
+    JSR getgammavalue
+    SEC
+    SBC #1
     RTS
 
 
@@ -83,18 +95,29 @@ compressed_src = P%+1
     RTS
 
 
+.updatedest
+    TYA
+    ADC dest
+    STA dest
+    BCC updatedest2
+    INC dest+1
+    .updatedest2
+    DEC count
+    RTS
+
+
 .decompress
     LDA #1
     STA bitstream
 
-    JSR getgammavalue:SBC #0
+    JSR gethybridvaluehi
     JSR get8bits
     STA numblocks
     LDA temp
     STA numblocks+1
     
     LDA #0
-    LDX #4:JSR getbits
+    LDX #2:JSR getbits
     STA fixedbits
 
 .decompressloop
@@ -104,24 +127,23 @@ compressed_src = P%+1
 .literal
     JSR get8bits
     LDY #0:STA (dest),Y
-    INC dest
-    BNE P%+4
-    INC dest+1
-    DEC count
+    SEC
+    JSR updatedest
     BNE literal
 
     JSR getcount
     BEQ literal
 
 .reference
-    JSR getgammavalue:SBC #0
+    JSR gethybridvaluehi
     LDX fixedbits
     JSR getbits
 
     EOR #255:ADC dest:STA addr
     LDA dest+1:SBC temp:STA addr+1
 
-    JSR getgammavalue:STA temp
+    JSR getgammavalue
+    STA temp
 
     LDY #255
 .copyloop
@@ -131,12 +153,9 @@ compressed_src = P%+1
     CPY temp
     BNE copyloop
 
-    LDA dest:ADC temp:STA dest  ; C set from the CPY above
-    BCC P%+4:INC dest+1
-
-    DEC count
+    JSR updatedest
     BNE reference
     BEQ decompressloop
 
 
-PRINT "Length of decompress: ", P%-decompress, "bytes"
+PRINT "Length of decompress: ", P%-getbit, "bytes"

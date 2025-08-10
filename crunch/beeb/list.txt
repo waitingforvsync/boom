@@ -11,147 +11,151 @@
 .samebyte
      1913   60         RTS
 .get8bits
-     1914   A2 08      LDX #&08
+     1914   A2 07      LDX #&07
 .getbits
      1916   20 00 19   JSR &1900
      1919   2A         ROL A
      191A   26 78      ROL &78
      191C   CA         DEX
-     191D   D0 F7      BNE &1916
+     191D   10 F7      BPL &1916
      191F   60         RTS
 .getgammavalue
-     1920   A2 00      LDX #&00
-     1922   86 78      STX &78
-     1924   CA         DEX
-     1925   A9 01      LDA #&01
+     1920   A2 FE      LDX #&FE
+     1922   A9 01      LDA #&01
 .getgammaloop
-     1927   20 00 19   JSR &1900
-     192A   E8         INX
-     192B   90 FA      BCC &1927
-     192D   D0 E7      BNE &1916
-     192F   18         CLC
-     1930   60         RTS
+     1924   20 00 19   JSR &1900
+     1927   E8         INX
+     1928   90 FA      BCC &1924
+     192A   10 EA      BPL &1916
+     192C   60         RTS
+.gethybridvaluehi
+     192D   A9 00      LDA #&00
+     192F   85 78      STA &78
+     1931   20 20 19   JSR &1920
+     1934   38         SEC
+     1935   E9 01      SBC #&01
+     1937   60         RTS
 .getcount
-     1931   A5 76      LDA &76
-     1933   D0 07      BNE &193C
-     1935   C6 77      DEC &77
-     1937   10 03      BPL &193C
-     1939   68         PLA
-     193A   68         PLA
-     193B   60         RTS
+     1938   A5 76      LDA &76
+     193A   D0 07      BNE &1943
+     193C   C6 77      DEC &77
+     193E   10 03      BPL &1943
+     1940   68         PLA
+     1941   68         PLA
+     1942   60         RTS
 .skip
-     193C   C6 76      DEC &76
-     193E   20 20 19   JSR &1920
-     1941   85 79      STA &79
-     1943   C9 00      CMP #&00
-     1945   60         RTS
+     1943   C6 76      DEC &76
+     1945   20 20 19   JSR &1920
+     1948   85 79      STA &79
+     194A   C9 00      CMP #&00
+     194C   60         RTS
+.updatedest
+     194D   98         TYA
+     194E   65 72      ADC &72
+     1950   85 72      STA &72
+     1952   90 02      BCC &1956
+     1954   E6 73      INC &73
+.updatedest2
+     1956   C6 79      DEC &79
+     1958   60         RTS
 .decompress
-     1946   A9 01      LDA #&01
-     1948   85 74      STA &74
-     194A   20 20 19   JSR &1920
-     194D   E9 00      SBC #&00
-     194F   20 14 19   JSR &1914
-     1952   85 76      STA &76
-     1954   A5 78      LDA &78
-     1956   85 77      STA &77
-     1958   A9 00      LDA #&00
-     195A   A2 04      LDX #&04
-     195C   20 16 19   JSR &1916
-     195F   85 75      STA &75
+     1959   A9 01      LDA #&01
+     195B   85 74      STA &74
+     195D   20 2D 19   JSR &192D
+     1960   20 14 19   JSR &1914
+     1963   85 76      STA &76
+     1965   A5 78      LDA &78
+     1967   85 77      STA &77
+     1969   A9 00      LDA #&00
+     196B   A2 02      LDX #&02
+     196D   20 16 19   JSR &1916
+     1970   85 75      STA &75
 .decompressloop
-     1961   20 31 19   JSR &1931
-     1964   F0 16      BEQ &197C
+     1972   20 38 19   JSR &1938
+     1975   F0 12      BEQ &1989
 .literal
-     1966   20 14 19   JSR &1914
-     1969   A0 00      LDY #&00
-     196B   91 72      STA (&72),Y
-     196D   E6 72      INC &72
-     196F   D0 02      BNE &1973
-     1971   E6 73      INC &73
-     1973   C6 79      DEC &79
-     1975   D0 EF      BNE &1966
-     1977   20 31 19   JSR &1931
-     197A   F0 EA      BEQ &1966
+     1977   20 14 19   JSR &1914
+     197A   A0 00      LDY #&00
+     197C   91 72      STA (&72),Y
+     197E   38         SEC
+     197F   20 4D 19   JSR &194D
+     1982   D0 F3      BNE &1977
+     1984   20 38 19   JSR &1938
+     1987   F0 EE      BEQ &1977
 .reference
-     197C   20 20 19   JSR &1920
-     197F   E9 00      SBC #&00
-     1981   A6 75      LDX &75
-     1983   20 16 19   JSR &1916
-     1986   49 FF      EOR #&FF
-     1988   65 72      ADC &72
-     198A   85 7A      STA &7A
-     198C   A5 73      LDA &73
-     198E   E5 78      SBC &78
-     1990   85 7B      STA &7B
-     1992   20 20 19   JSR &1920
-     1995   85 78      STA &78
-     1997   A0 FF      LDY #&FF
+     1989   20 2D 19   JSR &192D
+     198C   A6 75      LDX &75
+     198E   20 16 19   JSR &1916
+     1991   49 FF      EOR #&FF
+     1993   65 72      ADC &72
+     1995   85 7A      STA &7A
+     1997   A5 73      LDA &73
+     1999   E5 78      SBC &78
+     199B   85 7B      STA &7B
+     199D   20 20 19   JSR &1920
+     19A0   85 78      STA &78
+     19A2   A0 FF      LDY #&FF
 .copyloop
-     1999   C8         INY
-     199A   B1 7A      LDA (&7A),Y
-     199C   91 72      STA (&72),Y
-     199E   C4 78      CPY &78
-     19A0   D0 F7      BNE &1999
-     19A2   A5 72      LDA &72
-     19A4   65 78      ADC &78
-     19A6   85 72      STA &72
-     19A8   90 02      BCC &19AC
-     19AA   E6 73      INC &73
-     19AC   C6 79      DEC &79
-     19AE   D0 CC      BNE &197C
-     19B0   F0 AF      BEQ &1961
-Length of decompress:  108 bytes 
+     19A4   C8         INY
+     19A5   B1 7A      LDA (&7A),Y
+     19A7   91 72      STA (&72),Y
+     19A9   C4 78      CPY &78
+     19AB   D0 F7      BNE &19A4
+     19AD   20 4D 19   JSR &194D
+     19B0   D0 D7      BNE &1989
+     19B2   F0 BE      BEQ &1972
+Length of decompress:  180 bytes 
 .entry
-     19B2   A2 00      LDX #&00
+     19B4   A2 00      LDX #&00
 .vduloop
-     19B4   BD D4 19   LDA &19D4,X
-     19B7   20 EE FF   JSR &FFEE
-     19BA   E8         INX
-     19BB   E0 21      CPX #&21
-     19BD   D0 F5      BNE &19B4
-     19BF   A9 F5      LDA #&F5
-     19C1   8D 05 19   STA &1905
-     19C4   A9 19      LDA #&19
-     19C6   8D 06 19   STA &1906
-     19C9   A9 00      LDA #&00
-     19CB   85 72      STA &72
-     19CD   A9 58      LDA #&58
-     19CF   85 73      STA &73
-     19D1   4C 46 19   JMP &1946
+     19B6   BD D6 19   LDA &19D6,X
+     19B9   20 EE FF   JSR &FFEE
+     19BC   E8         INX
+     19BD   E0 21      CPX #&21
+     19BF   D0 F5      BNE &19B6
+     19C1   A9 F7      LDA #&F7
+     19C3   8D 05 19   STA &1905
+     19C6   A9 19      LDA #&19
+     19C8   8D 06 19   STA &1906
+     19CB   A9 00      LDA #&00
+     19CD   85 72      STA &72
+     19CF   A9 58      LDA #&58
+     19D1   85 73      STA &73
+     19D3   4C 59 19   JMP &1959
 .vdus
-     19D4   16
-     19D5   05
-     19D6   13
-     19D7   01
-     19D8   04
-     19D9   00
-     19DA   00
+     19D6   16
+     19D7   05
+     19D8   13
+     19D9   01
+     19DA   04
      19DB   00
-     19DC   13
-     19DD   02
-     19DE   01
-     19DF   00
-     19E0   00
+     19DC   00
+     19DD   00
+     19DE   13
+     19DF   02
+     19E0   01
      19E1   00
-     19E2   13
-     19E3   03
-     19E4   03
-     19E5   00
-     19E6   00
+     19E2   00
+     19E3   00
+     19E4   13
+     19E5   03
+     19E6   03
      19E7   00
-     19E8   1F
+     19E8   00
      19E9   00
-     19EA   1B
-     19EB   17
-     19EC   00
-     19ED   0A
-     19EE   20
-     19EF   00
-     19F0   00
+     19EA   1F
+     19EB   00
+     19EC   1B
+     19ED   17
+     19EE   00
+     19EF   0A
+     19F0   20
      19F1   00
      19F2   00
      19F3   00
      19F4   00
+     19F5   00
+     19F6   00
 .vdus_end
 .compressed_data
 Saving file 'TEST'

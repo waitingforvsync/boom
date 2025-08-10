@@ -6,13 +6,13 @@
 #include <stdio.h>
 
 
-uint32_t get_elias_gamma_cost(uint32_t value) {
+static uint32_t get_elias_gamma_cost(uint32_t value) {
     assert(value > 0 && value <= 256);  // 256 will be read as 0
     return get_bit_width(value) * 2 - 1;
 }
 
 
-uint32_t get_hybrid_cost(uint32_t value, uint32_t num_fixed_bits) {
+static uint32_t get_hybrid_cost(uint32_t value, uint32_t num_fixed_bits) {
     return get_elias_gamma_cost((value >> num_fixed_bits) + 1) + num_fixed_bits;
 }
 
@@ -32,12 +32,14 @@ static uint32_t get_token_cost(token_t t, uint32_t num_fixed_bits) {
 
 
 lz_result_t lz_parse(const refs_t *refs, arena_t *arena, arena_t scratch) {
-    lz_item_array_span_t items_array[9] = {0};
+    lz_item_array_span_t items_array[8] = {0};
 
-    for (uint32_t num_fixed_bits = 0; num_fixed_bits < 9; num_fixed_bits++) {
+    for (uint32_t n = 0; n < 8; n++) {
+        uint32_t num_fixed_bits = n + 1;
+
         // Make a list of optimal tokens for each source index
         lz_item_array_span_t items = lz_item_array_span_make(refs_num(refs) + 1, &scratch);
-        items_array[num_fixed_bits] = items;
+        items_array[n] = items;
 
         uint32_t max_offset = 256 << num_fixed_bits;
 
@@ -78,17 +80,17 @@ lz_result_t lz_parse(const refs_t *refs, arena_t *arena, arena_t scratch) {
 
     // Find the parse with the lowest cost
     uint32_t best_cost = UINT32_MAX;
-    uint32_t best_bit_num = 0;
-    for (uint32_t num_fixed_bits = 0; num_fixed_bits < 9; num_fixed_bits++) {
-        uint32_t cost = lz_item_array_span_get(items_array[num_fixed_bits], 0).total_cost;
+    uint32_t best_n = 0;
+    for (uint32_t n = 0; n < 8; n++) {
+        uint32_t cost = lz_item_array_span_get(items_array[n], 0).total_cost;
         if (cost < best_cost) {
             best_cost = cost;
-            best_bit_num = num_fixed_bits;
+            best_n = n;
         }
     }
 
     // Now build the final token stream by walking the token list from the first element
-    lz_item_array_span_t items = items_array[best_bit_num];
+    lz_item_array_span_t items = items_array[best_n];
     lz_item_array_t result = lz_item_array_make(refs_num(refs), arena);
     for (uint32_t i = 0; i < refs_num(refs); i += token_get_length(lz_item_array_span_get(items, i).token)) {
         lz_item_array_add(&result, lz_item_array_span_get(items, i), arena);
@@ -97,7 +99,7 @@ lz_result_t lz_parse(const refs_t *refs, arena_t *arena, arena_t scratch) {
     return (lz_result_t) {
         .items = result.view,
         .cost = lz_item_array_get(&result, 0).total_cost,
-        .num_fixed_bits = best_bit_num
+        .num_fixed_bits = best_n + 1
     };
 }
 
@@ -167,7 +169,7 @@ byte_array_view_t lz_serialise(const lz_result_t *lz, arena_t *arena) {
     bitwriter_t writer = bitwriter_make((num_bits + 7) / 8, arena);
 
     bitwriter_add_hybrid_value(&writer, num_blocks, 8, arena);
-    bitwriter_add_value(&writer, lz->num_fixed_bits, 4, arena);
+    bitwriter_add_value(&writer, lz->num_fixed_bits - 1, 3, arena);
 
     uint32_t i = 0;
     while (i < lz->items.num) {
@@ -204,7 +206,7 @@ byte_array_view_t lz_deserialise(byte_array_view_t compressed, arena_t *arena) {
     bitreader_t reader = bitreader_make(compressed);
 
     uint32_t num_blocks = bitreader_get_hybrid_value(&reader, 8);
-    uint32_t num_fixed_bits = bitreader_get_value(&reader, 4);
+    uint32_t num_fixed_bits = bitreader_get_value(&reader, 3) + 1;
 
     bool is_literal = true;
     while (num_blocks--) {
