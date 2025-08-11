@@ -1,4 +1,4 @@
-target_sources("crunch" PRIVATE
+target_sources("richcrunch" PRIVATE
     "test.h"
     "test.c"
 )
