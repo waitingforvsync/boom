@@ -1,10 +1,10 @@
+addr = &70
 dest = &72
 bitstream = &74
 fixedbits = &75
 numblocks = &76
 temp = &78
 count = &79
-addr = &7A
 
 
 .getbit

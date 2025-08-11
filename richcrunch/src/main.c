@@ -14,14 +14,14 @@
 
 
 static void display_version(void) {
-    puts("crunch " VERSION);
+    puts("richcrunch " VERSION);
     puts("Developed and maintained by Rich Talbot-Watkins");
-    puts("github.com/waitingforvsync/boom");
+    puts("github.com/waitingforvsync/richcrunch");
 }
 
 
 static void display_help(void) {
-    puts("Usage: crunch [OPTIONS]... <input> <output>");
+    puts("Usage: richcrunch [OPTIONS]... <input> <output>");
     puts("A tool for compressing small binary files.");
     puts("");
     puts("Possible options:");
