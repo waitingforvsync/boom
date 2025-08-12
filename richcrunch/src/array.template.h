@@ -8,9 +8,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-// Template for concatenating multiple macros 
+#define SPAN(a) {.data = a, .num = sizeof a / sizeof *a}
+#define VIEW(a) {.data = a, .num = sizeof a / sizeof *a}
+
+// Macros for concatenating multiple macros
+#ifndef CONCAT
 #define CONCAT(a, b) CONCAT2_(a, b)
 #define CONCAT2_(a, b) a##b
+#endif
 
 #endif // ifndef ARRAY_TEMPLATE_H_
 
@@ -36,6 +41,7 @@
 
 #define ARRAY_NAME_span_t              CONCAT(TEMPLATE_ARRAY_NAME, _span_t)
 #define ARRAY_NAME_span_make           CONCAT(TEMPLATE_ARRAY_NAME, _span_make)
+#define ARRAY_NAME_span_make_subspan   CONCAT(TEMPLATE_ARRAY_NAME, _span_make_subspan)
 #define ARRAY_NAME_span_get            CONCAT(TEMPLATE_ARRAY_NAME, _span_get)
 #define ARRAY_NAME_span_set            CONCAT(TEMPLATE_ARRAY_NAME, _span_set)
 #define ARRAY_NAME_span_at             CONCAT(TEMPLATE_ARRAY_NAME, _span_at)
@@ -132,6 +138,17 @@ static inline ARRAY_NAME_span_t ARRAY_NAME_span_make(uint32_t num, arena_t *aren
     return (ARRAY_NAME_span_t) {
         .data = arena_calloc(arena, num * sizeof(ARRAY_TYPE_t)),
         .num = num,
+    };
+}
+
+static inline ARRAY_NAME_span_t ARRAY_NAME_span_make_subspan(ARRAY_NAME_span_t span, uint32_t start, uint32_t end) {
+    assert(span.data);
+    assert(start <= span.num);
+    assert(end <= span.num);
+    assert(start <= end);
+    return (ARRAY_NAME_span_t) {
+        .data = span.data + start,
+        .num = end - start
     };
 }
 
@@ -240,6 +257,7 @@ static inline uint32_t ARRAY_NAME_add(ARRAY_NAME_t *array, ARRAY_TYPE_t value, a
 #undef ARRAY_NAME_view_at
 #undef ARRAY_NAME_span_t
 #undef ARRAY_NAME_span_make
+#undef ARRAY_NAME_span_make_subspan
 #undef ARRAY_NAME_span_get
 #undef ARRAY_NAME_span_set
 #undef ARRAY_NAME_span_at

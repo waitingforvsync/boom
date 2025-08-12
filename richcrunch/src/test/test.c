@@ -239,8 +239,38 @@ int test_bitstream(void) {
 }
 
 
+#define TEMPLATE_ARRAY_NAME uint32_array
+#define TEMPLATE_ARRAY_TYPE uint32_t
+#include "array.template.h"
+
+#define TEMPLATE_SORT_NAME uint32
+#include "sort.template.h"
+
+int test_sort(void) {
+    uint32_t data[1000];
+    uint32_array_span_t span = SPAN(data);
+
+    uint32_t val = 372621;
+    for (uint32_t i = 0; i < span.num; i++) {
+        uint32_array_span_set(span, i, val);
+        val = (val * 100009 + 12356237);
+    }
+    
+    sort_uint32(span);
+
+    bool is_sorted = true;
+    for (uint32_t i = 1; is_sorted && i < span.num; i++) {
+        is_sorted &= (uint32_array_span_get(span, i - 1) < uint32_array_span_get(span, i));
+    }
+    TEST_REQUIRE_TRUE(is_sorted);
+
+    return 0;
+}
+
+
 int test_run(void) {
     return test_lz_simple()
         || test_lz_file()
-        || test_bitstream();
+        || test_bitstream()
+        || test_sort();
 }

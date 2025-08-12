@@ -1,23 +1,24 @@
 #ifndef HUFFMAN_H_
 #define HUFFMAN_H_
 
+#include "arena.h"
 #include <stdint.h>
 
 
-typedef struct huffman_code_t {
+typedef struct huffman_symbol_t {
     uint32_t code;
     uint8_t length;
-} huffman_code_t;
+} huffman_symbol_t;
 
 
-#define TEMPLATE_ARRAY_NAME huffman_code_array
-#define TEMPLATE_ARRAY_TYPE huffman_code_t
+#define TEMPLATE_ARRAY_NAME huffman_symbol_array
+#define TEMPLATE_ARRAY_TYPE huffman_symbol_t
 #include "array.template.h"
 
 
-typedef struct huffman_tree_t {
-    huffman_code_array_view_t codes;
-} huffman_tree_t;
+typedef struct huffman_code_t {
+    huffman_symbol_array_view_t symbols;
+} huffman_code_t;
 
 
 #define TEMPLATE_ARRAY_NAME huffman_freq
@@ -26,7 +27,7 @@ typedef struct huffman_tree_t {
 
 
 // Build a huffman encoding, mapping symbol id to a huffman code
-huffman_tree_t huffman_tree_make(huffman_freq_view_t freqs, uint32_t max_code_length);
+huffman_code_t huffman_code_make(huffman_freq_view_t freqs, uint32_t max_code_length, arena_t *arena, arena_t scratch);
 
 
 #endif // ifndef HUFFMAN_H_
