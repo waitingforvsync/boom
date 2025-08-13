@@ -2,6 +2,8 @@
 #define HUFFMAN_H_
 
 #include "arena.h"
+#include "byte_array.h"
+#include "uint16_array.h"
 #include <stdint.h>
 
 
@@ -17,17 +19,12 @@ typedef struct huffman_symbol_t {
 
 
 typedef struct huffman_code_t {
-    huffman_symbol_array_view_t symbols;
+    byte_array_view_t symbol_lengths;
 } huffman_code_t;
 
 
-#define TEMPLATE_ARRAY_NAME huffman_freq
-#define TEMPLATE_ARRAY_TYPE uint16_t
-#include "array.template.h"
-
-
 // Build a huffman encoding, mapping symbol id to a huffman code
-huffman_code_t huffman_code_make(huffman_freq_view_t freqs, uint32_t max_code_length, arena_t *arena, arena_t scratch);
+huffman_code_t huffman_code_make(uint16_array_view_t freqs, uint32_t max_code_length, arena_t *arena, arena_t scratch);
 
 
 #endif // ifndef HUFFMAN_H_

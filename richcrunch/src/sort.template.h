@@ -86,19 +86,22 @@ static inline void SORT_NAME_partial_quicksort(SORT_SPAN_t span) {
         uint32_t lt = 0;
         uint32_t gt = span.num;
 
-        for (uint32_t i = 0; i < gt; i++) {
+        for (uint32_t i = 0; i < gt; ) {
             if (SORT_less_fn(SORT_SPAN_at(span, i), SORT_SPAN_at(span, pivot_index))) {
                 pivot_index = SORT_NAME_swap_update_pivot(span, i, lt, pivot_index);
                 lt++;
+                i++;
             }
             else if (SORT_less_fn(SORT_SPAN_at(span, pivot_index), SORT_SPAN_at(span, i))) {
                 pivot_index = SORT_NAME_swap_update_pivot(span, i, gt - 1, pivot_index);
                 gt--;
-                i--;    // need to examine the same i next iteration
+            }
+            else {
+                i++;
             }
         }
 
-        // Recurse the smallest of the "less than" or "greater than" partition.
+        // Recurse the smallest of the "less than" or "greater than" partition, and iterate the largest.
         // Leave the "equal to" part as it's already sorted
         if (lt < span.num - gt) {
             SORT_NAME_partial_quicksort(SORT_SPAN_make_subspan(span, 0, lt));

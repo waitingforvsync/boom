@@ -56,6 +56,7 @@
 #define ARRAY_NAME_resize              CONCAT(TEMPLATE_ARRAY_NAME, _resize)
 #define ARRAY_NAME_grow                CONCAT(TEMPLATE_ARRAY_NAME, _grow)
 #define ARRAY_NAME_add                 CONCAT(TEMPLATE_ARRAY_NAME, _add)
+#define ARRAY_NAME_add_uninitialised   CONCAT(TEMPLATE_ARRAY_NAME, _add_uninitialised)
 
 
 // Define array_view type:
@@ -246,6 +247,12 @@ static inline uint32_t ARRAY_NAME_add(ARRAY_NAME_t *array, ARRAY_TYPE_t value, a
     return array->num++;
 }
 
+static inline ARRAY_TYPE_t *ARRAY_NAME_add_uninitialised(ARRAY_NAME_t *array, arena_t *arena) {
+    assert(array);
+    ARRAY_NAME_grow(array, array->num + 1, arena);
+    return array->data + array->num++;
+}
+
 
 // Undefine everything
 
@@ -271,6 +278,7 @@ static inline uint32_t ARRAY_NAME_add(ARRAY_NAME_t *array, ARRAY_TYPE_t value, a
 #undef ARRAY_NAME_resize
 #undef ARRAY_NAME_grow
 #undef ARRAY_NAME_add
+#undef ARRAY_NAME_add_uninitialised
 
 #undef TEMPLATE_ARRAY_NAME
 #undef TEMPLATE_ARRAY_TYPE

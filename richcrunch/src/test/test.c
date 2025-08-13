@@ -3,6 +3,7 @@
 #include "bitwriter.h"
 #include "byte_array.h"
 #include "file.h"
+#include "huffman.h"
 #include "lz.h"
 #include "refs.h"
 #include "test.h"
@@ -252,7 +253,7 @@ int test_sort(void) {
 
     uint32_t val = 372621;
     for (uint32_t i = 0; i < span.num; i++) {
-        uint32_array_span_set(span, i, val % 32);
+        uint32_array_span_set(span, i, val % 256);
         val = (val * 100009 + 12356237);
     }
     
@@ -268,9 +269,70 @@ int test_sort(void) {
 }
 
 
+int test_huffman(void) {
+    arena_t arena = arena_make(0x800000);
+    arena_t scratch = arena_make(0x800000);
+
+    byte_array_view_t src = {
+        .data = (const uint8_t *)"the cat sat on the mat",
+        .num = sizeof("the cat sat on the mat") - 1
+    };
+
+    // Symbol frequencies:
+    //  ' ' = 5
+    //  't' = 5
+    //  'a' = 3
+    //  'e' = 2
+    //  'h' = 2
+    //  'c' = 1
+    //  'm' = 1
+    //  'n' = 1
+    //  'o' = 1
+    //  's' = 1
+
+    // When building the Huffman tree, if we prioritise leaf nodes over tree nodes of the same frequency,
+    // we get a more balanced tree (left) compared to prioritising tree nodes (right).
+    // The more balanced tree is preferable, and is what we are expecting.
+    //  ' ' = 00                ' ' = 00
+    //  't' = 01                't' = 01
+    //  'a' = 100               'a' = 100
+    //  'e' = 1010              'h' = 101
+    //  'h' = 1011              'e' = 1100
+    //  'n' = 1100              's' = 1101
+    //  'o' = 1101              'c' = 11100
+    //  's' = 1110              'm' = 11101
+    //  'c' = 11110             'n' = 11110
+    //  'm' = 11111             'o' = 11111
+
+    uint16_t freqs[256] = {0};
+    for (uint32_t i = 0; i < src.num; i++) {
+        freqs[byte_array_view_get(src, i)]++;
+    }
+
+    huffman_code_t huff = huffman_code_make((uint16_array_view_t) VIEW(freqs), 15, &arena, scratch);
+    TEST_REQUIRE_EQUAL(byte_array_view_get(huff.symbol_lengths, ' '), 2);
+    TEST_REQUIRE_EQUAL(byte_array_view_get(huff.symbol_lengths, 't'), 2);
+    TEST_REQUIRE_EQUAL(byte_array_view_get(huff.symbol_lengths, 'a'), 3);
+    TEST_REQUIRE_EQUAL(byte_array_view_get(huff.symbol_lengths, 'e'), 4);
+    TEST_REQUIRE_EQUAL(byte_array_view_get(huff.symbol_lengths, 'h'), 4);
+    TEST_REQUIRE_EQUAL(byte_array_view_get(huff.symbol_lengths, 'n'), 4);
+    TEST_REQUIRE_EQUAL(byte_array_view_get(huff.symbol_lengths, 'o'), 4);
+    TEST_REQUIRE_EQUAL(byte_array_view_get(huff.symbol_lengths, 's'), 4);
+    TEST_REQUIRE_EQUAL(byte_array_view_get(huff.symbol_lengths, 'c'), 5);
+    TEST_REQUIRE_EQUAL(byte_array_view_get(huff.symbol_lengths, 'm'), 5);
+    TEST_REQUIRE_EQUAL(byte_array_view_get(huff.symbol_lengths, 'x'), 0);
+
+    arena_deinit(&scratch);
+    arena_deinit(&arena);
+
+    return 0;
+}
+
+
 int test_run(void) {
     return test_lz_simple()
         || test_lz_file()
         || test_bitstream()
-        || test_sort();
+        || test_sort()
+        || test_huffman();
 }
