@@ -12,13 +12,13 @@ typedef struct huffman_node_t {
 #include "array.template.h"
 
 
-static bool huffman_node_compare(const huffman_node_t *a, const huffman_node_t *b) {
+static bool huffman_node_compare_freq(const huffman_node_t *a, const huffman_node_t *b) {
     return a->frequency < b->frequency;
 }
 
 
 #define TEMPLATE_SORT_NAME huffman_node
-#define TEMPLATE_SORT_LESS_FN huffman_node_compare
+#define TEMPLATE_SORT_LESS_FN huffman_node_compare_freq
 #include "sort.template.h"
 
 

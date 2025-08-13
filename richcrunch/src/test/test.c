@@ -252,7 +252,7 @@ int test_sort(void) {
 
     uint32_t val = 372621;
     for (uint32_t i = 0; i < span.num; i++) {
-        uint32_array_span_set(span, i, val);
+        uint32_array_span_set(span, i, val % 32);
         val = (val * 100009 + 12356237);
     }
     
@@ -260,7 +260,7 @@ int test_sort(void) {
 
     bool is_sorted = true;
     for (uint32_t i = 1; is_sorted && i < span.num; i++) {
-        is_sorted &= (uint32_array_span_get(span, i - 1) < uint32_array_span_get(span, i));
+        is_sorted &= (uint32_array_span_get(span, i - 1) <= uint32_array_span_get(span, i));
     }
     TEST_REQUIRE_TRUE(is_sorted);
 

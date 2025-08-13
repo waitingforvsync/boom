@@ -40,7 +40,7 @@
 #define SORT_NAME_insertion             CONCAT(SORT_NAME, _insertion)
 #define SORT_NAME_swap                  CONCAT(SORT_NAME, _swap)
 #define SORT_NAME_median_of_three       CONCAT(SORT_NAME, _median_of_three)
-#define SORT_NAME_less_or_equal         CONCAT(SORT_NAME, _less_or_equal)
+#define SORT_NAME_swap_update_pivot     CONCAT(SORT_NAME, _swap_update_pivot)
 
 #ifndef TEMPLATE_SORT_LESS_FN
 #define TEMPLATE_SORT_LESS_FN CONCAT(SORT_NAME, _default_less)
@@ -60,9 +60,9 @@ static inline void SORT_NAME_swap(SORT_TYPE_t *a, SORT_TYPE_t *b) {
 
 
 static inline uint32_t SORT_NAME_median_of_three(SORT_SPAN_t span, uint32_t i, uint32_t j, uint32_t k) {
-    SORT_TYPE_t *elem_i = SORT_SPAN_at(span, i);
-    SORT_TYPE_t *elem_j = SORT_SPAN_at(span, j);
-    SORT_TYPE_t *elem_k = SORT_SPAN_at(span, k);
+    const SORT_TYPE_t *elem_i = SORT_SPAN_at(span, i);
+    const SORT_TYPE_t *elem_j = SORT_SPAN_at(span, j);
+    const SORT_TYPE_t *elem_k = SORT_SPAN_at(span, k);
 
     return SORT_less_fn(elem_i, elem_j) ?
         (SORT_less_fn(elem_j, elem_k) ? j : (SORT_less_fn(elem_i, elem_k) ? k : i)) :
@@ -70,36 +70,43 @@ static inline uint32_t SORT_NAME_median_of_three(SORT_SPAN_t span, uint32_t i, u
 }
 
 
-static inline bool SORT_NAME_less_or_equal(const SORT_TYPE_t *a, const SORT_TYPE_t *b) {
-    return SORT_less_fn(a, b) || !SORT_less_fn(b, a);
+static inline uint32_t SORT_NAME_swap_update_pivot(SORT_SPAN_t span, uint32_t i, uint32_t j, uint32_t pivot) {
+    SORT_NAME_swap(SORT_SPAN_at(span, i), SORT_SPAN_at(span, j));
+    return (pivot == i) ? j : (pivot == j) ? i : pivot;
 }
 
 
 static inline void SORT_NAME_partial_quicksort(SORT_SPAN_t span) {
-    while (span.num > 16) {     // threshold for performing insertion sort on a partition
-        uint32_t mid_index = span.num / 2;
-        uint32_t pivot_index = SORT_NAME_median_of_three(span, 0, mid_index, span.num - 1);
-        SORT_TYPE_t *pivot_elem = SORT_SPAN_at(span, pivot_index);
-        SORT_NAME_swap(pivot_elem, SORT_SPAN_at(span, span.num - 1));
+     // threshold for performing insertion sort on a partition
+    while (span.num > 16) {
+        // Use median of three to find a pivot value: aim is to find the "middlest" value in the span
+        uint32_t pivot_index = SORT_NAME_median_of_three(span, 0, span.num / 2, span.num - 1);
 
-        // Hoare partition
-        uint32_t i = 0;
-        uint32_t j = span.num - 1;
-        while (i < j) {
-            while (i < j && SORT_NAME_less_or_equal(SORT_SPAN_at(span, i), pivot_elem)) i++;
-            while (i < j && SORT_NAME_less_or_equal(pivot_elem, SORT_SPAN_at(span, j))) j--;
-            if (i < j) SORT_NAME_swap(SORT_SPAN_at(span, i), SORT_SPAN_at(span, j));
+        // Partition into three parts: less than pivot, equal to pivot, greater than pivot
+        uint32_t lt = 0;
+        uint32_t gt = span.num;
+
+        for (uint32_t i = 0; i < gt; i++) {
+            if (SORT_less_fn(SORT_SPAN_at(span, i), SORT_SPAN_at(span, pivot_index))) {
+                pivot_index = SORT_NAME_swap_update_pivot(span, i, lt, pivot_index);
+                lt++;
+            }
+            else if (SORT_less_fn(SORT_SPAN_at(span, pivot_index), SORT_SPAN_at(span, i))) {
+                pivot_index = SORT_NAME_swap_update_pivot(span, i, gt - 1, pivot_index);
+                gt--;
+                i--;    // need to examine the same i next iteration
+            }
         }
-        SORT_NAME_swap(SORT_SPAN_at(span, i), SORT_SPAN_at(span, span.num - 1));
 
-        // Recurse
-        if (i < span.num - i) {
-            SORT_NAME_partial_quicksort(SORT_SPAN_make_subspan(span, 0, i));
-            span = SORT_SPAN_make_subspan(span, i + 1, span.num);
+        // Recurse the smallest of the "less than" or "greater than" partition.
+        // Leave the "equal to" part as it's already sorted
+        if (lt < span.num - gt) {
+            SORT_NAME_partial_quicksort(SORT_SPAN_make_subspan(span, 0, lt));
+            span = SORT_SPAN_make_subspan(span, gt, span.num);
         }
         else {
-            SORT_NAME_partial_quicksort(SORT_SPAN_make_subspan(span, i + 1, span.num));
-            span = SORT_SPAN_make_subspan(span, 0, i);
+            SORT_NAME_partial_quicksort(SORT_SPAN_make_subspan(span, gt, span.num));
+            span = SORT_SPAN_make_subspan(span, 0, lt);
         }
     }
 }
@@ -114,6 +121,7 @@ static inline void SORT_NAME_insertion(SORT_SPAN_t span) {
             SORT_SPAN_set(span, j, SORT_SPAN_get(span, j - 1));
             j--;
         }
+        assert(i - j < 16);
         SORT_SPAN_set(span, j, key);
     }
 }
@@ -144,7 +152,7 @@ static inline void SORT_NAME(SORT_SPAN_t span) {
 #undef SORT_NAME_insertion
 #undef SORT_NAME_swap
 #undef SORT_NAME_median_of_three
-#undef SORT_NAME_less_or_equal
+#undef SORT_NAME_swap_update_pivot
 #undef SORT_less_fn
 
 #undef TEMPLATE_SORT_NAME
