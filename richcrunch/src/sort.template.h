@@ -124,7 +124,7 @@ static inline void SORT_NAME_insertion(SORT_SPAN_t span) {
             SORT_SPAN_set(span, j, SORT_SPAN_get(span, j - 1));
             j--;
         }
-        assert(i - j < 16);
+        assert(i - j < 16); // sanity check: we should never be more than 16 elements away
         SORT_SPAN_set(span, j, key);
     }
 }
@@ -132,7 +132,7 @@ static inline void SORT_NAME_insertion(SORT_SPAN_t span) {
 
 static inline void SORT_NAME(SORT_SPAN_t span) {
     if (span.num > 1) {
-        // Perform a partial quicksort to a granularity of partitions of <16 elements
+        // Perform a partial quicksort to a granularity of partitions of >16 elements
         SORT_NAME_partial_quicksort(span);
 
         // Insertion sort to finish off

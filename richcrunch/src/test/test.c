@@ -309,7 +309,23 @@ int test_huffman(void) {
         freqs[byte_array_view_get(src, i)]++;
     }
 
-    huffman_code_t huff = huffman_code_make((uint16_array_view_t) VIEW(freqs), 15, &arena, scratch);
+    // Test that length limiting does something sensible
+    huffman_code_t huff_limited = huffman_code_make((uint16_array_view_t) VIEW(freqs), 4, &arena, scratch);
+    TEST_REQUIRE_EQUAL(byte_array_view_get(huff_limited.symbol_lengths, 't'), 2);   // 00
+    TEST_REQUIRE_EQUAL(byte_array_view_get(huff_limited.symbol_lengths, ' '), 3);   // 010
+    TEST_REQUIRE_EQUAL(byte_array_view_get(huff_limited.symbol_lengths, 'a'), 3);   // 011
+    TEST_REQUIRE_EQUAL(byte_array_view_get(huff_limited.symbol_lengths, 'e'), 4);   // 1000
+    TEST_REQUIRE_EQUAL(byte_array_view_get(huff_limited.symbol_lengths, 'h'), 4);   // 1001
+    TEST_REQUIRE_EQUAL(byte_array_view_get(huff_limited.symbol_lengths, 'n'), 4);   // 1010
+    TEST_REQUIRE_EQUAL(byte_array_view_get(huff_limited.symbol_lengths, 'o'), 4);   // 1011
+    TEST_REQUIRE_EQUAL(byte_array_view_get(huff_limited.symbol_lengths, 's'), 4);   // 1100
+    TEST_REQUIRE_EQUAL(byte_array_view_get(huff_limited.symbol_lengths, 'c'), 4);   // 1101
+    TEST_REQUIRE_EQUAL(byte_array_view_get(huff_limited.symbol_lengths, 'm'), 4);   // 1110
+    TEST_REQUIRE_EQUAL(byte_array_view_get(huff_limited.symbol_lengths, 'x'), 0);
+
+    // Generate an new huffman encoding without length limiting
+    huffman_code_t huff = huffman_code_make((uint16_array_view_t) VIEW(freqs), 0, &arena, scratch);
+    TEST_REQUIRE_EQUAL(huff.symbol_lengths.num, 256);
     TEST_REQUIRE_EQUAL(byte_array_view_get(huff.symbol_lengths, ' '), 2);
     TEST_REQUIRE_EQUAL(byte_array_view_get(huff.symbol_lengths, 't'), 2);
     TEST_REQUIRE_EQUAL(byte_array_view_get(huff.symbol_lengths, 'a'), 3);
@@ -321,6 +337,25 @@ int test_huffman(void) {
     TEST_REQUIRE_EQUAL(byte_array_view_get(huff.symbol_lengths, 'c'), 5);
     TEST_REQUIRE_EQUAL(byte_array_view_get(huff.symbol_lengths, 'm'), 5);
     TEST_REQUIRE_EQUAL(byte_array_view_get(huff.symbol_lengths, 'x'), 0);
+
+    TEST_REQUIRE_EQUAL(huff.num_symbols_per_bit_length.num, 5);
+    TEST_REQUIRE_EQUAL(byte_array_view_get(huff.num_symbols_per_bit_length, 0), 0);
+    TEST_REQUIRE_EQUAL(byte_array_view_get(huff.num_symbols_per_bit_length, 1), 2);
+    TEST_REQUIRE_EQUAL(byte_array_view_get(huff.num_symbols_per_bit_length, 2), 1);
+    TEST_REQUIRE_EQUAL(byte_array_view_get(huff.num_symbols_per_bit_length, 3), 5);
+    TEST_REQUIRE_EQUAL(byte_array_view_get(huff.num_symbols_per_bit_length, 4), 2);
+
+    TEST_REQUIRE_EQUAL(huff.dictionary.num, 10);
+    TEST_REQUIRE_EQUAL(uint16_array_view_get(huff.dictionary, 0), ' ');
+    TEST_REQUIRE_EQUAL(uint16_array_view_get(huff.dictionary, 1), 't');
+    TEST_REQUIRE_EQUAL(uint16_array_view_get(huff.dictionary, 2), 'a');
+    TEST_REQUIRE_EQUAL(uint16_array_view_get(huff.dictionary, 3), 'e');
+    TEST_REQUIRE_EQUAL(uint16_array_view_get(huff.dictionary, 4), 'h');
+    TEST_REQUIRE_EQUAL(uint16_array_view_get(huff.dictionary, 5), 'n');
+    TEST_REQUIRE_EQUAL(uint16_array_view_get(huff.dictionary, 6), 'o');
+    TEST_REQUIRE_EQUAL(uint16_array_view_get(huff.dictionary, 7), 's');
+    TEST_REQUIRE_EQUAL(uint16_array_view_get(huff.dictionary, 8), 'c');
+    TEST_REQUIRE_EQUAL(uint16_array_view_get(huff.dictionary, 9), 'm');
 
     arena_deinit(&scratch);
     arena_deinit(&arena);

@@ -1,0 +1,95 @@
+addr = &70
+dest = &72
+bitstream = &74
+numbitvals = &80
+
+dictionary = &700
+
+
+.getbit
+    \\ Gets one bit from the bitstream
+    \\ On exit:
+    \\   A preserved
+    \\   X preserved
+    \\   Y corrupted
+    \\   C = bit
+    LSR bitstream
+    BNE samebyte
+
+compressed_src = P%+1
+    LDY &FFFF
+    INC compressed_src
+    BNE P%+5
+    INC compressed_src+1
+    STY bitstream
+    ROR bitstream
+.samebyte
+    RTS
+
+
+.builddictionary
+    \\ Given a table of code lengths indexed by symbol value,
+    \\ generate a dictionary mapping huffman code to symbol value
+    \\ On entry:
+    \\   symbollengths[256] = array of code lengths indexed by symbol value
+    \\ On exit:
+    \\   dictionary[] = symbol values indexed by huffman code
+    \\   numbitvals[] = number of symbols with the indexed code length
+
+	LDA #1              ; code length being searched for
+.dicloop1
+	LDY #0              ; tally of how many symbols have this code length
+	LDX #0              ; symbol value
+.dicloop2
+	CMP symbollengths,X
+	BNE dicnext
+	INY                 ; increment tally
+dictionary_addr = P%+1
+    STX dictionary      ; note: must be page aligned
+	INC dictionary_addr
+.dicnext
+	INX
+    BNE dicloop2        ; loop for all symbol values
+
+	TAX
+    TYA                 ; tally total
+    STA numbitvals-1,X  ; store tally total for this code length
+	INX                 ; increment code length being searched
+    TXA
+	CMP #16
+    BNE dicloop1        ; reloop for all code lengths until 16
+	RTS
+
+
+.gethuffmancode
+    \\ Gets a huffman code from the bitstream and returns the corresponding symbol value
+    \\ The dictionary and numbitvals table must have been built previously
+    \\ On exit:
+    \\   A = symbol value
+    \\   X,Y corrupted
+    \\   C = dictionary overflow
+	LDA #0
+	LDX #255
+.gethuffmanloop
+	INX
+	JSR getbit
+	ROL A
+	SEC
+	SBC numbitvals,X
+	BCS gethuffmanloop
+.gethuffmanloop2
+	CLC
+	ADC numbitvals,X
+	DEX
+	BPL gethuffmanloop2
+	TAX
+	LDA dictionary,X
+	RTS
+
+
+
+
+.huffman_decompress
+    LDA #1
+    STA bitstream
+    RTS

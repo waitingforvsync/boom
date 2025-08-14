@@ -1,7 +1,7 @@
 ORG &1900
 .start
 
-INCLUDE "decompress.6502"
+INCLUDE "lz_decompress.6502"
 
 .entry
     LDX #0

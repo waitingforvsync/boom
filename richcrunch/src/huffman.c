@@ -152,11 +152,29 @@ static void huffman_limit_length(byte_array_span_t lengths, uint32_t max_code_le
 }
 
 
+static uint8_t huffman_highest_bit_length(byte_array_span_t lengths) {
+    assert(lengths.num > 0);
+    uint8_t result = byte_array_span_get(lengths, 0);
+    for (uint32_t i = 1; i < lengths.num; i++) {
+        uint32_t length = byte_array_span_get(lengths, i);
+        if (length > result) {
+            result = length;
+        }
+    }
+    return result;
+}
+
+
+#define TEMPLATE_SORT_NAME uint16
+#include "sort.template.h"
+
+
 huffman_code_t huffman_code_make(uint16_array_view_t freqs, uint32_t max_code_length, arena_t *arena, arena_t scratch) {
     assert(arena);
     assert(freqs.data);
 
     // @todo: handle edge cases, e.g. zero or one symbols
+    assert(freqs.num > 1);
 
     // Create an array for holding the huffman tree
     // This goes into scratch space as it will be discarded at the end
@@ -180,15 +198,52 @@ huffman_code_t huffman_code_make(uint16_array_view_t freqs, uint32_t max_code_le
         huffman_limit_length(lengths, max_code_length);
     }
 
-    // Output bit lengths by symbol index
+    // Use this to store bit lengths by symbol index 
     byte_array_span_t symbol_lengths = byte_array_span_make(freqs.num, arena);
+
+    // Use this to record number of symbol values per bit length
+    byte_array_span_t num_symbols_per_bit_length = byte_array_span_make(
+        huffman_highest_bit_length(lengths),
+        arena
+    );
+
     for (uint32_t i = 0; i < num_leafs; i++) {
+        // Get symbol value which corresponds to leaf index
         uint16_t symbol_index = huffman_node_array_get(&tree, i).symbol;
         assert(symbol_index < freqs.num);
-        byte_array_span_set(symbol_lengths, symbol_index, byte_array_span_get(lengths, i));
+
+        // Write symbol length for this symbol value
+        uint8_t symbol_length = byte_array_span_get(lengths, i);
+        byte_array_span_set(symbol_lengths, symbol_index, symbol_length);
+
+        // Increment num_symbols for the found bit length (indexed by length-1)
+        uint32_t num_symbols = byte_array_span_get(num_symbols_per_bit_length, symbol_length - 1);
+        assert(num_symbols < 255);
+        byte_array_span_set(num_symbols_per_bit_length, symbol_length - 1, num_symbols + 1);
+    }
+
+    // Build the dictionary for looking up symbol from code
+    // First copy the symbol values directly from the leaf array in highest frequency order
+    uint16_array_span_t dictionary = uint16_array_span_make(num_leafs, arena);
+    for (uint32_t i = 0; i < num_leafs; i++) {
+        uint16_array_span_set(
+            dictionary,
+            i,
+            huffman_node_array_get(&tree, num_leafs - 1 - i).symbol
+        );
+    }
+    // Now within each span of equal bit length, sort the symbol values
+    // to satisfy the canonical code property
+    uint32_t start = 0;
+    for (uint32_t i = 1; i < num_symbols_per_bit_length.num; i++) {
+        uint32_t end = start + byte_array_span_get(num_symbols_per_bit_length, i);
+        sort_uint16(uint16_array_span_make_subspan(dictionary, start, end));
+        start = end;
     }
 
     return (huffman_code_t) {
-        .symbol_lengths = symbol_lengths.view
+        .symbol_lengths = symbol_lengths.view,
+        .num_symbols_per_bit_length = num_symbols_per_bit_length.view,
+        .dictionary = dictionary.view
     };
 }

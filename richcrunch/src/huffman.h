@@ -20,6 +20,8 @@ typedef struct huffman_symbol_t {
 
 typedef struct huffman_code_t {
     byte_array_view_t symbol_lengths;
+    byte_array_view_t num_symbols_per_bit_length;
+    uint16_array_view_t dictionary;
 } huffman_code_t;
 
 
