@@ -64,3 +64,23 @@ uint16_t bitreader_get_hybrid_value(bitreader_t *bitreader, uint32_t fixed_bits)
     uint16_t value = (bitreader_get_elias_gamma_value(bitreader) - 1) & 0xFF;
     return (value << fixed_bits) | bitreader_get_value(bitreader, fixed_bits);
 }
+
+
+uint16_t bitreader_get_huffman_code(bitreader_t *bitreader, huffman_code_t *huffman) {
+    assert(bitreader);
+    assert(bitreader->data.data);
+    assert(huffman);
+
+    uint16_t index = 0;
+    uint16_t base = 0;
+    for (uint32_t i = 0; i < huffman->num_symbols_per_bit_length.num; i++) {
+        index = (index << 1) | bitreader_get_bit(bitreader);
+        uint8_t num = uint8_array_view_get(huffman->num_symbols_per_bit_length, i);
+        if (index < num) {
+            return uint16_array_view_get(huffman->dictionary, base + index);
+        }
+        base += num;
+        index -= num;
+    }
+    return 0xFFFF;
+}

@@ -191,11 +191,11 @@ int test_lz_file(void) {
     bool same = (memcmp(file_result.contents.data, expanded.data, file_result.contents.num) == 0);
     TEST_REQUIRE_TRUE(same);
 
-    printf("Compressed: %d / 8320 (%d%%), %d fixed bits\n",
-        compressed.num,
-        compressed.num * 100 / file_result.contents.num,
-        lz.num_fixed_bits
-    );
+    // printf("Compressed: %d / 8320 (%d%%), %d fixed bits\n",
+    //     compressed.num,
+    //     compressed.num * 100 / file_result.contents.num,
+    //     lz.num_fixed_bits
+    // );
 
     arena_deinit(&scratch);
     arena_deinit(&arena);
@@ -269,7 +269,7 @@ int test_sort(void) {
 }
 
 
-int test_huffman(void) {
+int test_huffman_simple(void) {
     arena_t arena = arena_make(0x800000);
     arena_t scratch = arena_make(0x800000);
 
@@ -311,39 +311,51 @@ int test_huffman(void) {
 
     // Test that length limiting does something sensible
     huffman_code_t huff_limited = huffman_code_make((uint16_array_view_t) VIEW(freqs), 4, &arena, scratch);
-    TEST_REQUIRE_EQUAL(byte_array_view_get(huff_limited.symbol_lengths, 't'), 2);   // 00
-    TEST_REQUIRE_EQUAL(byte_array_view_get(huff_limited.symbol_lengths, ' '), 3);   // 010
-    TEST_REQUIRE_EQUAL(byte_array_view_get(huff_limited.symbol_lengths, 'a'), 3);   // 011
-    TEST_REQUIRE_EQUAL(byte_array_view_get(huff_limited.symbol_lengths, 'e'), 4);   // 1000
-    TEST_REQUIRE_EQUAL(byte_array_view_get(huff_limited.symbol_lengths, 'h'), 4);   // 1001
-    TEST_REQUIRE_EQUAL(byte_array_view_get(huff_limited.symbol_lengths, 'n'), 4);   // 1010
-    TEST_REQUIRE_EQUAL(byte_array_view_get(huff_limited.symbol_lengths, 'o'), 4);   // 1011
-    TEST_REQUIRE_EQUAL(byte_array_view_get(huff_limited.symbol_lengths, 's'), 4);   // 1100
-    TEST_REQUIRE_EQUAL(byte_array_view_get(huff_limited.symbol_lengths, 'c'), 4);   // 1101
-    TEST_REQUIRE_EQUAL(byte_array_view_get(huff_limited.symbol_lengths, 'm'), 4);   // 1110
-    TEST_REQUIRE_EQUAL(byte_array_view_get(huff_limited.symbol_lengths, 'x'), 0);
+    TEST_REQUIRE_EQUAL(uint8_array_view_get(huff_limited.symbol_lengths, 't'), 2);   // 00
+    TEST_REQUIRE_EQUAL(uint8_array_view_get(huff_limited.symbol_lengths, ' '), 3);   // 010
+    TEST_REQUIRE_EQUAL(uint8_array_view_get(huff_limited.symbol_lengths, 'a'), 3);   // 011
+    TEST_REQUIRE_EQUAL(uint8_array_view_get(huff_limited.symbol_lengths, 'e'), 4);   // 1000
+    TEST_REQUIRE_EQUAL(uint8_array_view_get(huff_limited.symbol_lengths, 'h'), 4);   // 1001
+    TEST_REQUIRE_EQUAL(uint8_array_view_get(huff_limited.symbol_lengths, 'n'), 4);   // 1010
+    TEST_REQUIRE_EQUAL(uint8_array_view_get(huff_limited.symbol_lengths, 'o'), 4);   // 1011
+    TEST_REQUIRE_EQUAL(uint8_array_view_get(huff_limited.symbol_lengths, 's'), 4);   // 1100
+    TEST_REQUIRE_EQUAL(uint8_array_view_get(huff_limited.symbol_lengths, 'c'), 4);   // 1101
+    TEST_REQUIRE_EQUAL(uint8_array_view_get(huff_limited.symbol_lengths, 'm'), 4);   // 1110
+    TEST_REQUIRE_EQUAL(uint8_array_view_get(huff_limited.symbol_lengths, 'x'), 0);
 
     // Generate an new huffman encoding without length limiting
     huffman_code_t huff = huffman_code_make((uint16_array_view_t) VIEW(freqs), 0, &arena, scratch);
     TEST_REQUIRE_EQUAL(huff.symbol_lengths.num, 256);
-    TEST_REQUIRE_EQUAL(byte_array_view_get(huff.symbol_lengths, ' '), 2);
-    TEST_REQUIRE_EQUAL(byte_array_view_get(huff.symbol_lengths, 't'), 2);
-    TEST_REQUIRE_EQUAL(byte_array_view_get(huff.symbol_lengths, 'a'), 3);
-    TEST_REQUIRE_EQUAL(byte_array_view_get(huff.symbol_lengths, 'e'), 4);
-    TEST_REQUIRE_EQUAL(byte_array_view_get(huff.symbol_lengths, 'h'), 4);
-    TEST_REQUIRE_EQUAL(byte_array_view_get(huff.symbol_lengths, 'n'), 4);
-    TEST_REQUIRE_EQUAL(byte_array_view_get(huff.symbol_lengths, 'o'), 4);
-    TEST_REQUIRE_EQUAL(byte_array_view_get(huff.symbol_lengths, 's'), 4);
-    TEST_REQUIRE_EQUAL(byte_array_view_get(huff.symbol_lengths, 'c'), 5);
-    TEST_REQUIRE_EQUAL(byte_array_view_get(huff.symbol_lengths, 'm'), 5);
-    TEST_REQUIRE_EQUAL(byte_array_view_get(huff.symbol_lengths, 'x'), 0);
+    TEST_REQUIRE_EQUAL(uint8_array_view_get(huff.symbol_lengths, ' '), 2);
+    TEST_REQUIRE_EQUAL(uint8_array_view_get(huff.symbol_lengths, 't'), 2);
+    TEST_REQUIRE_EQUAL(uint8_array_view_get(huff.symbol_lengths, 'a'), 3);
+    TEST_REQUIRE_EQUAL(uint8_array_view_get(huff.symbol_lengths, 'e'), 4);
+    TEST_REQUIRE_EQUAL(uint8_array_view_get(huff.symbol_lengths, 'h'), 4);
+    TEST_REQUIRE_EQUAL(uint8_array_view_get(huff.symbol_lengths, 'n'), 4);
+    TEST_REQUIRE_EQUAL(uint8_array_view_get(huff.symbol_lengths, 'o'), 4);
+    TEST_REQUIRE_EQUAL(uint8_array_view_get(huff.symbol_lengths, 's'), 4);
+    TEST_REQUIRE_EQUAL(uint8_array_view_get(huff.symbol_lengths, 'c'), 5);
+    TEST_REQUIRE_EQUAL(uint8_array_view_get(huff.symbol_lengths, 'm'), 5);
+    TEST_REQUIRE_EQUAL(uint8_array_view_get(huff.symbol_lengths, 'x'), 0);
+
+    TEST_REQUIRE_EQUAL(huff.symbol_codes.num, 256);
+    TEST_REQUIRE_EQUAL(uint16_array_view_get(huff.symbol_codes, ' '), 0);   // 00
+    TEST_REQUIRE_EQUAL(uint16_array_view_get(huff.symbol_codes, 't'), 1);   // 01
+    TEST_REQUIRE_EQUAL(uint16_array_view_get(huff.symbol_codes, 'a'), 4);   // 100
+    TEST_REQUIRE_EQUAL(uint16_array_view_get(huff.symbol_codes, 'e'), 10);  // 1010
+    TEST_REQUIRE_EQUAL(uint16_array_view_get(huff.symbol_codes, 'h'), 11);  // 1011
+    TEST_REQUIRE_EQUAL(uint16_array_view_get(huff.symbol_codes, 'n'), 12);  // 1100
+    TEST_REQUIRE_EQUAL(uint16_array_view_get(huff.symbol_codes, 'o'), 13);  // 1101
+    TEST_REQUIRE_EQUAL(uint16_array_view_get(huff.symbol_codes, 's'), 14);  // 1110
+    TEST_REQUIRE_EQUAL(uint16_array_view_get(huff.symbol_codes, 'c'), 30);  // 11110
+    TEST_REQUIRE_EQUAL(uint16_array_view_get(huff.symbol_codes, 'm'), 31);  // 11111
 
     TEST_REQUIRE_EQUAL(huff.num_symbols_per_bit_length.num, 5);
-    TEST_REQUIRE_EQUAL(byte_array_view_get(huff.num_symbols_per_bit_length, 0), 0);
-    TEST_REQUIRE_EQUAL(byte_array_view_get(huff.num_symbols_per_bit_length, 1), 2);
-    TEST_REQUIRE_EQUAL(byte_array_view_get(huff.num_symbols_per_bit_length, 2), 1);
-    TEST_REQUIRE_EQUAL(byte_array_view_get(huff.num_symbols_per_bit_length, 3), 5);
-    TEST_REQUIRE_EQUAL(byte_array_view_get(huff.num_symbols_per_bit_length, 4), 2);
+    TEST_REQUIRE_EQUAL(uint8_array_view_get(huff.num_symbols_per_bit_length, 0), 0);
+    TEST_REQUIRE_EQUAL(uint8_array_view_get(huff.num_symbols_per_bit_length, 1), 2);
+    TEST_REQUIRE_EQUAL(uint8_array_view_get(huff.num_symbols_per_bit_length, 2), 1);
+    TEST_REQUIRE_EQUAL(uint8_array_view_get(huff.num_symbols_per_bit_length, 3), 5);
+    TEST_REQUIRE_EQUAL(uint8_array_view_get(huff.num_symbols_per_bit_length, 4), 2);
 
     TEST_REQUIRE_EQUAL(huff.dictionary.num, 10);
     TEST_REQUIRE_EQUAL(uint16_array_view_get(huff.dictionary, 0), ' ');
@@ -357,6 +369,64 @@ int test_huffman(void) {
     TEST_REQUIRE_EQUAL(uint16_array_view_get(huff.dictionary, 8), 'c');
     TEST_REQUIRE_EQUAL(uint16_array_view_get(huff.dictionary, 9), 'm');
 
+    bitwriter_t writer = bitwriter_make(1000, &arena);
+    bitwriter_add_huffman_code(&writer, &huff, 'a', &arena);
+    bitwriter_add_huffman_code(&writer, &huff, 'n', &arena);
+    bitwriter_add_huffman_code(&writer, &huff, 't', &arena);
+
+    bitreader_t reader = bitreader_make(writer.data.view);
+    TEST_REQUIRE_EQUAL(bitreader_get_huffman_code(&reader, &huff), 'a');
+    TEST_REQUIRE_EQUAL(bitreader_get_huffman_code(&reader, &huff), 'n');
+    TEST_REQUIRE_EQUAL(bitreader_get_huffman_code(&reader, &huff), 't');
+
+    arena_deinit(&scratch);
+    arena_deinit(&arena);
+
+    return 0;
+}
+
+
+int test_huffman_file(void) {
+    arena_t arena = arena_make(0x800000);
+    arena_t scratch = arena_make(0x800000);
+
+    file_read_result_t file_result = file_read_binary("titlescreen.bin", &arena);
+    TEST_REQUIRE_EQUAL(file_result.error.type, file_error_none);
+    TEST_REQUIRE_EQUAL(file_result.contents.num, 8320);
+
+    uint16_t freqs[256] = {0};
+    for (uint32_t i = 0; i < file_result.contents.num; i++) {
+        freqs[byte_array_view_get(file_result.contents, i)]++;
+    }
+
+    huffman_code_t huff = huffman_code_make(
+        (uint16_array_view_t) VIEW(freqs),
+        0,
+        &arena,
+        scratch
+    );
+
+    bitwriter_t writer = bitwriter_make(file_result.contents.num, &arena);
+    for (uint32_t i = 0; i < file_result.contents.num; i++) {
+        bitwriter_add_huffman_code(
+            &writer,
+            &huff,
+            byte_array_view_get(file_result.contents, i),
+            &arena
+        );
+    }
+
+    bitreader_t reader = bitreader_make(writer.data.view);
+    for (uint32_t i = 0; i < file_result.contents.num; i++) {
+        uint16_t symbol = bitreader_get_huffman_code(&reader, &huff);
+        TEST_REQUIRE_EQUAL(byte_array_view_get(file_result.contents, i), symbol);
+    }
+
+    printf("Compressed: %d / 8320 (%d%%)\n",
+        writer.data.num,
+        writer.data.num * 100 / file_result.contents.num
+    );
+
     arena_deinit(&scratch);
     arena_deinit(&arena);
 
@@ -369,5 +439,6 @@ int test_run(void) {
         || test_lz_file()
         || test_bitstream()
         || test_sort()
-        || test_huffman();
+        || test_huffman_simple()
+        || test_huffman_file();
 }

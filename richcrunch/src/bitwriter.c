@@ -30,7 +30,7 @@ void bitwriter_add_bit(bitwriter_t *bitwriter, uint32_t value, arena_t *arena) {
 void bitwriter_add_value(bitwriter_t *bitwriter, uint32_t value, uint32_t numbits, arena_t *arena) {
     assert(bitwriter);
     assert(bitwriter->data.data);
-    assert(numbits <= 8 || (numbits == 9 && value == 256));
+//    assert(numbits <= 8 || (numbits == 9 && value == 256));
     for (uint32_t n = numbits; n-- > 0;) {
         bitwriter_add_bit(bitwriter, value & (1 << n), arena);
     }
@@ -59,4 +59,14 @@ void bitwriter_add_hybrid_value(bitwriter_t *bitwriter, uint32_t value, uint32_t
     assert(bitwriter->data.data);
     bitwriter_add_elias_gamma_value(bitwriter, (value >> fixed_bits) + 1, arena);
     bitwriter_add_value(bitwriter, value, fixed_bits, arena);
+}
+
+
+void bitwriter_add_huffman_code(bitwriter_t *bitwriter, huffman_code_t *huffman, uint32_t value, arena_t *arena) {
+    assert(bitwriter);
+    assert(bitwriter->data.data);
+    assert(huffman);
+    uint32_t huffman_length = uint8_array_view_get(huffman->symbol_lengths, value);
+    uint32_t huffman_code = uint16_array_view_get(huffman->symbol_codes, value);
+    bitwriter_add_value(bitwriter, huffman_code, huffman_length, arena);
 }

@@ -3,6 +3,7 @@
 
 #include "arena.h"
 #include "byte_array.h"
+#include "huffman.h"
 
 
 typedef struct bitwriter_t {
@@ -29,6 +30,9 @@ void bitwriter_add_elias_gamma_value(bitwriter_t *bitwriter, uint32_t value, are
 
 // Add a hybrid (fixed+elias) value to the stream
 void bitwriter_add_hybrid_value(bitwriter_t *bitwriter, uint32_t value, uint32_t fixed_bits, arena_t *arena);
+
+// Add a huffman coded value to the stream
+void bitwriter_add_huffman_code(bitwriter_t *bitwriter, huffman_code_t *huffman, uint32_t value, arena_t *arena);
 
 
 #endif // ifndef BITWRITER_H_

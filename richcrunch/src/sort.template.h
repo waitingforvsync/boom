@@ -43,7 +43,7 @@
 #define SORT_NAME_swap_update_pivot     CONCAT(SORT_NAME, _swap_update_pivot)
 
 #ifndef TEMPLATE_SORT_LESS_FN
-#define TEMPLATE_SORT_LESS_FN CONCAT(SORT_NAME, _default_less)
+#define TEMPLATE_SORT_LESS_FN           CONCAT(SORT_NAME, _default_less)
 static inline bool TEMPLATE_SORT_LESS_FN(const SORT_TYPE_t *a, const SORT_TYPE_t *b) {
     return *a < *b;
 }

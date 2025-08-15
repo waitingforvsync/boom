@@ -91,17 +91,22 @@ static void huffman_build_tree(huffman_node_array_t *tree) {
         }
 
         assert(tree->num == num_leafs || huffman_node_array_get(tree, tree->num - 1).frequency <= new_node.frequency);
-        huffman_node_array_add(tree, new_node, 0);
+
+        huffman_node_array_add(
+            tree,
+            new_node,
+            0           // don't pass an arena
+        );
     }
 }
 
 
-static void huffman_walk_tree(huffman_node_array_view_t tree, byte_array_span_t lengths, uint32_t index, uint32_t level) {
+static void huffman_walk_tree(huffman_node_array_view_t tree, uint8_array_span_t lengths, uint32_t index, uint32_t level) {
     const huffman_node_t *node = huffman_node_array_view_at(tree, index);
     if (!node->left_child && !node->right_child) {
         // index is an index to leaf nodes sorted by frequency
         // thus we expect the lengths array to be ordered longest->shortest huffman code lengths
-        byte_array_span_set(lengths, index, level);
+        uint8_array_span_set(lengths, index, level);
     }
     else {
         huffman_walk_tree(tree, lengths, node->left_child, level + 1);
@@ -110,28 +115,28 @@ static void huffman_walk_tree(huffman_node_array_view_t tree, byte_array_span_t 
 }
 
 
-static void huffman_limit_length(byte_array_span_t lengths, uint32_t max_code_length) {
+static void huffman_limit_length(uint8_array_span_t lengths, uint32_t max_code_length) {
     // Algorithm from https://glinscott.github.io/lz/index.html#toc3.2
     uint64_t k = 0ULL;
     uint64_t maxk = 1ULL << max_code_length;
 
     // Limit the bit lengths to the maximum allowed
     for (uint32_t i = 0; i < lengths.num; i++) {
-        uint32_t length = byte_array_span_get(lengths, i);
+        uint32_t length = uint8_array_span_get(lengths, i);
         uint32_t limited_length = min_uint32(length, max_code_length);
-        byte_array_span_set(lengths, i, limited_length);
+        uint8_array_span_set(lengths, i, limited_length);
         k += (1ULL << (max_code_length - limited_length));
     }
 
     // Redistribute error just introduced, first pass
     for (uint32_t i = 0; i < lengths.num && k >= maxk; i++) {
         while (true) {
-            uint32_t length = byte_array_span_get(lengths, i);
+            uint32_t length = uint8_array_span_get(lengths, i);
             if (length == max_code_length) {
                 break;
             }
             length++;
-            byte_array_span_set(lengths, i, length);
+            uint8_array_span_set(lengths, i, length);
             k -= (1ULL << (max_code_length - length));
         }
     }
@@ -139,24 +144,24 @@ static void huffman_limit_length(byte_array_span_t lengths, uint32_t max_code_le
     // Redistribute error just introduced, second pass
     for (uint32_t i = lengths.num; i-- > 0; ) {
         while (true) {
-            uint32_t length = byte_array_span_get(lengths, i);
+            uint32_t length = uint8_array_span_get(lengths, i);
             uint64_t dk = (1ULL << (max_code_length - length));
             if (k + dk >= maxk) {
                 break;
             }
             length--;
-            byte_array_span_set(lengths, i, length);
+            uint8_array_span_set(lengths, i, length);
             k += dk;
         }
     }
 }
 
 
-static uint8_t huffman_highest_bit_length(byte_array_span_t lengths) {
+static uint8_t huffman_highest_bit_length(uint8_array_span_t lengths) {
     assert(lengths.num > 0);
-    uint8_t result = byte_array_span_get(lengths, 0);
+    uint8_t result = uint8_array_span_get(lengths, 0);
     for (uint32_t i = 1; i < lengths.num; i++) {
-        uint32_t length = byte_array_span_get(lengths, i);
+        uint32_t length = uint8_array_span_get(lengths, i);
         if (length > result) {
             result = length;
         }
@@ -165,6 +170,7 @@ static uint8_t huffman_highest_bit_length(byte_array_span_t lengths) {
 }
 
 
+// Generate a default sort function for uint16_array_spans
 #define TEMPLATE_SORT_NAME uint16
 #include "sort.template.h"
 
@@ -190,19 +196,22 @@ huffman_code_t huffman_code_make(uint16_array_view_t freqs, uint32_t max_code_le
     // We now have a fully built tree, with its root node at tree.num-1.
     // Now traverse the tree, getting the bit lengths of the symbols in the leaf nodes.
     // We index this lengths array by symbol frequency order (as per the index in the tree)
-    byte_array_span_t lengths = byte_array_span_make(num_leafs, &scratch);
+    uint8_array_span_t lengths = uint8_array_span_make(num_leafs, &scratch);
     huffman_walk_tree(tree.view, lengths, tree.num - 1, 0);
 
     // If we have specified a max code length, apply length limiting
-    if (max_code_length > 0 && byte_array_span_get(lengths, 0) > max_code_length) {
+    if (max_code_length == 0) {
+        max_code_length = 15;
+    }
+    if (uint8_array_span_get(lengths, 0) > max_code_length) {
         huffman_limit_length(lengths, max_code_length);
     }
 
     // Use this to store bit lengths by symbol index 
-    byte_array_span_t symbol_lengths = byte_array_span_make(freqs.num, arena);
+    uint8_array_span_t symbol_lengths = uint8_array_span_make(freqs.num, arena);
 
     // Use this to record number of symbol values per bit length
-    byte_array_span_t num_symbols_per_bit_length = byte_array_span_make(
+    uint8_array_span_t num_symbols_per_bit_length = uint8_array_span_make(
         huffman_highest_bit_length(lengths),
         arena
     );
@@ -213,13 +222,13 @@ huffman_code_t huffman_code_make(uint16_array_view_t freqs, uint32_t max_code_le
         assert(symbol_index < freqs.num);
 
         // Write symbol length for this symbol value
-        uint8_t symbol_length = byte_array_span_get(lengths, i);
-        byte_array_span_set(symbol_lengths, symbol_index, symbol_length);
+        uint8_t symbol_length = uint8_array_span_get(lengths, i);
+        uint8_array_span_set(symbol_lengths, symbol_index, symbol_length);
 
         // Increment num_symbols for the found bit length (indexed by length-1)
-        uint32_t num_symbols = byte_array_span_get(num_symbols_per_bit_length, symbol_length - 1);
+        uint32_t num_symbols = uint8_array_span_get(num_symbols_per_bit_length, symbol_length - 1);
         assert(num_symbols < 255);
-        byte_array_span_set(num_symbols_per_bit_length, symbol_length - 1, num_symbols + 1);
+        uint8_array_span_set(num_symbols_per_bit_length, symbol_length - 1, num_symbols + 1);
     }
 
     // Build the dictionary for looking up symbol from code
@@ -236,13 +245,29 @@ huffman_code_t huffman_code_make(uint16_array_view_t freqs, uint32_t max_code_le
     // to satisfy the canonical code property
     uint32_t start = 0;
     for (uint32_t i = 1; i < num_symbols_per_bit_length.num; i++) {
-        uint32_t end = start + byte_array_span_get(num_symbols_per_bit_length, i);
+        uint32_t end = start + uint8_array_span_get(num_symbols_per_bit_length, i);
         sort_uint16(uint16_array_span_make_subspan(dictionary, start, end));
         start = end;
     }
 
+    // Build the mapping of symbol -> code
+    uint16_array_span_t symbol_codes = uint16_array_span_make(freqs.num, arena);
+    uint16_t code = 0;
+    uint32_t dictionary_index = 0;
+    for (uint32_t i = 0; i < num_symbols_per_bit_length.num; i++) {
+        uint32_t num_symbols = uint8_array_span_get(num_symbols_per_bit_length, i);
+        for (uint32_t n = 0; n < num_symbols; n++) {
+            uint16_t symbol = uint16_array_span_get(dictionary, dictionary_index);
+            uint16_array_span_set(symbol_codes, symbol, code);
+            dictionary_index++;
+            code++;
+        }
+        code <<= 1;
+    }
+
     return (huffman_code_t) {
         .symbol_lengths = symbol_lengths.view,
+        .symbol_codes = symbol_codes.view,
         .num_symbols_per_bit_length = num_symbols_per_bit_length.view,
         .dictionary = dictionary.view
     };

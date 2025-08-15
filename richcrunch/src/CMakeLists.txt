@@ -35,6 +35,7 @@ target_sources("richcrunch" PRIVATE
     "refs.h"
     "token.h"
     "uint16_array.h"
+    "uint8_array.h"
     "utils.c"
     "utils.h"
 )

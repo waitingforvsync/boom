@@ -3,6 +3,7 @@
 
 #include "arena.h"
 #include "byte_array.h"
+#include "huffman.h"
 
 
 typedef struct bitreader_t {
@@ -30,6 +31,9 @@ uint8_t bitreader_get_elias_gamma_value(bitreader_t *bitreader);
 
 // Read a hybrid (fixed+elias) value from the stream
 uint16_t bitreader_get_hybrid_value(bitreader_t *bitreader, uint32_t fixed_bits);
+
+// Read a huffman coded value from the stream
+uint16_t bitreader_get_huffman_code(bitreader_t *bitreader, huffman_code_t *huffman);
 
 
 #endif // ifndef BITREADER_H_
