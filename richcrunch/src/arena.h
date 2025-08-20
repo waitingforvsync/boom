@@ -28,6 +28,9 @@ void *arena_calloc(arena_t *arena, uint32_t size);
 // Reallocate a block from the arena
 void *arena_realloc(arena_t *arena, void *oldptr, uint32_t old_size, uint32_t new_size);
 
+// Allocate a subarena from this arena and return it
+arena_t arena_alloc_subarena(arena_t *arena, uint32_t size);
+
 // Free a block from the arena, if it's the last
 void arena_free(arena_t *arena, void *ptr, uint32_t size);
 

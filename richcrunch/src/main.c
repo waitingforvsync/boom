@@ -102,7 +102,7 @@ int main(int argc, char *argv[]) {
     }
 
     refs_t refs = refs_make(src_file.contents, &arena, scratch);
-    lz_result_t lz = lz_parse(&refs, &arena, scratch);
+    lz_parse_result_t lz = lz_parse(&refs, &arena, scratch);
     if (log_filename) {
         lz_dump(&lz, log_filename);
     }

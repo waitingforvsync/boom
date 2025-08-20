@@ -31,7 +31,7 @@ static uint32_t get_token_cost(token_t t, uint32_t num_fixed_bits) {
 }
 
 
-lz_result_t lz_parse(const refs_t *refs, arena_t *arena, arena_t scratch) {
+lz_parse_result_t lz_parse(const refs_t *refs, arena_t *arena, arena_t scratch) {
     lz_item_array_span_t items_array[8] = {0};
 
     for (uint32_t n = 0; n < 8; n++) {
@@ -96,7 +96,7 @@ lz_result_t lz_parse(const refs_t *refs, arena_t *arena, arena_t scratch) {
         lz_item_array_add(&result, lz_item_array_span_get(items, i), arena);
     }
 
-    return (lz_result_t) {
+    return (lz_parse_result_t) {
         .items = result.view,
         .cost = lz_item_array_get(&result, 0).total_cost,
         .num_fixed_bits = best_n + 1
@@ -104,7 +104,7 @@ lz_result_t lz_parse(const refs_t *refs, arena_t *arena, arena_t scratch) {
 }
 
 
-static uint32_t lz_get_block_count(const lz_result_t *lz) {
+static uint32_t lz_get_block_count(const lz_parse_result_t *lz) {
     uint32_t num_blocks = 0;
     for (uint32_t i = 0; i < lz->items.num; i += lz_item_array_view_get(lz->items, i).tally) {
         num_blocks++;
@@ -113,7 +113,7 @@ static uint32_t lz_get_block_count(const lz_result_t *lz) {
 }
 
 
-void lz_dump(const lz_result_t *lz, const char *filename) {
+void lz_dump(const lz_parse_result_t *lz, const char *filename) {
     FILE *file = 0;
     if (filename) {
         file = fopen(filename, "w");
@@ -160,7 +160,7 @@ void lz_dump(const lz_result_t *lz, const char *filename) {
 }
 
 
-byte_array_view_t lz_serialise(const lz_result_t *lz, arena_t *arena) {
+byte_array_view_t lz_serialise(const lz_parse_result_t *lz, arena_t *arena) {
     assert(lz);
     assert(arena);
 

@@ -73,7 +73,7 @@ int test_lz_simple(void) {
         // Note the earlier 'ng' is ignored for being further away than another of the same length
     }
 
-    lz_result_t lz = lz_parse(&refs, &arena, scratch);
+    lz_parse_result_t lz = lz_parse(&refs, &arena, scratch);
 
     //  0123456789.123456789.123456789.12
     // "the cat sat on the mat singinging"
@@ -184,14 +184,14 @@ int test_lz_file(void) {
     TEST_REQUIRE_EQUAL(file_result.contents.num, 8320);
 
     refs_t refs = refs_make(file_result.contents, &arena, scratch);
-    lz_result_t lz = lz_parse(&refs, &arena, scratch);
+    lz_parse_result_t lz = lz_parse(&refs, &arena, scratch);
     lz_dump(&lz, "titlescreen.txt");
     byte_array_view_t compressed = lz_serialise(&lz, &arena);
     byte_array_view_t expanded = lz_deserialise(compressed, &arena);
     bool same = (memcmp(file_result.contents.data, expanded.data, file_result.contents.num) == 0);
     TEST_REQUIRE_TRUE(same);
 
-    // printf("Compressed: %d / 8320 (%d%%), %d fixed bits\n",
+    // printf("lz compressed: %d / 8320 (%d%%), %d fixed bits\n",
     //     compressed.num,
     //     compressed.num * 100 / file_result.contents.num,
     //     lz.num_fixed_bits
@@ -422,15 +422,110 @@ int test_huffman_file(void) {
         TEST_REQUIRE_EQUAL(byte_array_view_get(file_result.contents, i), symbol);
     }
 
-    printf("Compressed: %d / 8320 (%d%%)\n",
-        writer.data.num,
-        writer.data.num * 100 / file_result.contents.num
-    );
+    // printf("huffman compressed: %d / 8320 (%d%%)\n",
+    //     writer.data.num,
+    //     writer.data.num * 100 / file_result.contents.num
+    // );
 
     arena_deinit(&scratch);
     arena_deinit(&arena);
 
     return 0;
+}
+
+
+int test_lzhuff_simple(void) {
+    return 0;
+}
+
+
+int test_compare_methods(void) {
+    arena_t arena = arena_make(0x800000);
+    arena_t scratch = arena_make(0x800000);
+
+    // Load test file
+    file_read_result_t file_result = file_read_binary("test_0.bin", &arena);
+    TEST_REQUIRE_EQUAL(file_result.error.type, file_error_none);
+    TEST_REQUIRE_EQUAL(file_result.contents.num, 10240);
+
+    // Do lz compression
+    refs_t refs = refs_make(file_result.contents, &arena, scratch);
+    lz_parse_result_t lz = lz_parse(&refs, &arena, scratch);
+    lz_dump(&lz, "test_0.txt");
+    byte_array_view_t compressed = lz_serialise(&lz, &arena);
+    byte_array_view_t expanded = lz_deserialise(compressed, &arena);
+    bool same = (memcmp(file_result.contents.data, expanded.data, file_result.contents.num) == 0);
+    TEST_REQUIRE_TRUE(same);
+
+    printf("lz compressed: %d / 8320 (%d%%), %d fixed bits\n",
+        compressed.num,
+        compressed.num * 100 / file_result.contents.num,
+        lz.num_fixed_bits
+    );
+
+    // Do huffman compression
+    uint16_t freqs[256] = {0};
+    for (uint32_t i = 0; i < file_result.contents.num; i++) {
+        freqs[byte_array_view_get(file_result.contents, i)]++;
+    }
+
+    huffman_code_t huff = huffman_code_make(
+        (uint16_array_view_t) VIEW(freqs),
+        0,
+        &arena,
+        scratch
+    );
+
+    // Huffman encode dictionary
+    uint16_t hufffreqs[16] = {0};
+    for (uint32_t i = 0; i < huff.symbol_lengths.num; i++) {
+        hufffreqs[uint8_array_view_get(huff.symbol_lengths, i)]++;
+    }
+
+    huffman_code_t huffdict = huffman_code_make(
+        (uint16_array_view_t) VIEW(hufffreqs),
+        7,
+        &arena,
+        scratch
+    );
+
+    uint32_t dictlength = 0;
+    for (uint32_t i = 0; i < huff.symbol_lengths.num; i++) {
+        dictlength += uint8_array_view_get(
+            huffdict.symbol_lengths,
+            uint8_array_view_get(huff.symbol_lengths, i)
+        );
+    }
+    dictlength = (dictlength + 7) / 8;
+    printf("Huffman dict size: %d\n", dictlength);
+
+    bitwriter_t writer = bitwriter_make(file_result.contents.num, &arena);
+    for (uint32_t i = 0; i < file_result.contents.num; i++) {
+        bitwriter_add_huffman_code(
+            &writer,
+            &huff,
+            byte_array_view_get(file_result.contents, i),
+            &arena
+        );
+    }
+
+    bitreader_t reader = bitreader_make(writer.data.view);
+    for (uint32_t i = 0; i < file_result.contents.num; i++) {
+        uint16_t symbol = bitreader_get_huffman_code(&reader, &huff);
+        TEST_REQUIRE_EQUAL(byte_array_view_get(file_result.contents, i), symbol);
+    }
+
+    printf("huffman compressed: %d / 8320 (%d%%)\n",
+        (writer.data.num + dictlength + 6),
+        (writer.data.num + dictlength + 6) * 100 / file_result.contents.num
+    );
+
+
+    arena_deinit(&scratch);
+    arena_deinit(&arena);
+
+    return 0;
+
 }
 
 
@@ -440,5 +535,7 @@ int test_run(void) {
         || test_bitstream()
         || test_sort()
         || test_huffman_simple()
-        || test_huffman_file();
+        || test_huffman_file()
+        || test_lzhuff_simple()
+        || test_compare_methods();
 }

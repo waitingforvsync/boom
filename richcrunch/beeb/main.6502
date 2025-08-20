@@ -2,6 +2,8 @@ ORG &1900
 .start
 
 INCLUDE "lz_decompress.6502"
+.compressed_data
+INCBIN "titlescreen_compressed.bin"
 
 .entry
     LDX #0
@@ -25,9 +27,6 @@ INCLUDE "lz_decompress.6502"
     EQUB 31, 0, 27
     EQUB 23, 0, 10, 32, 0, 0, 0, 0, 0, 0
     .vdus_end
-
-.compressed_data
-    INCBIN "titlescreen_compressed.bin"
 
 SAVE "TEST", start, P%, entry
 

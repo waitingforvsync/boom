@@ -10,7 +10,7 @@ else()
 	target_compile_options("richcrunch" PRIVATE -Wall -Wextra -Wpedantic -Werror -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function)
 endif()
 
-# set_target_properties("richcrunch" PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
+set_target_properties("richcrunch" PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
 # set_target_properties("richcrunch" PROPERTIES UNITY_BUILD ON)
 
 target_include_directories("richcrunch" PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -30,6 +30,8 @@ target_sources("richcrunch" PRIVATE
     "huffman.h"
     "lz.c"
     "lz.h"
+    "lzhuff.c"
+    "lzhuff.h"
     "main.c"
     "refs.c"
     "refs.h"

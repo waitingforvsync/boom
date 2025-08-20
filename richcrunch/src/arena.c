@@ -6,6 +6,11 @@
 #define ARENA_ALIGNMENT 16
 
 
+static uint32_t get_aligned_size(uint32_t size, uint32_t alignment) {
+    return (size + alignment - 1) & ~(alignment - 1);
+}
+
+
 arena_t arena_make(uint32_t size) {
     arena_t arena = {0};
     arena_init(&arena, size);
@@ -19,6 +24,7 @@ void arena_init(arena_t *arena, uint32_t total_size) {
         arena_deinit(arena);
     }
 
+    total_size = get_aligned_size(total_size, ARENA_ALIGNMENT);
     void *block = calloc(total_size, 1);
     if (!block) {
         abort();
@@ -39,11 +45,6 @@ void arena_deinit(arena_t *arena) {
     arena->base = 0;
     arena->next = 0;
     arena->end  = 0;
-}
-
-
-static uint32_t get_aligned_size(uint32_t size, uint32_t alignment) {
-    return (size + alignment - 1) & ~(alignment - 1);
 }
 
 
@@ -95,6 +96,17 @@ void *arena_realloc(arena_t *arena, void *oldptr, uint32_t old_size, uint32_t ne
         memset((char *)newptr + old_aligned_size, 0, new_aligned_size - old_aligned_size);
         return newptr;
     }
+}
+
+
+arena_t arena_alloc_subarena(arena_t *arena, uint32_t size) {
+    assert(arena);
+    size = get_aligned_size(size, ARENA_ALIGNMENT);
+    return (arena_t) {
+        .base = arena_alloc(arena, size),
+        .next = 0,
+        .end = size
+    };
 }
 
 

@@ -41,6 +41,7 @@
 
 #define ARRAY_NAME_span_t              CONCAT(TEMPLATE_ARRAY_NAME, _span_t)
 #define ARRAY_NAME_span_make           CONCAT(TEMPLATE_ARRAY_NAME, _span_make)
+#define ARRAY_NAME_span_make_copy      CONCAT(TEMPLATE_ARRAY_NAME, _span_make_copy)
 #define ARRAY_NAME_span_make_subspan   CONCAT(TEMPLATE_ARRAY_NAME, _span_make_subspan)
 #define ARRAY_NAME_span_get            CONCAT(TEMPLATE_ARRAY_NAME, _span_get)
 #define ARRAY_NAME_span_set            CONCAT(TEMPLATE_ARRAY_NAME, _span_set)
@@ -139,6 +140,17 @@ static inline ARRAY_NAME_span_t ARRAY_NAME_span_make(uint32_t num, arena_t *aren
     return (ARRAY_NAME_span_t) {
         .data = arena_calloc(arena, num * sizeof(ARRAY_TYPE_t)),
         .num = num,
+    };
+}
+
+static inline ARRAY_NAME_span_t ARRAY_NAME_span_make_copy(ARRAY_NAME_view_t view, arena_t *arena) {
+    assert(arena);
+    assert(view.data);
+    ARRAY_TYPE_t *data = arena_calloc(arena, view.num * sizeof(ARRAY_TYPE_t));
+    memcpy(data, view.data, view.num * sizeof(ARRAY_TYPE_t));
+    return (ARRAY_NAME_span_t) {
+        .data = data,
+        .num = view.num
     };
 }
 
@@ -264,6 +276,7 @@ static inline ARRAY_TYPE_t *ARRAY_NAME_add_uninitialised(ARRAY_NAME_t *array, ar
 #undef ARRAY_NAME_view_at
 #undef ARRAY_NAME_span_t
 #undef ARRAY_NAME_span_make
+#undef ARRAY_NAME_span_make_copy
 #undef ARRAY_NAME_span_make_subspan
 #undef ARRAY_NAME_span_get
 #undef ARRAY_NAME_span_set
