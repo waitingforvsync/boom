@@ -3,7 +3,6 @@
 
 #include "arena.h"
 #include "byte_array.h"
-#include "refs.h"
 #include "token.h"
 
 
@@ -28,7 +27,7 @@ typedef struct lz_parse_result_t {
 
 
 // Perform an optimal lz parse
-lz_parse_result_t lz_parse(const refs_t *refs, arena_t *arena, arena_t scratch);
+lz_parse_result_t lz_parse(byte_array_view_t src, arena_t *arena, arena_t scratch);
 
 // Dump the lz result in a readable format
 void lz_dump(const lz_parse_result_t *lz, const char *filename);

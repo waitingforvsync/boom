@@ -11,7 +11,7 @@
 
 
 
-int test_lz_simple(void) {
+int test_refs(void) {
     arena_t arena = arena_make(0x800000);
     arena_t scratch = arena_make(0x800000);
 
@@ -73,7 +73,24 @@ int test_lz_simple(void) {
         // Note the earlier 'ng' is ignored for being further away than another of the same length
     }
 
-    lz_parse_result_t lz = lz_parse(&refs, &arena, scratch);
+    arena_deinit(&scratch);
+    arena_deinit(&arena);
+
+    return 0;
+}
+
+
+int test_lz_simple(void) {
+    arena_t arena = arena_make(0x800000);
+    arena_t scratch = arena_make(0x800000);
+
+    byte_array_view_t src = {
+        //                        0123456789.123456789.123456789.12
+        .data = (const uint8_t *)"the cat sat on the mat singinging",
+        .num = sizeof("the cat sat on the mat singinging") - 1
+    };
+
+    lz_parse_result_t lz = lz_parse(src, &arena, scratch);
 
     //  0123456789.123456789.123456789.12
     // "the cat sat on the mat singinging"
@@ -183,8 +200,7 @@ int test_lz_file(void) {
     TEST_REQUIRE_EQUAL(file_result.error.type, file_error_none);
     TEST_REQUIRE_EQUAL(file_result.contents.num, 8320);
 
-    refs_t refs = refs_make(file_result.contents, &arena, scratch);
-    lz_parse_result_t lz = lz_parse(&refs, &arena, scratch);
+    lz_parse_result_t lz = lz_parse(file_result.contents, &arena, scratch);
     lz_dump(&lz, "titlescreen.txt");
     byte_array_view_t compressed = lz_serialise(&lz, &arena);
     byte_array_view_t expanded = lz_deserialise(compressed, &arena);
@@ -449,8 +465,7 @@ int test_compare_methods(void) {
     TEST_REQUIRE_EQUAL(file_result.contents.num, 10240);
 
     // Do lz compression
-    refs_t refs = refs_make(file_result.contents, &arena, scratch);
-    lz_parse_result_t lz = lz_parse(&refs, &arena, scratch);
+    lz_parse_result_t lz = lz_parse(file_result.contents, &arena, scratch);
     lz_dump(&lz, "test_0.txt");
     byte_array_view_t compressed = lz_serialise(&lz, &arena);
     byte_array_view_t expanded = lz_deserialise(compressed, &arena);
@@ -530,7 +545,8 @@ int test_compare_methods(void) {
 
 
 int test_run(void) {
-    return test_lz_simple()
+    return test_refs()
+        || test_lz_simple()
         || test_lz_file()
         || test_bitstream()
         || test_sort()

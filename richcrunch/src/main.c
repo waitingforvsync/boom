@@ -1,7 +1,6 @@
 #include "arena.h"
 #include "file.h"
 #include "lz.h"
-#include "refs.h"
 #ifdef TESTS_ENABLED
 #include "test/test.h"
 #endif
@@ -92,8 +91,8 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Warning: missing output filename\n");
     }
 
-    arena_t arena = arena_make(0x800000);
-    arena_t scratch = arena_make(0x800000);
+    arena_t arena = arena_make(0x1000000);
+    arena_t scratch = arena_make(0x1000000);
 
     file_read_result_t src_file = file_read_binary(input_filename, &arena);
     if (src_file.error.type != file_error_none) {
@@ -101,8 +100,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    refs_t refs = refs_make(src_file.contents, &arena, scratch);
-    lz_parse_result_t lz = lz_parse(&refs, &arena, scratch);
+    lz_parse_result_t lz = lz_parse(src_file.contents, &arena, scratch);
     if (log_filename) {
         lz_dump(&lz, log_filename);
     }

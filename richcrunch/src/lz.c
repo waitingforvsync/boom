@@ -1,6 +1,7 @@
 #include "bitreader.h"
 #include "bitwriter.h"
 #include "lz.h"
+#include "refs.h"
 #include "utils.h"
 #include <assert.h>
 #include <stdio.h>
@@ -31,23 +32,32 @@ static uint32_t get_token_cost(token_t t, uint32_t num_fixed_bits) {
 }
 
 
-lz_parse_result_t lz_parse(const refs_t *refs, arena_t *arena, arena_t scratch) {
+lz_parse_result_t lz_parse(byte_array_view_t src, arena_t *arena, arena_t scratch) {
+    assert(arena);
+    assert(src.data);
+
+    // Reserve a piece of scratch space for holding the refs result
+    arena_t refs_arena = arena_alloc_subarena(&scratch, 0x400000);
+    refs_t refs = refs_make(src, &refs_arena, scratch);
+
+    // Parse the source data with differing numbers of fixed offset bits, and choose the best one at the end
     lz_item_array_span_t items_array[8] = {0};
 
     for (uint32_t n = 0; n < 8; n++) {
         uint32_t num_fixed_bits = n + 1;
 
         // Make a list of optimal tokens for each source index
-        lz_item_array_span_t items = lz_item_array_span_make(refs_num(refs) + 1, &scratch);
+        // We reserve an extra element which represents the "off the end" element which previous elements can point to
+        lz_item_array_span_t items = lz_item_array_span_make(src.num + 1, &scratch);
         items_array[n] = items;
 
         uint32_t max_offset = 256 << num_fixed_bits;
 
-        for (uint32_t i = refs_num(refs); i-- > 0;) {
+        for (uint32_t i = src.num; i-- > 0;) {
             lz_item_t *item = lz_item_array_span_at(items, i);
             item->total_cost = UINT32_MAX;
 
-            token_array_view_t tokens = refs_get_tokens(refs, i);
+            token_array_view_t tokens = refs_get_tokens(&refs, i);
 
             for (uint32_t j = 0; j < tokens.num; j++) {
                 token_t token = token_array_view_get(tokens, j);
@@ -91,8 +101,8 @@ lz_parse_result_t lz_parse(const refs_t *refs, arena_t *arena, arena_t scratch) 
 
     // Now build the final token stream by walking the token list from the first element
     lz_item_array_span_t items = items_array[best_n];
-    lz_item_array_t result = lz_item_array_make(refs_num(refs), arena);
-    for (uint32_t i = 0; i < refs_num(refs); i += token_get_length(lz_item_array_span_get(items, i).token)) {
+    lz_item_array_t result = lz_item_array_make(src.num, arena);
+    for (uint32_t i = 0; i < src.num; i += token_get_length(lz_item_array_span_get(items, i).token)) {
         lz_item_array_add(&result, lz_item_array_span_get(items, i), arena);
     }
 
