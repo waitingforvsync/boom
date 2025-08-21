@@ -17,11 +17,11 @@ count = &79
     LSR bitstream
     BNE samebyte
 
-compressed_src = P%+1
+compressed_lz_src = P%+1
     LDY &FFFF
-    INC compressed_src
+    INC compressed_lz_src
     BNE P%+5
-    INC compressed_src+1
+    INC compressed_lz_src+1
     STY bitstream
     ROR bitstream
 .samebyte
@@ -106,7 +106,7 @@ compressed_src = P%+1
     RTS
 
 
-.decompress
+.decompress_lz
     LDA #1
     STA bitstream
 

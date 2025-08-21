@@ -1,0 +1,33 @@
+CLEAR &1200, &5800
+ORG &1200
+
+.start_huffman
+
+INCLUDE "decompress_huffman.6502"
+.compressed_huffman_data
+INCBIN "titlescreen_huffman.bin"
+
+.entry_huffman
+    LDX #0
+    .vduloop
+    LDA vdus,X:JSR &FFEE
+    INX
+    CPX #vdus_end-vdus
+    BNE vduloop
+
+    LDA #LO(compressed_huffman_data):STA compressed_huffman_src
+    LDA #HI(compressed_huffman_data):STA compressed_huffman_src+1
+    LDA #LO(&5800):STA dest
+    LDA #HI(&5800):STA dest+1
+    JMP decompress_huffman
+
+.vdus
+    EQUB 22, 5
+    EQUB 19, 1, 4, 0, 0, 0
+    EQUB 19, 2, 1, 0, 0, 0
+    EQUB 19, 3, 3, 0, 0, 0
+    EQUB 31, 0, 27
+    EQUB 23, 0, 10, 32, 0, 0, 0, 0, 0, 0
+    .vdus_end
+
+SAVE "HUFFMAN", start_huffman, P%, entry_huffman

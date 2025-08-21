@@ -1,11 +1,13 @@
-ORG &1900
-.start
+CLEAR &1200, &5800
+ORG &1200
 
-INCLUDE "lz_decompress.6502"
-.compressed_data
-INCBIN "titlescreen_compressed.bin"
+.start_lz
 
-.entry
+INCLUDE "decompress_lz.6502"
+.compressed_lz_data
+INCBIN "titlescreen_lz.bin"
+
+.entry_lz
     LDX #0
     .vduloop
     LDA vdus,X:JSR &FFEE
@@ -13,11 +15,11 @@ INCBIN "titlescreen_compressed.bin"
     CPX #vdus_end-vdus
     BNE vduloop
 
-    LDA #LO(compressed_data):STA compressed_src
-    LDA #HI(compressed_data):STA compressed_src+1
+    LDA #LO(compressed_lz_data):STA compressed_lz_src
+    LDA #HI(compressed_lz_data):STA compressed_lz_src+1
     LDA #LO(&5800):STA dest
     LDA #HI(&5800):STA dest+1
-    JMP decompress
+    JMP decompress_lz
 
 .vdus
     EQUB 22, 5
@@ -28,9 +30,4 @@ INCBIN "titlescreen_compressed.bin"
     EQUB 23, 0, 10, 32, 0, 0, 0, 0, 0, 0
     .vdus_end
 
-SAVE "TEST", start, P%, entry
-
-
-ORG &5800
-INCBIN "titlescreen.bin"
-SAVE "SCREEN", &5800, P%
+SAVE "LZ", start_lz, P%, entry_lz

@@ -1,9 +1,11 @@
 addr = &70
 dest = &72
 bitstream = &74
+temp = &75
 numbitvals = &80
 
 dictionary = &700
+symbollengths = &900
 
 
 .getbit
@@ -16,14 +18,35 @@ dictionary = &700
     LSR bitstream
     BNE samebyte
 
-compressed_src = P%+1
+compressed_huffman_src = P%+1
     LDY &FFFF
-    INC compressed_src
+    INC compressed_huffman_src
     BNE P%+5
-    INC compressed_src+1
+    INC compressed_huffman_src+1
     STY bitstream
     ROR bitstream
 .samebyte
+    RTS
+
+
+.get8bits
+    LDX #7
+.getbits
+    \\ Gets a value composed of a specified number of bits from the bitstream
+    \\ Note: bits must be stored reversed (most significant bit first)
+    \\ On entry:
+    \\   X = number of bits minus 1
+    \\ On exit:
+    \\   A = value lsb
+    \\   X = &FF
+    \\   Y corrupted
+    \\   temp = value msb
+    \\   C undefined
+    JSR getbit
+    ROL A
+    ROL temp
+    DEX
+    BPL getbits
     RTS
 
 
@@ -88,8 +111,7 @@ dictionary_addr = P%+1
 
 
 
-
-.huffman_decompress
+.decompress_huffman
     LDA #1
     STA bitstream
     RTS

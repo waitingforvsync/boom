@@ -1,0 +1,119 @@
+.start_huffman
+.getbit
+     1200   46 74      LSR &74
+     1202   D0 0F      BNE &1213
+     1204   AC FF FF   LDY &FFFF
+     1207   EE 05 12   INC &1205
+     120A   D0 03      BNE &120F
+     120C   EE 06 12   INC &1206
+     120F   84 74      STY &74
+     1211   66 74      ROR &74
+.samebyte
+     1213   60         RTS
+.get8bits
+     1214   A2 07      LDX #&07
+.getbits
+     1216   20 00 12   JSR &1200
+     1219   2A         ROL A
+     121A   26 75      ROL &75
+     121C   CA         DEX
+     121D   10 F7      BPL &1216
+     121F   60         RTS
+.builddictionary
+     1220   A9 01      LDA #&01
+.dicloop1
+     1222   A0 00      LDY #&00
+     1224   A2 00      LDX #&00
+.dicloop2
+     1226   DD 00 09   CMP &0900,X
+     1229   D0 07      BNE &1232
+     122B   C8         INY
+     122C   8E 00 07   STX &0700
+     122F   EE 2D 12   INC &122D
+.dicnext
+     1232   E8         INX
+     1233   D0 F1      BNE &1226
+     1235   AA         TAX
+     1236   98         TYA
+     1237   95 7F      STA &7F,X
+     1239   E8         INX
+     123A   8A         TXA
+     123B   C9 10      CMP #&10
+     123D   D0 E3      BNE &1222
+     123F   60         RTS
+.gethuffmancode
+     1240   A9 00      LDA #&00
+     1242   A2 FF      LDX #&FF
+.gethuffmanloop
+     1244   E8         INX
+     1245   20 00 12   JSR &1200
+     1248   2A         ROL A
+     1249   38         SEC
+     124A   F5 80      SBC &80,X
+     124C   B0 F6      BCS &1244
+.gethuffmanloop2
+     124E   18         CLC
+     124F   75 80      ADC &80,X
+     1251   CA         DEX
+     1252   10 FA      BPL &124E
+     1254   AA         TAX
+     1255   BD 00 07   LDA &0700,X
+     1258   60         RTS
+.decompress_huffman
+     1259   A9 01      LDA #&01
+     125B   85 74      STA &74
+     125D   60         RTS
+.compressed_huffman_data
+.entry_huffman
+     2407   A2 00      LDX #&00
+.vduloop
+     2409   BD 29 24   LDA &2429,X
+     240C   20 EE FF   JSR &FFEE
+     240F   E8         INX
+     2410   E0 21      CPX #&21
+     2412   D0 F5      BNE &2409
+     2414   A9 5E      LDA #&5E
+     2416   8D 05 12   STA &1205
+     2419   A9 12      LDA #&12
+     241B   8D 06 12   STA &1206
+     241E   A9 00      LDA #&00
+     2420   85 72      STA &72
+     2422   A9 58      LDA #&58
+     2424   85 73      STA &73
+     2426   4C 59 12   JMP &1259
+.vdus
+     2429   16
+     242A   05
+     242B   13
+     242C   01
+     242D   04
+     242E   00
+     242F   00
+     2430   00
+     2431   13
+     2432   02
+     2433   01
+     2434   00
+     2435   00
+     2436   00
+     2437   13
+     2438   03
+     2439   03
+     243A   00
+     243B   00
+     243C   00
+     243D   1F
+     243E   00
+     243F   1B
+     2440   17
+     2441   00
+     2442   0A
+     2443   20
+     2444   00
+     2445   00
+     2446   00
+     2447   00
+     2448   00
+     2449   00
+.vdus_end
+Saving file 'HUFFMAN'

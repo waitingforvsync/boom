@@ -1,0 +1,161 @@
+.start_lz
+.getbit
+     1200   46 74      LSR &74
+     1202   D0 0F      BNE &1213
+     1204   AC FF FF   LDY &FFFF
+     1207   EE 05 12   INC &1205
+     120A   D0 03      BNE &120F
+     120C   EE 06 12   INC &1206
+     120F   84 74      STY &74
+     1211   66 74      ROR &74
+.samebyte
+     1213   60         RTS
+.get8bits
+     1214   A2 07      LDX #&07
+.getbits
+     1216   20 00 12   JSR &1200
+     1219   2A         ROL A
+     121A   26 78      ROL &78
+     121C   CA         DEX
+     121D   10 F7      BPL &1216
+     121F   60         RTS
+.getgammavalue
+     1220   A2 FE      LDX #&FE
+     1222   A9 01      LDA #&01
+.getgammaloop
+     1224   20 00 12   JSR &1200
+     1227   E8         INX
+     1228   90 FA      BCC &1224
+     122A   10 EA      BPL &1216
+     122C   60         RTS
+.gethybridvaluehi
+     122D   A9 00      LDA #&00
+     122F   85 78      STA &78
+     1231   20 20 12   JSR &1220
+     1234   38         SEC
+     1235   E9 01      SBC #&01
+     1237   60         RTS
+.getcount
+     1238   A5 76      LDA &76
+     123A   D0 07      BNE &1243
+     123C   C6 77      DEC &77
+     123E   10 03      BPL &1243
+     1240   68         PLA
+     1241   68         PLA
+     1242   60         RTS
+.skip
+     1243   C6 76      DEC &76
+     1245   20 20 12   JSR &1220
+     1248   85 79      STA &79
+     124A   C9 00      CMP #&00
+     124C   60         RTS
+.updatedest
+     124D   98         TYA
+     124E   65 72      ADC &72
+     1250   85 72      STA &72
+     1252   90 02      BCC &1256
+     1254   E6 73      INC &73
+.updatedest2
+     1256   C6 79      DEC &79
+     1258   60         RTS
+.decompress_lz
+     1259   A9 01      LDA #&01
+     125B   85 74      STA &74
+     125D   20 2D 12   JSR &122D
+     1260   20 14 12   JSR &1214
+     1263   85 76      STA &76
+     1265   A5 78      LDA &78
+     1267   85 77      STA &77
+     1269   A9 00      LDA #&00
+     126B   A2 02      LDX #&02
+     126D   20 16 12   JSR &1216
+     1270   85 75      STA &75
+.decompressloop
+     1272   20 38 12   JSR &1238
+     1275   F0 12      BEQ &1289
+.literal
+     1277   20 14 12   JSR &1214
+     127A   A0 00      LDY #&00
+     127C   91 72      STA (&72),Y
+     127E   38         SEC
+     127F   20 4D 12   JSR &124D
+     1282   D0 F3      BNE &1277
+     1284   20 38 12   JSR &1238
+     1287   F0 EE      BEQ &1277
+.reference
+     1289   20 2D 12   JSR &122D
+     128C   A6 75      LDX &75
+     128E   20 16 12   JSR &1216
+     1291   49 FF      EOR #&FF
+     1293   65 72      ADC &72
+     1295   85 70      STA &70
+     1297   A5 73      LDA &73
+     1299   E5 78      SBC &78
+     129B   85 71      STA &71
+     129D   20 20 12   JSR &1220
+     12A0   85 78      STA &78
+     12A2   A0 FF      LDY #&FF
+.copyloop
+     12A4   C8         INY
+     12A5   B1 70      LDA (&70),Y
+     12A7   91 72      STA (&72),Y
+     12A9   C4 78      CPY &78
+     12AB   D0 F7      BNE &12A4
+     12AD   20 4D 12   JSR &124D
+     12B0   D0 D7      BNE &1289
+     12B2   F0 BE      BEQ &1272
+Length of decompress:  180 bytes 
+.compressed_lz_data
+.entry_lz
+     1F13   A2 00      LDX #&00
+.vduloop
+     1F15   BD 35 1F   LDA &1F35,X
+     1F18   20 EE FF   JSR &FFEE
+     1F1B   E8         INX
+     1F1C   E0 21      CPX #&21
+     1F1E   D0 F5      BNE &1F15
+     1F20   A9 B4      LDA #&B4
+     1F22   8D 05 12   STA &1205
+     1F25   A9 12      LDA #&12
+     1F27   8D 06 12   STA &1206
+     1F2A   A9 00      LDA #&00
+     1F2C   85 72      STA &72
+     1F2E   A9 58      LDA #&58
+     1F30   85 73      STA &73
+     1F32   4C 59 12   JMP &1259
+.vdus
+     1F35   16
+     1F36   05
+     1F37   13
+     1F38   01
+     1F39   04
+     1F3A   00
+     1F3B   00
+     1F3C   00
+     1F3D   13
+     1F3E   02
+     1F3F   01
+     1F40   00
+     1F41   00
+     1F42   00
+     1F43   13
+     1F44   03
+     1F45   03
+     1F46   00
+     1F47   00
+     1F48   00
+     1F49   1F
+     1F4A   00
+     1F4B   1B
+     1F4C   17
+     1F4D   00
+     1F4E   0A
+     1F4F   20
+     1F50   00
+     1F51   00
+     1F52   00
+     1F53   00
+     1F54   00
+     1F55   00
+.vdus_end
+Saving file 'LZ'
