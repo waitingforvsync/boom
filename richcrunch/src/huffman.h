@@ -14,7 +14,7 @@ uint8_array_view_t huffman_build_code_lengths(uint16_array_view_t symbol_counts,
 // Gets the canonical huffman encoding for an alphabet with the given huffman code lengths.
 // Note, the most significant set bit is not part of the code - it exists in order to define the canonical code length.
 // e.g. huffman code '01' will be stored as 0b101 (5)
-//      huffman code '1010' will be stored as 0x11010 (26)
+//      huffman code '1010' will be stored as 0b11010 (26)
 // It should therefore be written with length get_bit_width(code) - 1
 uint16_array_view_t huffman_get_canonical_encoding(uint8_array_view_t code_lengths, arena_t *arena);
 

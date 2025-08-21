@@ -1,5 +1,6 @@
 #include "arena.h"
 #include "file.h"
+#include "huffman.h"
 #include "lz.h"
 #ifdef TESTS_ENABLED
 #include "test/test.h"
@@ -20,8 +21,13 @@ static void display_version(void) {
 
 
 static void display_help(void) {
-    puts("Usage: richcrunch [OPTIONS]... <input> <output>");
+    puts("Usage: richcrunch TYPE [OPTIONS]... <input> <output>");
     puts("A tool for compressing small binary files.");
+    puts("");
+    puts("Possible types:");
+    puts("  lz           Use lz style back-reference compression");
+    puts("  huffman      Use huffman tree compression");
+    puts("  lzhuff       Use huffman combined with lz compression");
     puts("");
     puts("Possible options:");
     puts("  -d <file>    Output beebasm includeable file with details");
@@ -45,6 +51,14 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
+    typedef enum compression_type_t {
+        compression_type_none,
+        compression_type_lz,
+        compression_type_huffman,
+        compression_type_lzhuff
+    } compression_type_t;
+
+    compression_type_t type = compression_type_none;
     const char *input_filename = 0;
     const char *output_filename = 0;
     const char *log_filename = 0;
@@ -71,6 +85,15 @@ int main(int argc, char *argv[]) {
                 return 1;
             }
         }
+        else if (type == compression_type_none && strcmp(argv[i], "lz") == 0) {
+            type = compression_type_lz;
+        }
+        else if (type == compression_type_none && strcmp(argv[i], "huffman") == 0) {
+            type = compression_type_huffman;
+        }
+        else if (type == compression_type_none && strcmp(argv[i], "lzhuff") == 0) {
+            type = compression_type_lzhuff;
+        }
         else if (!input_filename) {
             input_filename = argv[i];
         }
@@ -81,6 +104,11 @@ int main(int argc, char *argv[]) {
             fprintf(stderr, "Unknown parameter: %s\n", argv[i]);
             return 1;
         }
+    }
+
+    if (type == compression_type_none) {
+        fprintf(stderr, "Compression type not specified: richcrunch --help to see options\n");
+        return 1;
     }
 
     if (!input_filename) {
@@ -100,17 +128,41 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    lz_parse_result_t lz = lz_parse(src_file.contents, &arena, scratch);
-    if (log_filename) {
-        lz_dump(&lz, log_filename);
-    }
-    byte_array_view_t compressed = lz_serialise(&lz, &arena);
-    if (verify) {
-        byte_array_view_t expanded = lz_deserialise(compressed, &arena);
-        bool same = (memcmp(src_file.contents.data, expanded.data, src_file.contents.num) == 0);
-        if (!same) {
-            fprintf(stderr, "Unknown error attempting to compress file\n");
+    byte_array_view_t compressed = {0};
+
+    if (type == compression_type_lz) {
+
+        // Perform lz compression
+        lz_parse_result_t lz = lz_parse(src_file.contents, &arena, scratch);
+        if (log_filename) {
+            lz_dump(&lz, log_filename);
         }
+        compressed = lz_serialise(&lz, &arena);
+        if (verify) {
+            byte_array_view_t expanded = lz_deserialise(compressed, &arena);
+            bool same = (src_file.contents.num == expanded.num &&
+                memcmp(src_file.contents.data, expanded.data, src_file.contents.num) == 0);
+            if (!same) {
+                fprintf(stderr, "Unknown error attempting to compress file\n");
+            }
+        }
+    }
+    else if (type == compression_type_huffman) {
+
+        // Perform huffman compression
+        compressed = huffman_serialise(src_file.contents, &arena, scratch);
+        if (verify) {
+            byte_array_view_t expanded = huffman_deserialise(compressed, &arena, scratch);
+            bool same = (src_file.contents.num == expanded.num &&
+                memcmp(src_file.contents.data, expanded.data, src_file.contents.num) == 0);
+            if (!same) {
+                fprintf(stderr, "Unknown error attempting to compress file\n");
+            }
+        }
+    }
+    else if (type == compression_type_lzhuff) {
+
+        // Perform lzhuff compression
     }
 
     if (output_filename) {
