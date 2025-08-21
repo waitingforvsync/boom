@@ -32,7 +32,7 @@ void bitwriter_add_elias_gamma_value(bitwriter_t *bitwriter, uint32_t value, are
 void bitwriter_add_hybrid_value(bitwriter_t *bitwriter, uint32_t value, uint32_t fixed_bits, arena_t *arena);
 
 // Add a huffman coded value to the stream
-void bitwriter_add_huffman_code(bitwriter_t *bitwriter, huffman_code_t *huffman, uint32_t value, arena_t *arena);
+void bitwriter_add_huffman_code(bitwriter_t *bitwriter, uint16_array_view_t huffman_codes, uint32_t value, arena_t *arena);
 
 
 #endif // ifndef BITWRITER_H_

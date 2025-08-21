@@ -29,21 +29,21 @@ lzhuff_result_t lzhuff_parse(byte_array_view_t src, arena_t *arena, arena_t scra
     // Find all the back-references in the source data
     refs_t refs = refs_make(src, arena, scratch);
 
-    // Get symbol frequencies based on an initial greedy parse
-    uint16_t freqs[257] = {0};
+    // Get symbol counts based on an initial greedy parse
+    uint16_t counts[257] = {0};
     for (uint32_t i = 0; i < refs_num(&refs); ) {
         token_array_view_t tokens = refs_get_tokens(&refs, i);
         token_t biggest = token_array_view_get(tokens, tokens.num - 1);
         if (token_is_literal(biggest)) {
-            freqs[biggest.value]++;
+            counts[biggest.value]++;
         }
         else {
-            freqs[ref_symbol]++;
+            counts[ref_symbol]++;
         }
     }
 
     // Build huffman tree based on this initial symbol frequency estimate
-    huffman_code_t huff = huffman_code_make((uint16_array_view_t) VIEW(freqs), 0, arena, scratch);
+//    huffman_code_t huff = huffman_code_make((uint16_array_view_t) VIEW(freqs), 0, arena, scratch);
 
     return (lzhuff_result_t) {0};
 }

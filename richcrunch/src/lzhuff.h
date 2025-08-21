@@ -20,7 +20,7 @@ typedef struct lzhuff_item_t {
 
 
 typedef struct lzhuff_result_t {
-    huffman_code_t *huffman;
+    uint8_array_view_t huffman_lengths;
 } lzhuff_result_t;
 
 

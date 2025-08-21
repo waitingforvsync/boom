@@ -62,11 +62,11 @@ void bitwriter_add_hybrid_value(bitwriter_t *bitwriter, uint32_t value, uint32_t
 }
 
 
-void bitwriter_add_huffman_code(bitwriter_t *bitwriter, huffman_code_t *huffman, uint32_t value, arena_t *arena) {
+void bitwriter_add_huffman_code(bitwriter_t *bitwriter, uint16_array_view_t huffman_codes, uint32_t value, arena_t *arena) {
     assert(bitwriter);
     assert(bitwriter->data.data);
-    assert(huffman);
-    uint32_t huffman_length = uint8_array_view_get(huffman->symbol_lengths, value);
-    uint32_t huffman_code = uint16_array_view_get(huffman->symbol_codes, value);
-    bitwriter_add_value(bitwriter, huffman_code, huffman_length, arena);
+    assert(huffman_codes.data);
+    uint16_t huffman_code = uint16_array_view_get(huffman_codes, value);
+    assert(huffman_code != 0);
+    bitwriter_add_value(bitwriter, huffman_code, get_bit_width(huffman_code) - 1, arena);
 }

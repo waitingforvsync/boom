@@ -1,3 +1,5 @@
+#include "bitreader.h"
+#include "bitwriter.h"
 #include "huffman.h"
 #include <stdbool.h>
 
@@ -157,38 +159,21 @@ static void huffman_limit_length(uint8_array_span_t lengths, uint32_t max_code_l
 }
 
 
-static uint8_t huffman_highest_bit_length(uint8_array_span_t lengths) {
-    assert(lengths.num > 0);
-    uint8_t result = uint8_array_span_get(lengths, 0);
-    for (uint32_t i = 1; i < lengths.num; i++) {
-        uint32_t length = uint8_array_span_get(lengths, i);
-        if (length > result) {
-            result = length;
-        }
-    }
-    return result;
-}
-
-
-// Generate a default sort function for uint16_array_spans
-#define TEMPLATE_SORT_NAME uint16
-#include "sort.template.h"
-
-
-huffman_code_t huffman_code_make(uint16_array_view_t freqs, uint32_t max_code_length, arena_t *arena, arena_t scratch) {
+uint8_array_view_t huffman_build_code_lengths(uint16_array_view_t symbol_counts, uint32_t max_code_length, arena_t *arena, arena_t scratch) {
     assert(arena);
-    assert(freqs.data);
+    assert(symbol_counts.data);
 
     // @todo: handle edge cases, e.g. zero or one symbols
-    assert(freqs.num > 1);
+    assert(symbol_counts.num > 1);
 
     // Create an array for holding the huffman tree
     // This goes into scratch space as it will be discarded at the end
-    huffman_node_array_t tree = huffman_node_array_make(freqs.num * 2, &scratch);
+    huffman_node_array_t tree = huffman_node_array_make(symbol_counts.num * 2, &scratch);
 
     // Get a list of all the symbols sorted in frequency order
     // These are the leaf nodes of the tree.
-    uint32_t num_leafs = huffman_get_sorted_frequencies(freqs, &tree);
+    // num_leafs is the number of symbols which are actually used (i.e. have non-zero count)
+    uint32_t num_leafs = huffman_get_sorted_frequencies(symbol_counts, &tree);
 
     // Now build the rest of the tree from the leaf nodes
     huffman_build_tree(&tree);
@@ -203,72 +188,211 @@ huffman_code_t huffman_code_make(uint16_array_view_t freqs, uint32_t max_code_le
     if (max_code_length == 0) {
         max_code_length = 15;
     }
+
     if (uint8_array_span_get(lengths, 0) > max_code_length) {
         huffman_limit_length(lengths, max_code_length);
     }
 
-    // Use this to store bit lengths by symbol index 
-    uint8_array_span_t symbol_lengths = uint8_array_span_make(freqs.num, arena);
+    // Make the array which stores bit lengths by symbol index, which we will return.
+    // This is zero-initialised.
+    uint8_array_span_t symbol_lengths = uint8_array_span_make(symbol_counts.num, arena);
 
-    // Use this to record number of symbol values per bit length
-    uint8_array_span_t num_symbols_per_bit_length = uint8_array_span_make(
-        huffman_highest_bit_length(lengths),
-        arena
-    );
-
+    // Iterate through tree leaves (used symbols), get the code length, and store it in the symbol_lengths array
     for (uint32_t i = 0; i < num_leafs; i++) {
         // Get symbol value which corresponds to leaf index
         uint16_t symbol_index = huffman_node_array_get(&tree, i).symbol;
-        assert(symbol_index < freqs.num);
+        assert(symbol_index < symbol_counts.num);
 
         // Write symbol length for this symbol value
-        uint8_t symbol_length = uint8_array_span_get(lengths, i);
-        uint8_array_span_set(symbol_lengths, symbol_index, symbol_length);
-
-        // Increment num_symbols for the found bit length (indexed by length-1)
-        uint32_t num_symbols = uint8_array_span_get(num_symbols_per_bit_length, symbol_length - 1);
-        assert(num_symbols < 255);
-        uint8_array_span_set(num_symbols_per_bit_length, symbol_length - 1, num_symbols + 1);
+        uint8_t code_length = uint8_array_span_get(lengths, i);
+        uint8_array_span_set(symbol_lengths, symbol_index, code_length);
     }
 
-    // Build the dictionary for looking up symbol from code
-    // First copy the symbol values directly from the leaf array in highest frequency order
-    uint16_array_span_t dictionary = uint16_array_span_make(num_leafs, arena);
-    for (uint32_t i = 0; i < num_leafs; i++) {
-        uint16_array_span_set(
-            dictionary,
-            i,
-            huffman_node_array_get(&tree, num_leafs - 1 - i).symbol
-        );
-    }
-    // Now within each span of equal bit length, sort the symbol values
-    // to satisfy the canonical code property
-    uint32_t start = 0;
-    for (uint32_t i = 1; i < num_symbols_per_bit_length.num; i++) {
-        uint32_t end = start + uint8_array_span_get(num_symbols_per_bit_length, i);
-        sort_uint16(uint16_array_span_make_subspan(dictionary, start, end));
-        start = end;
-    }
+    return symbol_lengths.view;
+}
 
-    // Build the mapping of symbol -> code
-    uint16_array_span_t symbol_codes = uint16_array_span_make(freqs.num, arena);
+
+uint16_array_view_t huffman_get_canonical_encoding(uint8_array_view_t code_lengths, arena_t *arena) {
+    assert(arena);
+    assert(code_lengths.data);
+
+    uint16_array_span_t symbol_codes = uint16_array_span_make(code_lengths.num, arena);
     uint16_t code = 0;
-    uint32_t dictionary_index = 0;
-    for (uint32_t i = 0; i < num_symbols_per_bit_length.num; i++) {
-        uint32_t num_symbols = uint8_array_span_get(num_symbols_per_bit_length, i);
-        for (uint32_t n = 0; n < num_symbols; n++) {
-            uint16_t symbol = uint16_array_span_get(dictionary, dictionary_index);
-            uint16_array_span_set(symbol_codes, symbol, code);
-            dictionary_index++;
-            code++;
+    for (uint32_t length = 1; length < 16; length++) {
+        for (uint32_t i = 0; i < code_lengths.num; i++) {
+            uint8_t code_length = uint8_array_view_get(code_lengths, i);
+            if (code_length == length) {
+                uint16_array_span_set(symbol_codes, i, code | (1 << length));
+                code++;
+            }
         }
         code <<= 1;
     }
+    return symbol_codes.view;
+}
 
-    return (huffman_code_t) {
-        .symbol_lengths = symbol_lengths.view,
-        .symbol_codes = symbol_codes.view,
-        .num_symbols_per_bit_length = num_symbols_per_bit_length.view,
+
+huffman_decoder_t huffman_decoder_make(uint8_array_view_t code_lengths, arena_t *arena) {
+    assert(arena);
+    assert(code_lengths.data);
+
+    // Count how many codes there are of each bit length
+    // and build a dictionary of symbol values ordered by ascending canonical huffman code
+    uint8_array_span_t num_codes_of_length = uint8_array_span_make(16, arena);
+    uint16_array_t dictionary = uint16_array_make(code_lengths.num, arena);
+
+    uint32_t highest_code_length = 0;
+    for (uint32_t length = 1; length < 16; length++) {
+        for (uint32_t i = 0; i < code_lengths.num; i++) {
+            uint8_t code_length = uint8_array_view_get(code_lengths, i);
+
+            if (code_length == length) {
+                uint8_t *num_codes = uint8_array_span_at(num_codes_of_length, length - 1);
+                assert(*num_codes < 255);
+                (*num_codes)++;
+                highest_code_length = max_uint32(highest_code_length, length);
+                uint16_array_add(&dictionary, i, 0);
+            }
+        }
+    }
+
+    return (huffman_decoder_t) {
+        .num_codes_of_length = (uint8_array_view_t) {
+            .data = num_codes_of_length.data,
+            .num = highest_code_length
+        },
         .dictionary = dictionary.view
     };
+}
+
+
+byte_array_view_t huffman_serialise(byte_array_view_t src, arena_t *arena, arena_t scratch) {
+    assert(arena);
+    assert(src.data);
+
+    arena_t local = arena_alloc_subarena(&scratch, 0x10000);
+
+    // Count source symbols
+    uint16_t counts[256] = {0};
+    for (uint32_t i = 0; i < src.num; i++) {
+        counts[byte_array_view_get(src, i)]++;
+    }
+
+    // Get huffman encoded length of each source symbol
+    uint8_array_view_t huff = huffman_build_code_lengths(
+        (uint16_array_view_t) VIEW(counts),
+        0,
+        &local,
+        scratch
+    );
+
+    // Get canonical huffman codes
+    uint16_array_view_t huff_codes = huffman_get_canonical_encoding(huff, &local); 
+
+    // When we serialise, we have to first encode the huffman tree itself, or, in this case,
+    // the lengths of the huffman code for each symbol (from which we can deduce the canonical code)
+
+    // For compactness, we huffman encode the lengths array itself
+    // The 'symbols' are the valid bit lengths 0...15 (remembering that we always length limit to 15)
+    uint16_t huff_counts[16] = {0};
+    for (uint32_t i = 0; i < huff.num; i++) {
+        huff_counts[uint8_array_view_get(huff, i)]++;
+    }
+
+    // Get huffman encoded length of the huffman code dictionary
+    uint8_array_view_t huffdict = huffman_build_code_lengths(
+        (uint16_array_view_t) VIEW(huff_counts),
+        7,      // length limit to 7 bits
+        &local,
+        scratch
+    );
+
+    // Get canonical huffman codes for the dictionary
+    uint16_array_view_t huffdict_codes = huffman_get_canonical_encoding(huffdict, &local); 
+
+    // Make a bitwriter    
+    bitwriter_t writer = bitwriter_make(src.num, arena);
+
+    // Write length of src data
+    bitwriter_add_value(&writer, src.num & 0xFF, 8, arena);
+    bitwriter_add_value(&writer, src.num >> 8, 8, arena);
+
+    // Write code lengths of dictionary symbols
+    // They are 16 3-bit values (representing code lengths between 0 and 7)
+    assert(huffdict.num == 16);
+    for (uint32_t i = 0; i < huffdict.num; i++) {
+        bitwriter_add_value(&writer, uint8_array_view_get(huffdict, i), 3, arena);
+    }
+
+    // Write huffman encoded dictionary
+    assert(huff.num == 256);
+    for (uint32_t i = 0; i < huff.num; i++) {
+        bitwriter_add_huffman_code(
+            &writer,
+            huffdict_codes,
+            uint8_array_view_get(huff, i),
+            arena
+        );
+    }
+
+    // Write huffman encoded data
+    for (uint32_t i = 0; i < src.num; i++) {
+        bitwriter_add_huffman_code(
+            &writer,
+            huff_codes,
+            byte_array_view_get(src, i),
+            arena
+        );
+    }
+
+    return writer.data.view;
+}
+
+
+byte_array_view_t huffman_deserialise(byte_array_view_t compressed, arena_t *arena, arena_t scratch) {
+    assert(arena);
+    assert(compressed.data);
+
+    arena_t local = arena_alloc_subarena(&scratch, 0x10000);
+
+    // Make bitreader from the compressed data
+    bitreader_t reader = bitreader_make(compressed);
+
+    // Get size to decompress
+    uint8_t sizelo = bitreader_get_value(&reader, 8);
+    uint8_t sizehi = bitreader_get_value(&reader, 8);
+    uint32_t size = sizelo | (sizehi << 8);
+    byte_array_t result = byte_array_make(size, arena);
+
+    // Read huffman tree used to compress dictionary
+    uint8_t dict_lengths[16];
+    for (uint32_t i = 0; i < 16; i++) {
+        dict_lengths[i] = bitreader_get_value(&reader, 3);
+    }
+
+    huffman_decoder_t dict_decoder = huffman_decoder_make(
+        (uint8_array_view_t) VIEW(dict_lengths),
+        &local
+    );
+
+    uint8_t lengths[256];
+    for (uint32_t i = 0; i < 256; i++) {
+        lengths[i] = bitreader_get_huffman_code(&reader, dict_decoder);
+    }
+
+    huffman_decoder_t decoder = huffman_decoder_make(
+        (uint8_array_view_t) VIEW(lengths),
+        &local
+    );
+
+    // Read and expand huffman compressed data
+    for (uint32_t i = 0; i < size; i++) {
+        byte_array_add(
+            &result,
+            bitreader_get_huffman_code(&reader, decoder),
+            arena
+        );
+    }
+
+    return result.view;
 }
