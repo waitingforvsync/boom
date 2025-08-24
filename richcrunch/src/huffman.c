@@ -313,10 +313,6 @@ byte_array_view_t huffman_serialise(byte_array_view_t src, arena_t *arena, arena
     // Make a bitwriter    
     bitwriter_t writer = bitwriter_make(src.num, arena);
 
-    // Write length of src data
-    bitwriter_add_value(&writer, src.num & 0xFF, 8, arena);
-    bitwriter_add_value(&writer, src.num >> 8, 8, arena);
-
     // Write code lengths of dictionary symbols
     // They are 16 3-bit values (representing code lengths between 0 and 7)
     assert(huffdict.num == 16);
@@ -334,6 +330,10 @@ byte_array_view_t huffman_serialise(byte_array_view_t src, arena_t *arena, arena
             arena
         );
     }
+
+    // Write length of src data
+    bitwriter_add_value(&writer, src.num & 0xFF, 8, arena);
+    bitwriter_add_value(&writer, src.num >> 8, 8, arena);
 
     // Write huffman encoded data
     for (uint32_t i = 0; i < src.num; i++) {
@@ -358,12 +358,6 @@ byte_array_view_t huffman_deserialise(byte_array_view_t compressed, arena_t *are
     // Make bitreader from the compressed data
     bitreader_t reader = bitreader_make(compressed);
 
-    // Get size to decompress
-    uint8_t sizelo = bitreader_get_value(&reader, 8);
-    uint8_t sizehi = bitreader_get_value(&reader, 8);
-    uint32_t size = sizelo | (sizehi << 8);
-    byte_array_t result = byte_array_make(size, arena);
-
     // Read huffman tree used to compress dictionary
     uint8_t dict_lengths[16];
     for (uint32_t i = 0; i < 16; i++) {
@@ -384,6 +378,12 @@ byte_array_view_t huffman_deserialise(byte_array_view_t compressed, arena_t *are
         (uint8_array_view_t) VIEW(lengths),
         &local
     );
+
+    // Get size to decompress
+    uint8_t sizelo = bitreader_get_value(&reader, 8);
+    uint8_t sizehi = bitreader_get_value(&reader, 8);
+    uint32_t size = sizelo | (sizehi << 8);
+    byte_array_t result = byte_array_make(size, arena);
 
     // Read and expand huffman compressed data
     for (uint32_t i = 0; i < size; i++) {

@@ -1,11 +1,11 @@
-addr = &70
+length = &70
 dest = &72
 bitstream = &74
-temp = &75
+numsymbols = &76
+count = &77
 numbitvals = &80
 
-dictionary = &700
-symbollengths = &900
+dictionary = &900
 
 
 .getbit
@@ -42,11 +42,12 @@ compressed_huffman_src = P%+1
     \\   Y corrupted
     \\   temp = value msb
     \\   C undefined
+    LDA #0
+    .getbitsloop
     JSR getbit
     ROL A
-    ROL temp
     DEX
-    BPL getbits
+    BPL getbitsloop
     RTS
 
 
@@ -54,31 +55,34 @@ compressed_huffman_src = P%+1
     \\ Given a table of code lengths indexed by symbol value,
     \\ generate a dictionary mapping huffman code to symbol value
     \\ On entry:
-    \\   symbollengths[256] = array of code lengths indexed by symbol value
+    \\   (dest)       = array of code lengths indexed by symbol value
     \\ On exit:
     \\   dictionary[] = symbol values indexed by huffman code
     \\   numbitvals[] = number of symbols with the indexed code length
 
+    LDA #0
+    STA dictionary_addr
 	LDA #1              ; code length being searched for
 .dicloop1
-	LDY #0              ; tally of how many symbols have this code length
-	LDX #0              ; symbol value
+	LDX #0              ; tally of how many symbols have this code length
+	LDY #0              ; symbol value
 .dicloop2
-	CMP symbollengths,X
+	CMP (dest),Y
 	BNE dicnext
-	INY                 ; increment tally
+	INX                 ; increment tally
 dictionary_addr = P%+1
-    STX dictionary      ; note: must be page aligned
+    STY dictionary      ; note: must be page aligned
 	INC dictionary_addr
 .dicnext
-	INX
+	INY
+    CPY numsymbols
     BNE dicloop2        ; loop for all symbol values
 
-	TAX
-    TYA                 ; tally total
-    STA numbitvals-1,X  ; store tally total for this code length
-	INX                 ; increment code length being searched
-    TXA
+	TAY
+    TXA                 ; tally total
+    STA numbitvals-1,Y  ; store tally total for this code length
+	INY                 ; increment code length being searched
+    TYA
 	CMP #16
     BNE dicloop1        ; reloop for all code lengths until 16
 	RTS
@@ -112,6 +116,43 @@ dictionary_addr = P%+1
 
 
 .decompress_huffman
-    LDA #1
-    STA bitstream
+    LDA #1:STA bitstream
+
+    \\ Build huffman dictionary dictionary
+    LDA #0:STA numsymbols
+    .builddictloop
+    LDX #2:JSR getbits
+    LDY numsymbols:STA (dest),Y
+    INY:CPY #16
+    STY numsymbols
+    BNE builddictloop
+
+    JSR builddictionary
+
+    \\ Expand 'proper' huffman dictionary
+    LDA #0:STA count:STA count+1:STA numsymbols
+    .builddict2loop
+    JSR gethuffmancode
+    LDY count:STA (dest),Y
+    INC count
+    BNE builddict2loop
+
+    JSR builddictionary
+
+    JSR get8bits:STA length
+    JSR get8bits:STA length+1
+
+    .decompress_loop
+    JSR gethuffmancode
+    LDY count:STA (dest),Y
+    INY:BNE adjustmsbs
+    INC count+1:INC dest+1
+    .adjustmsbs
+    STY count
+    CPY length
+    BNE decompress_loop
+    LDA count+1
+    CMP length+1
+    BNE decompress_loop
+
     RTS
