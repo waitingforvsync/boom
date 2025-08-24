@@ -4,6 +4,7 @@
 #include "arena.h"
 #include "byte_array.h"
 #include "token.h"
+#include "utils.h"
 
 
 typedef struct lz_item_t {
@@ -37,6 +38,8 @@ byte_array_view_t lz_serialise(const lz_parse_result_t *lz, arena_t *arena);
 
 // Deserialise the compressed bitstream
 byte_array_view_t lz_deserialise(byte_array_view_t compressed, arena_t *arena);
+
+
 
 
 #endif // ifndef LZ_H_

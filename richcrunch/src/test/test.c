@@ -5,6 +5,7 @@
 #include "file.h"
 #include "huffman.h"
 #include "lz.h"
+#include "lzhuff.h"
 #include "refs.h"
 #include "test.h"
 #include <stdio.h>
@@ -501,6 +502,13 @@ int test_compare_methods(void) {
         );
     }
 
+    // Do lzhuff compression
+    {
+        lzhuff_result_t lzhuff = lzhuff_parse(file_result.contents, &arena, scratch);
+        printf("lzhuff %d\n",
+            (lzhuff_item_array_view_get(lzhuff.items, 0).total_cost + 7) / 8
+        );
+    }
 
     arena_deinit(&scratch);
     arena_deinit(&arena);

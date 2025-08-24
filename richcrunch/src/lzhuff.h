@@ -5,6 +5,7 @@
 #include "byte_array.h"
 #include "huffman.h"
 #include "token.h"
+#include "uint8_array.h"
 #include <stdint.h>
 
 
@@ -20,7 +21,7 @@ typedef struct lzhuff_item_t {
 
 
 typedef struct lzhuff_result_t {
-    uint8_array_view_t huffman_lengths;
+    lzhuff_item_array_view_t items;
 } lzhuff_result_t;
 
 
