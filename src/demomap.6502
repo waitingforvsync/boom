@@ -1,5 +1,26 @@
 .demomap
+map_offsets_size = 28
 {
+	.offsets_start
+		EQUW vertex_xlo - demomap
+		EQUW vertex_xhi - demomap
+		EQUW vertex_ylo - demomap
+		EQUW vertex_yhi - demomap
+
+		EQUW contour_vertex_lists - demomap
+		EQUW contour_subzone_lists - demomap
+		EQUW contour_edge_colour_lists - demomap
+
+		EQUW subzone_start_list_index - demomap - 1
+		EQUW subzone_num_verts - demomap - 1
+		EQUW subzone_zone_index - demomap - 1
+
+		EQUW zone_floor_heights - demomap
+		EQUW zone_ceiling_heights - demomap
+		EQUW zone_floor_colours - demomap
+		EQUW zone_ceiling_colours - demomap
+	.offsets_end
+
 	.start_x
 		EQUB 15
 	.start_y
@@ -8,69 +29,72 @@
 		EQUB 0
 	.start_subzone
 		EQUB 1
-	.offsets_start
-		EQUW vertex_x - demomap
-		EQUW vertex_y - demomap
-		EQUW edge_colours - demomap - 1
-		EQUW subzone_vertex_lists - demomap
-		EQUW subzone_edge_lists - demomap
-		EQUW subzone_list_start_indices - demomap - 1
-		EQUW subzone_zone_indices - demomap - 1
-		EQUW subzone_num_verts - demomap - 1
-		EQUW zone_floor_heights - demomap
-		EQUW zone_ceiling_heights - demomap
-		EQUW zone_floor_colours - demomap
-		EQUW zone_ceiling_colours - demomap
 		
 
-	\\ https://www.desmos.com/calculator/h49zizxuzm
+	\\ https://www.desmos.com/calculator/ggvsw4ivok
 
 	\\ Vertex data
+	\\ outer hexagon in clockwise order
+	vx0 = 746 : vx1 = 746 : vx2 = 390 : vx3 = 263 : vx4 = 263 : vx5 = 478
+	vy0 = 100 : vy1 = 550 : vy2 = 650 : vy3 = 397 : vy4 = 266 : vy5 = 15
+	\\ inner pentagon in clockwise order
+	vx6 = 640 : vx7 = 620 : vx8 = 500 : vx9 = 450 : vx10= 560
+	vy6 = 290 : vy7 = 410 : vy8 = 420 : vy9 = 300 : vy10= 250
+
+	.vertex_xlo
+		EQUB LO(vx0), LO(vx1), LO(vx2), LO(vx3), LO(vx4), LO(vx5)
+		EQUB LO(vx6), LO(vx7), LO(vx8), LO(vx9), LO(vx10)
+	.vertex_xhi
+		EQUB HI(vx0), HI(vx1), HI(vx2), HI(vx3), HI(vx4), HI(vx5)
+		EQUB HI(vx6), HI(vx7), HI(vx8), HI(vx9), HI(vx10)
+	.vertex_ylo
+		EQUB LO(vy0), LO(vy1), LO(vy2), LO(vy3), LO(vy4), LO(vy5)
+		EQUB LO(vy6), LO(vy7), LO(vy8), LO(vy9), LO(vy10)
+	.vertex_yhi
+		EQUB HI(vy0), HI(vy1), HI(vy2), HI(vy3), HI(vy4), HI(vy5)
+		EQUB HI(vy6), HI(vy7), HI(vy8), HI(vy9), HI(vy10)
+
+	\\ When we add the inner pentagon, these are the polys:
+	\\ (0,1,7,6) (1,2,8,7) (2,3,4,9,8) (4,5,10,9) (5,0,6,10) (6,7,8,9,10)
 		
-	; Vertex positions divided by 32
-	.vertex_x EQUB 24, 24, 12,  9,  9, 12,   20, 19, 15, 14, 18
-	.vertex_y EQUB  3, 17, 20, 12,  8,  0,    9, 13, 13,  9,  8
 
+	\\ Contour data
 
-	\\ Edge data (index 0 is invalid)
-
-	; Edge colour
-	.edge_colours
-		EQUB colour_dark_blue
-		EQUB colour_bright_blue
-		EQUB colour_violet
-		EQUB colour_purple
-		EQUB colour_violet
-		EQUB colour_deep_blue
-
-
-	\\ Subzone definitions
-
-	; A reversed list of all the vertex indices
-	.subzone_vertex_lists
-		.subzone_1_verts EQUB 5, 4, 3, 2, 1, 0
-		.subzone_2_verts
+	; A reversed list of all the contour vertex indices
+	.contour_vertex_lists
+		.contour_1_verts EQUB 5, 4, 3, 2, 1, 0
+		.contour_2_verts
 		
-	; A reversed list of all the edge indices
-	.subzone_edge_lists
-		.subzone_1_edges EQUB 0, 0, 0, 0, 0, 0		; all solid walls
-;		.subzone_1_edges EQUB 6, 5, 4, 3, 2, 1
+	; A reversed list of all the contour subzone indices
+	; They refer to the subzone which is between vertex n and n+1
+	.contour_subzone_lists
+		.contour_1_subzones EQUB 0, 0, 0, 0, 0, 0		; all solid walls
+
+	; A reversed list of all the contour edge colours
+	.contour_edge_colour_lists
+		.contour_1_edge_colours
+			EQUB colour_dark_blue
+			EQUB colour_bright_blue
+			EQUB colour_violet
+			EQUB colour_purple
+			EQUB colour_violet
+			EQUB colour_deep_blue
 
 
 	\\ Subzone data (index 0 is invalid)
 
 	; Subzone list indices
-	.subzone_list_start_indices
-		EQUB subzone_1_verts - subzone_vertex_lists
-		
-	; Subzone zone indices
-	.subzone_zone_indices
-		EQUB 0
+	.subzone_start_list_index
+		EQUB contour_1_verts - contour_vertex_lists
 		
 	; Subzone vertex count, minus one
 	.subzone_num_verts
-		EQUB subzone_2_verts - subzone_1_verts - 1
+		EQUB contour_2_verts - contour_1_verts - 1
 
+	; Subzone zone indices
+	.subzone_zone_index
+		EQUB 0
+		
 
 	\\ Zone data
 

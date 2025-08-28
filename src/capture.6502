@@ -65,7 +65,7 @@
 
 
 .capture
-{
+
 	\\ set up initial lines
 	
 	; [0] is the lower line
@@ -83,10 +83,11 @@
 
 	LDY playersubzone
 	JSR initialise_subzone
-	LDA #0:STA szc_lower_bounds
-	LDA #1:STA szc_upper_bounds
+	LDA #0:STA szc_lower_bounds+0
+	LDA #1:STA szc_upper_bounds+0
 
-	LDY playerzone:LDA (zone_ceiling_colours),Y:TAY
+	LDX playerzone
+	.capture_sm_zone_ceiling_colours LDY &FFFF,X
 	LDA colourtab0,Y:STA line_colour0+1
 	LDA colourtab1,Y:STA line_colour1+1
 	
@@ -102,7 +103,7 @@
 
 	; Now go round the initial contour looking for such a point
 	; We start at startcontindex (the index we obtained last frame), assuming that not much will have changed.	
-	LDY startcontindex:JSR get_relative_vertex_pos
+	LDY startcontindex:;JSR get_relative_vertex_pos
 
 	; copy the dx,dy return values to a "safe" place because getworldangle corrupts them
 	STA dy0+1:LDA dy:STA dy0
@@ -117,7 +118,7 @@
 	; OK, we are now iterating clockwise round the contour, looking to see if this edge
 	; crosses the boundary angle
 	LDY startcontindex:DEY:BPL P%+4:LDY cont_num_verts:STY startcontindex
-	JSR get_relative_vertex_pos
+	;JSR get_relative_vertex_pos
 	STA dy1+1:LDA dy:STA dy1
 	LDA dx+1:STA dx1+1:LDA dx:STA dx1
 	JSR getworldangle
@@ -132,4 +133,3 @@
 
 
 	RTS
-}

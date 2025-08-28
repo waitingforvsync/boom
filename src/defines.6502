@@ -139,8 +139,13 @@ ORG 0
 .anglediff			SKIP 2
 
 ; game
-.playerx			SKIP 3
-.playery			SKIP 3
+.playeryfrac		SKIP 1
+.playerxfrac		SKIP 1
+.playerylo			SKIP 1
+.playerxlo			SKIP 1
+.playeryhi			SKIP 1
+.playerxhi			SKIP 1
+
 .playerz			SKIP 2
 .playerangle		SKIP 2
 .playersubzone		SKIP 1
@@ -164,29 +169,15 @@ ORG 0
 .dydxlo				SKIP 1
 .dydxhi				SKIP 1
 
-; map related:
-; vert_ = vertex data
-; edge_ = edge data
-; cont_ = contour data
-; sz_   = subzone data
-; zone_ = zone data
-.map_ptrs
-.vert_xs				SKIP 2
-.vert_ys				SKIP 2
-.edge_colours			SKIP 2
+; Contour data base addrs
 .cont_vertices_base		SKIP 2
-.cont_edges_base		SKIP 2
-.sz_cont_indices		SKIP 2
-.sz_zone_indices		SKIP 2
-.sz_vert_counts			SKIP 2
-.zone_floor_heights		SKIP 2
-.zone_ceiling_heights	SKIP 2
-.zone_floor_colours		SKIP 2
-.zone_ceiling_colours	SKIP 2
-num_map_offsets = P%-map_ptrs
+.cont_subzones_base		SKIP 2
+.cont_edge_colours_base	SKIP 2
 
+; Current contour data
 .cont_vertices			SKIP 2
-.cont_edges				SKIP 2
+.cont_subzones			SKIP 2
+.cont_edge_colours		SKIP 2
 .cont_num_verts			SKIP 1
 
 .start
