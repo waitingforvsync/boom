@@ -1,29 +1,15 @@
+\\ Assemble !BOOT file
 INCLUDE "boot.6502"
 
-\\ If FALSE, we have 4 pixel high dither blocks (slower)
-\\ If TRUE, we have 2 pixel high dither blocks (faster)
-DITHER2 = TRUE	; FALSE is not supported for the moment
+\\ Assemble the BOOM executable
 
 INCLUDE "defines.6502"
 
 ORG codestart
-IF DITHER2
-	INCLUDE "linesprites2.6502"
-ELSE
-	INCLUDE "linesprites.6502"
-ENDIF
+INCLUDE "linesprites.6502"
 INCLUDE "indexeddata.6502"
-INCLUDE "distancealongray.6502"
-INCLUDE "getworldangle.6502"
+INCLUDE "drawline.6502"
 INCLUDE "irq.6502"
-IF DITHER2
-	INCLUDE "drawline2.6502"
-ELSE
-	INCLUDE "drawline.6502"
-ENDIF
-INCLUDE "applyperspective.6502"
-INCLUDE "calcworldnormalquadrant.6502"
-INCLUDE "clippeddistance.6502"
 INCLUDE "mulsin.6502"
 INCLUDE "screen.6502"
 INCLUDE "main.6502"
@@ -36,11 +22,6 @@ INCLUDE "demomap.6502"
 \\ Anything from here can be trashed after it has been executed
 INCLUDE "entry.6502"
 INCLUDE "buildtables.6502"
-IF DITHER2
-	INCLUDE "buildcode2.6502"
-ELSE
-	INCLUDE "buildcode.6502"
-ENDIF
-;INCLUDE "buildcolours.6502"
+INCLUDE "buildcode.6502"
 
 SAVE "BOOM", codestart, P%, entry

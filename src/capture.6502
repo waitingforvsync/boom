@@ -92,44 +92,8 @@
 	LDA colourtab1,Y:STA line_colour1+1
 	
 	LDA #2:STA numlines
-		
+	
 	\\ Get start index for iteration round the initial subzone
 	
-	; Get the angle of the second column of the screen
-	; We are looking for an edge which starts at a lesser angle and finishes on a greater or equal one
-	SEC
-	LDA playerangle:SBC #fov_offset-1:STA tempangle
-	LDA playerangle+1:SBC #0:AND #3:STA tempangle+1
-
-	; Now go round the initial contour looking for such a point
-	; We start at startcontindex (the index we obtained last frame), assuming that not much will have changed.	
-	LDY startcontindex:;JSR get_relative_vertex_pos
-
-	; copy the dx,dy return values to a "safe" place because getworldangle corrupts them
-	STA dy0+1:LDA dy:STA dy0
-	LDA dx+1:STA dx0+1:LDA dx:STA dx0
-
-	; compare the world angle to the second column angle
-	; while we're at it, store the difference in X for later
-	JSR getworldangle
-	SEC:SBC tempangle:TAX:LDA angle+1:SBC tempangle+1:AND #2
-	BEQ lookbackwards		; this indicates that we need to search backwards for the new edge
-
-	; OK, we are now iterating clockwise round the contour, looking to see if this edge
-	; crosses the boundary angle
-	LDY startcontindex:DEY:BPL P%+4:LDY cont_num_verts:STY startcontindex
-	;JSR get_relative_vertex_pos
-	STA dy1+1:LDA dy:STA dy1
-	LDA dx+1:STA dx1+1:LDA dx:STA dx1
-	JSR getworldangle
-
-	.lookbackwards
-
-	; If we came here, we are now iterating anticlockwise round the contour, looking for an
-	; edge which crosses the boundary angle.
-	; First we have to redesignate dx0,dy0 as dx1,dy1 as this is now potentially an endpoint.
-	LDA dx0:STA dx1:LDA dx0+1:STA dx0+1
-	LDA dy0:STA dy1:LDA dy0+1:STA dy1+1
-
 
 	RTS

@@ -1,4 +1,4 @@
-\\ Thick line 'sprites' for 2 pixel high dither blocks
+\\ Thick line 'sprites' for 4 pixel high dither blocks
 
 .blockoffset
 	EQUB block0000-blockdefs
@@ -9,7 +9,6 @@
 	EQUB block0101-blockdefs
 	EQUB block0110-blockdefs
 	EQUB block0111-blockdefs
-
 	EQUB block1000-blockdefs
 	EQUB block1001-blockdefs
 	EQUB block1010-blockdefs
@@ -18,28 +17,11 @@
 	EQUB block1101-blockdefs
 	EQUB block1110-blockdefs
 	EQUB block1111-blockdefs
-
-.blockoffset_reverse
-	EQUB block0111-blockdefs
-	EQUB block0110-blockdefs
-	EQUB block0101-blockdefs
-	EQUB block0100-blockdefs
-	EQUB block0011-blockdefs
-	EQUB block0010-blockdefs
-	EQUB block0001-blockdefs
-	EQUB block0000-blockdefs
-
-	EQUB block1111-blockdefs
-	EQUB block1110-blockdefs
-	EQUB block1101-blockdefs
-	EQUB block1100-blockdefs
-	EQUB block1011-blockdefs
-	EQUB block1010-blockdefs
-	EQUB block1001-blockdefs
-	EQUB block1000-blockdefs
 	
-.blockdefs
+.blockdefs	
 	.block0000
+	EQUB %1111 * 17		; ####
+	EQUB %1111 * 17		; ####
 	EQUB %1111 * 17		; ####
 	EQUB %1111 * 17		; ####
 	EQUB 0
@@ -47,11 +29,15 @@
 	.block0001
 	EQUB %1110 * 17		; ###
 	EQUB %1111 * 17		; ####
+	EQUB %1111 * 17		; ####
+	EQUB %1111 * 17		; ####
 	EQUB %0001 * 17		;    #
 	EQUB 0
 	
 	.block0010
 	EQUB %1100 * 17		; ##
+	EQUB %1111 * 17		; ####
+	EQUB %1111 * 17		; ####
 	EQUB %1111 * 17		; ####
 	EQUB %0011 * 17		;   ##
 	EQUB 0
@@ -59,6 +45,8 @@
 	.block0011
 	EQUB %1100 * 17		; ##
 	EQUB %1110 * 17		; ###
+	EQUB %1111 * 17		; ####
+	EQUB %1111 * 17		; ####
 	EQUB %0011 * 17		;   ##
 	EQUB %0001 * 17		;    #
 	EQUB 0
@@ -66,12 +54,16 @@
 	.block0100
 	EQUB %1000 * 17		; #
 	EQUB %1111 * 17		; ####
+	EQUB %1111 * 17		; ####
+	EQUB %1111 * 17		; ####
 	EQUB %0111 * 17		;  ###
 	EQUB 0
 	
 	.block0101
 	EQUB %1000 * 17		; #
 	EQUB %1110 * 17		; ###
+	EQUB %1111 * 17		; ####
+	EQUB %1111 * 17		; ####
 	EQUB %0111 * 17		;  ###
 	EQUB %0001 * 17		;    #
 	EQUB 0
@@ -79,6 +71,8 @@
 	.block0110
 	EQUB %1000 * 17		; #
 	EQUB %1100 * 17		; ##
+	EQUB %1111 * 17		; ####
+	EQUB %1111 * 17		; ####
 	EQUB %0111 * 17		;  ###
 	EQUB %0011 * 17		;   ##
 	EQUB 0
@@ -87,16 +81,20 @@
 	.block1000
 	EQUB %1000 * 17		; #
 	EQUB %1100 * 17		; ##
-	EQUB %0110 * 17		;  ##
+	EQUB %1110 * 17		; ###
+	EQUB %1111 * 17		; ####
+	EQUB %0111 * 17		;  ###
 	EQUB %0011 * 17		;   ##
 	EQUB %0001 * 17		;    #
 	EQUB 0
-
+	
 	.block1001
-	EQUB %1000 * 17		; #  
+	EQUB %1000 * 17		; # 
 	EQUB %1100 * 17		; ##  
-	EQUB %0110 * 17		;  ## 
-	EQUB %0010 * 17		;   #
+	EQUB %1110 * 17		; ### 
+	EQUB %1110 * 17		; ### 
+	EQUB %0111 * 17		;  ###
+	EQUB %0011 * 17		;   ##
 	EQUB %0001 * 17		;    #
 	EQUB %0001 * 17		;    #
 	EQUB 0
@@ -104,18 +102,22 @@
 	.block1010
 	EQUB %1000 * 17		; # 
 	EQUB %1100 * 17		; ##  
-	EQUB %0100 * 17		;  #  
-	EQUB %0010 * 17		;   # 
+	EQUB %1100 * 17		; ##  
+	EQUB %1110 * 17		; ### 
+	EQUB %0111 * 17		;  ###
+	EQUB %0011 * 17		;   ##
 	EQUB %0011 * 17		;   ##
 	EQUB %0001 * 17		;    #
 	EQUB 0
 	
 	.block1011
-	EQUB %1000 * 17		; # 
-	EQUB %1100 * 17		; ## 
-	EQUB %0100 * 17		;  #  
-	EQUB %0010 * 17		;   # 
-	EQUB %0010 * 17		;   # 
+	EQUB %1100 * 17		; # 
+	EQUB %1110 * 17		; ## 
+	EQUB %1111 * 17		; ##  
+	EQUB %1111 * 17		; ### 
+	EQUB %0011 * 17		;  ## 
+	EQUB %0001 * 17		;   ##
+	EQUB %0001 * 17		;   ##
 	EQUB %0001 * 17		;    #
 	EQUB %0001 * 17		;    #
 	EQUB 0
@@ -123,8 +125,10 @@
 	.block1100
 	EQUB %1000 * 17		; #
 	EQUB %1000 * 17		; #   
-	EQUB %0100 * 17		;  #  
-	EQUB %0110 * 17		;  ## 
+	EQUB %1100 * 17		; ##  
+	EQUB %1110 * 17		; ### 
+	EQUB %0111 * 17		;  ###
+	EQUB %0111 * 17		;  ###
 	EQUB %0011 * 17		;   ##
 	EQUB %0001 * 17		;    #
 	EQUB 0
@@ -132,9 +136,11 @@
 	.block1101
 	EQUB %1000 * 17		; #
 	EQUB %1000 * 17		; #  
-	EQUB %0100 * 17		;  #  
-	EQUB %0110 * 17		;  ##
-	EQUB %0010 * 17		;   # 
+	EQUB %1100 * 17		; ##  
+	EQUB %1110 * 17		; ### 
+	EQUB %0110 * 17		;  ## 
+	EQUB %0111 * 17		;  ###
+	EQUB %0011 * 17		;   ##
 	EQUB %0001 * 17		;    #
 	EQUB %0001 * 17		;    #
 	EQUB 0
@@ -142,9 +148,11 @@
 	.block1110
 	EQUB %1000 * 17		; #
 	EQUB %1000 * 17		; # 
-	EQUB %0100 * 17		;  #  
-	EQUB %0100 * 17		;  #  
-	EQUB %0010 * 17		;   # 
+	EQUB %1100 * 17		; ##  
+	EQUB %1100 * 17		; ##  
+	EQUB %0110 * 17		;  ## 
+	EQUB %0111 * 17		;  ###
+	EQUB %0011 * 17		;   ##
 	EQUB %0011 * 17		;   ##
 	EQUB %0001 * 17		;    #
 	EQUB 0
@@ -152,10 +160,13 @@
 	.block1111
 	EQUB %1000 * 17		; #
 	EQUB %1000 * 17		; # 
-	EQUB %0100 * 17		;  #  
-	EQUB %0100 * 17		;  #  
-	EQUB %0010 * 17		;   # 
-	EQUB %0010 * 17		;   #
+	EQUB %1100 * 17		; ##  
+	EQUB %1100 * 17		; ##  
+	EQUB %0110 * 17		;  ## 
+	EQUB %0110 * 17		;  ## 
+	EQUB %0011 * 17		;   ##
+	EQUB %0011 * 17		;   ##
 	EQUB %0001 * 17		;    #
 	EQUB %0001 * 17		;    #
 	EQUB 0
+

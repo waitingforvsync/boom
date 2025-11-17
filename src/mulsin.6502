@@ -1,0 +1,64 @@
+.mulsin16
+{
+    \ On entry:
+    \ A = angle
+    \ X = lsb multiplicand
+    \ Y = msb multiplicand
+    \
+    \ On exit:
+    \ X = lsb result
+    \ Y = msb result
+
+    STX multemp1  \ store lsb multiplicand
+
+    \ calculate YX * sin A
+
+    CMP #128:AND #127:TAX:BEQ sinezero
+
+    LDA sintab,X:BEQ sinenearlyone
+    STA mullo_ptr:STA mulhi_ptr
+    EOR #255:STA mulneglo_ptr:STA mulneghi_ptr
+    BCS negativesine
+
+    \ positive sine
+
+    SEC
+    LDA (mullo_ptr),Y:SBC (mulneglo_ptr),Y:STA multemp2 \ lsb result
+    LDA (mulhi_ptr),Y:SBC (mulneghi_ptr),Y
+    CPY #128:BCC dypositive:SBC sintab,X:.dypositive
+
+    LDY multemp1   \ get lsb multiplicand
+    STA multemp1   \ store msb result
+
+    SEC
+    LDA (mulhi_ptr),Y:SBC (mulneghi_ptr),Y
+    LDY multemp1
+    CLC:ADC multemp2:TAX:BCC exit:INY:RTS
+
+    \ negative sine
+
+    .negativesine
+
+    LDA (mulneglo_ptr),Y:SBC (mullo_ptr),Y:STA multemp2 \ lsb result
+    LDA (mulneghi_ptr),Y:SBC (mulhi_ptr),Y
+    CPY #128:BCC dypositive2:CLC:ADC sintab,X:.dypositive2
+
+    LDY multemp1   \ get lsb multiplicand
+    STA multemp1   \ store msb result
+
+    SEC
+    LDA (mulhi_ptr),Y:SBC (mulneghi_ptr),Y
+    LDY multemp1
+    EOR #255:ADC multemp2:TAX:BCS exit:DEY:.exit RTS
+
+    \ sine nearly +/-1
+
+    .sinenearlyone
+    LDX multemp1
+    BCC exit
+    TXA:EOR #255:ADC #0:TAX
+    TYA:EOR #255:ADC #0
+    .sinezero
+    TAY
+    RTS
+}

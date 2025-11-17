@@ -1,4 +1,4 @@
-\\ Builds code for 2 pixel high dither blocks
+\\ Builds code for 4 pixel high dither blocks
 
 .copysnippet
 {
@@ -8,8 +8,6 @@
 	.gotit
 	STA (write),Y
 	INY
-	BNE copysnippet
-	INC write+1
 	BNE copysnippet
 	.exit
 	RTS
@@ -23,41 +21,29 @@
 \\
 \\		.loop
 \\		LDA &7000,X		BD 00 70
-\\		EOR &7002,X		5D 02 70
-\\		STA &7002,X		9D 02 70
 \\		EOR &7004,X		5D 04 70
 \\		STA &7004,X		9D 04 70
-\\		EOR &7006,X		5D 06 70
-\\		STA &7006,X		9D 06 70
 \\
 \\		EOR &7100,X		5D 00 71
 \\		STA &7100,X		9D 00 71
-\\		EOR &7102,X		5D 02 71
-\\		STA &7102,X		9D 02 71
 \\		EOR &7104,X		5D 04 71
 \\		STA &7104,X		9D 04 71
-\\		EOR &7106,X		5D 06 71
-\\		STA &7106,X		9D 06 71
 \\		  ...
 \\		EOR &7F00,X		5D 00 7F
 \\		STA &7F00,X		9D 00 7F
-\\		EOR &7F02,X		5D 02 7F
-\\		STA &7F02,X		9D 02 7F
 \\		EOR &7F04,X		5D 04 7F
 \\		STA &7F04,X		9D 04 7F
-\\		EOR &7F06,X		5D 06 7F
-\\		STA &7F06,X		9D 06 7F
 \\
 \\		TXA				8A
 \\		ADC #8			69 08
 \\		ADC #0			69 00
 \\		TAX				AA
-\\		EOR #2			49 02
+\\		EOR #4			49 04
 \\		BNE +1			D0 01
 \\		RTS				60
 \\		JMP loop		4C xx xx
 \\
-\\ total 395 (&18B) bytes
+\\ total 203 (&CB) bytes
 
 .fill_pre
 	LDA &FF00,X
@@ -66,15 +52,11 @@
 	EOR &FF00,X
 	STA &FF00,X
 .fill_pre_2
-	EOR &FF02,X
-	STA &FF02,X
 	EOR &FF04,X
 	STA &FF04,X
-	EOR &FF06,X
-	STA &FF06,X
 	EQUB &FE
 .fill_post
-	TXA:ADC #8:ADC #0:TAX:EOR #2:BNE fill_reloop
+	TXA:ADC #8:ADC #0:TAX:EOR #4:BNE fill_reloop
 	RTS
 	.fill_reloop
 	EQUB &4C
@@ -107,6 +89,9 @@
 
 
 \\ Build fill routine
+\\
+\\ If we need to grab back more memory in future, consider building this dynamically on the
+\\ stack with PHA, each time it's required.
 
 .buildfill
 {
@@ -121,7 +106,7 @@
 	BNE loop
 	JSR copysnippet		; C set on exit
 	LDA write:STA (write),Y:INY
-	LDA write+1:SBC #1:STA (write),Y
+	LDA write+1:STA (write),Y
 	RTS
 }
 

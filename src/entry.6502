@@ -157,10 +157,6 @@ ALIGN &100
 	
 	JSR buildtables
 	
-	\\ Build colour table
-	
-;	JSR buildcolours
-	
 	\\ Initialize HUD screen
 	
 	LDX #hud_rows:LDA #0:TAY
@@ -204,10 +200,10 @@ ALIGN &100
 
 .zpinitvals
 {
-	.multablo_ptr		EQUW multablo
-	.multabneglo_ptr	EQUW multabneglo
-	.multabhi_ptr		EQUW multabhi
-	.multabneghi_ptr	EQUW multabneghi
+	.mullo_ptr			EQUW multablo
+	.mulneglo_ptr		EQUW multabneglo
+	.mulhi_ptr			EQUW multabhi
+	.mulneghi_ptr		EQUW multabneghi
 	.scrnbase			EQUB HI(screenaddr2)
 	.dispscrnhi			EQUB HI(screenaddr2 DIV 8), 0
 

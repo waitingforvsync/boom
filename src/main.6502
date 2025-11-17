@@ -10,7 +10,6 @@
 	LDA #LO(demomap):STA read
 	LDA #HI(demomap):STA read+1
 	JSR initialise_map
-	JSR clear_world_angle_cache
 	
 	\\ test code for now
 	

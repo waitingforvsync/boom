@@ -1,0 +1,101 @@
+.renderlines
+
+	LDX #0:JSR drawline
+	LDX #1:JMP drawline
+
+.plotpoint
+
+	LDA x0:AND #&7C:ASL A:STA write
+	LDA y0:LSR A:LSR A:LSR A:CLC:ADC scrnbase:STA write+1
+	LDA y0:AND #7:TAY
+	LDA (write),Y:EOR #&80:STA (write),Y
+	RTS
+
+
+; Draws the line indexed by X
+
+.drawline
+
+	\\ Initialize the colour
+	
+	LDA line_colour0,X:STA linecolours:STA linecolours+4:BNE definitelynotblack
+	ORA line_colour1,X:ORA line_colour2,X:BNE definitelynotblack
+.line_up
+.line_down_steep
+	
+	RTS
+	.definitelynotblack
+	LDA line_colour1,X:STA linecolours+1:STA linecolours+3:STA linecolours+5:STA linecolours+7
+	LDA line_colour2,X:STA linecolours+2:STA linecolours+6
+	
+	LDA line_dydxhi,X:BMI line_up
+	
+	\\ line going down
+
+	CMP #2:BCS line_down_steep
+
+	\\ line going down, shallow
+	
+	LDA line_dydxlo,X:STA dydxlo
+	LDA #&80:STA acc
+	
+	; offset (write) by -&78 and Y by +&78
+	; so we can test Y passing a row boundary by checking the N flag
+
+	LDA line_x0,X:AND #&7C:ASL A:SBC #&77:PHP:STA write
+	LDA line_y0,X:LSR A:LSR A:LSR A:PLP:SBC #0:CLC:ADC scrnbase:STA write+1
+	LDA line_y0,X:ORA #&78:TAY
+	
+	SEC
+	LDA line_x1,X:SBC line_x0,X:LSR A:LSR A:STA count
+
+	.nextblock
+	
+	DEC count:BMI finishedline
+	
+	.plot4pixels
+
+	LDA #0:STA state
+	CLC
+	LDA acc
+	ADC dydxlo:ROL state
+	ADC dydxlo:ROL state
+	ADC dydxlo:ROL state
+	ADC dydxlo					; C set here
+	STA acc
+
+	LDX state
+	LDA blockoffset,X:TAX
+
+	LDA blockdefs,X
+	.plotblock
+	AND linecolours-&78,Y
+	EOR (write),Y
+	STA (write),Y
+	LDA blockdefs+1,X:BEQ finishedblock
+	INX:INY:BPL plotblock
+	INC write+1:LDY #&78
+	BNE plotblock
+	
+	.finishedblock
+	TYA:ADC #5					; using C from above
+	BMI samerow
+	
+	TAY
+	DEC write+1
+	LDA write:ADC #8:STA write
+	BCC nextblock
+	INC write+1
+	BCS nextblock
+
+	.samerow
+	SBC #7:TAY
+	LDA write:ADC #7:STA write
+	BCC nextblock
+	INC write+1
+	BCS nextblock
+
+.finishedline
+	RTS
+
+

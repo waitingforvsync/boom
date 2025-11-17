@@ -6,26 +6,23 @@
 
 .bottompalette
 	EQUB &22, &81, &A4		; magenta, cyan, yellow
+	CHECKTABLE bottompalette
 
 .toppalette
 	EQUB &23, &86, &A5		; blue, red, green
-
+	CHECKTABLE toppalette
 
 \\ Used by line renderer / timer bars
 
 .leftmask
 	EQUB &FF,&77,&33,&11
+	CHECKTABLE leftmask
 .rightmask
 	EQUB &00,&88,&CC,&EE
+	CHECKTABLE rightmask
 .pixelmask
 	EQUB &88,&44,&22,&11
-
-
-\\ Used by distancealongray
-
-.dartablelo
-	EQUB LO(distancealongray0), LO(distancealongray1), LO(distancealongray2_stub), LO(distancealongray3_stub)
-
+	CHECKTABLE pixelmask
 
 \\ Colour tables
 
@@ -61,6 +58,7 @@ ENDMACRO
 	COL Green, Red,   Red,   Red        : colour_orange= 19
 	COL Green, Red,   Green, Red        : colour_olive = 20
 	COL Green, Green, Green, Red        : colour_autumn_green = 21
+	CHECKTABLE colourtab0
 	
 .colourtab1
 	COL Black, Black, Black, Black      ; colour_black
@@ -85,7 +83,7 @@ ENDMACRO
 	COL Red,   Red,   Green, Red        ; colour_orange
 	COL Red,   Green, Red,   Green      ; colour_olive
 	COL Green, Red,   Green, Green      ; colour_autumn_green
-
+	CHECKTABLE colourtab1
 
 \\ Used by timer bars
 
@@ -101,6 +99,7 @@ bar_yellow = &FF
 	EQUB bar_yellow
 	EQUB (bar_cyan AND &AA) OR (bar_yellow AND &55)
 	EQUB bar_magenta
+	CHECKTABLE barcol1
 .barcol2
 	EQUB bar_magenta
 	EQUB (bar_cyan AND &AA) OR (bar_magenta AND &55)
@@ -109,11 +108,9 @@ bar_yellow = &FF
 	EQUB bar_yellow
 	EQUB (bar_yellow AND &AA) OR (bar_cyan AND &55)
 	EQUB bar_magenta
+	CHECKTABLE barcol2
 
-
-IF P% > codestart+&100
-	ERROR "Tables overran page"
-ENDIF
 	
-
+.endaligned
 ALIGN &100
+PRINT "Wasted", ~(P%-endaligned), "bytes"

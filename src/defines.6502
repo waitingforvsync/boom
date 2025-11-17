@@ -1,8 +1,6 @@
 screen_width = 128				; screen width in pixels
 screen_height = 128				; screen height in pixels
 
-player_fov = 128				; half horizontal field of view angle
-fov_offset = player_fov - 1		; offset of the leftmost angle in the view
 player_radius = 15
 player_height = 41
 
@@ -14,9 +12,15 @@ hud_rows = 3
 max_lines = 128
 max_subzones = 64
 
-world_angle_cache_lo = &1F0
-world_angle_cache_hi = &1F8
 sz_cache_indices = &300
+
+
+MACRO CHECKTABLE base
+	IF HI(P%)<>HI(base)
+		ERROR "Table crosses page boundary"
+	ENDIF
+ENDMACRO
+
 
 ORG &400
 .multablo		SKIP &200				; &400
@@ -27,36 +31,33 @@ ORG &400
 ; for now skip over pages &D-&10
 ORG &1100
 .multabneghi	SKIP &200				; &1100
-.sintable		SKIP &100				; &1300
-.atantable		SKIP &100				; &1400
-.reciptablo		SKIP &100				; &1500
-.reciptabhi		SKIP &100				; &1600
-.angletocolumn	SKIP &100				; &1700
-IF 0
-.columntoangle	SKIP &100
-ENDIF
+.reciptablo		SKIP &100				; &1300
+.reciptabhi		SKIP &100				; &1400
+.sintab			SKIP &80				; &1500
+
+.line_x0		SKIP max_lines			; &1580
+.line_x1		SKIP max_lines			; &1600
+.line_y0		SKIP max_lines			; &1680
+.line_dydxlo	SKIP max_lines			; &1700
+.line_dydxhi	SKIP max_lines			; &1780
 
 .screenaddr1	SKIP &1000				; &1800
 .tempbuffer		SKIP &100				; &2800		; line rendering can corrupt the row below the screen, use it as scratch space
-
-
-.line_x0		SKIP max_lines			; &2900
-.line_x1		SKIP max_lines			; &2980
-.line_y0		SKIP max_lines			; &2A00
-.line_dydxlo	SKIP max_lines			; &2A80
-.line_dydxhi	SKIP max_lines			; &2B00
-.line_colour0	SKIP max_lines			; &2B80
-.line_colour1	SKIP max_lines			; &2C00
-.line_next		SKIP max_lines			; &2C80
-
 
 szc_subzone_indices = tempbuffer + &00
 szc_vert_indices = tempbuffer + &40
 szc_upper_bounds = tempbuffer + &80
 szc_lower_bounds = tempbuffer + &C0
 
+.line_colour0	SKIP max_lines			; &2900
+.line_colour1	SKIP max_lines			; &2980
+.line_next		SKIP max_lines			; &2A00
 
-.codestart								; &2D00
+\\ Eventually we will put more subzone cache tables here
+
+
+ALIGN &100
+.codestart								; &2B00
 
 
 screenaddr2 = &7000
@@ -67,13 +68,9 @@ IF (screenaddr1 AND &7FF) OR (screenaddr2 AND &7FF) OR (screenaddrhud AND &7FF)
 ENDIF
 
 
-IF DITHER2
-	screenfillsize = &18B
-	screenclearsize = &34
-ELSE
-	screenfillsize = &CB
-	screenclearsize = &34
-ENDIF
+\\ Size of these generated routines
+screenfillsize = &18B
+screenclearsize = &34
 
 screenclear2 = screenaddr2 - screenclearsize
 screenclear1 = screenclear2 - screenclearsize
@@ -87,10 +84,10 @@ ORG 0
 \\ variables which need to be initialized to something
 \\ remember to update entry.6502 as more are added
 .zpinit_start
-.multablo_ptr		SKIP 2
-.multabneglo_ptr	SKIP 2
-.multabhi_ptr		SKIP 2
-.multabneghi_ptr	SKIP 2
+.mullo_ptr			SKIP 2
+.mulneglo_ptr		SKIP 2
+.mulhi_ptr			SKIP 2
+.mulneghi_ptr		SKIP 2
 .scrnbase			SKIP 1
 .dispscrnhi			SKIP 2
 
@@ -137,6 +134,8 @@ ORG 0
 .count				SKIP 1
 .tempangle			SKIP 2
 .anglediff			SKIP 2
+.multemp1			SKIP 1
+.multemp2			SKIP 1
 
 ; game
 .playeryfrac		SKIP 1

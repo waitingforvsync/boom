@@ -1,101 +1,518 @@
-.renderlines
-
-	LDX #0:JSR drawline
-	LDX #1:JMP drawline
 
 .plotpoint
 
 	LDA x0:AND #&7C:ASL A:STA write
 	LDA y0:LSR A:LSR A:LSR A:CLC:ADC scrnbase:STA write+1
 	LDA y0:AND #7:TAY
-	LDA (write),Y:EOR #&80:STA (write),Y
+	LDA x0:AND #3:TAX
+	LDA (write),Y:EOR pixelmask,X:STA (write),Y
 	RTS
 
 
-; Draws the line indexed by X
+; Render all the lines in the buffer
+; (apart from the first (index 0) which is the dummy line inserted to clip off the bottom of the screen)
 
-.drawline
+.renderlines
 
-	\\ Initialize the colour
+	LDX numlines:DEX
+
+.renderlineloop
+	STX renderlineloopx+1
+
+	; initialise the first colour byte (even scanlines)
+	LDA line_colour0,X:STA linecolours:STA linecolours+2:STA linecolours+4:STA linecolours+6
 	
-	LDA line_colour0,X:STA linecolours:STA linecolours+4:BNE definitelynotblack
-	ORA line_colour1,X:ORA line_colour2,X:BNE definitelynotblack
-.line_up
-.line_down_steep
-	
-	RTS
-	.definitelynotblack
+	; if both colours are black, don't render anything
+	ORA line_colour1,X
+	BEQ nextline
+
+	; if line is off screen, skip this line
+	LDA line_y0,X:BMI nextline
+
+	; initialise the second colour byte (odd scanlines)
 	LDA line_colour1,X:STA linecolours+1:STA linecolours+3:STA linecolours+5:STA linecolours+7
-	LDA line_colour2,X:STA linecolours+2:STA linecolours+6
 	
-	LDA line_dydxhi,X:BMI line_up
-	
-	\\ line going down
-
-	CMP #2:BCS line_down_steep
-
-	\\ line going down, shallow
-	
-	LDA line_dydxlo,X:STA dydxlo
+	; initialise line properties common to up and down lines
 	LDA #&80:STA acc
+	LDA line_dydxlo,X:STA dydxlo
+	LDA line_dydxhi,X:CMP #&80:AND #&7F:STA dydxhi 	; set C for line up
 	
-	; offset (write) by -&78 and Y by +&78
-	; so we can test Y passing a row boundary by checking the N flag
+	LDA line_x1,X:STA x1
+	LDA line_x0,X:STA x0
 
-	LDA line_x0,X:AND #&7C:ASL A:SBC #&77:PHP:STA write
-	LDA line_y0,X:LSR A:LSR A:LSR A:PLP:SBC #0:CLC:ADC scrnbase:STA write+1
-	LDA line_y0,X:ORA #&78:TAY
+	BCS line_up:JMP line_down
+
+.nextline
+	.renderlineloopx LDX #0
+	DEX
+	BNE renderlineloop		; don't render index 0
+	RTS
+
+
+\\ line going up
+
+.line_up
+{
+	; todo: subtract 1 from dydx because we SBC with C=0.
+	; in practice the difference is probably unnoticeable.
+
+	; get address of the pixel below as we are plotting upwards
+
+	; on entry:
+	; A = x0
+	; dydxlo/hi, x0, x1, acc initialised
+
+	AND #&7C:ASL A:STA write
+	LDA line_y0,X:ADC #1:LSR A:LSR A:LSR A:CLC:ADC scrnbase:STA write+1
+	LDA line_y0,X:ADC #1:AND #7:TAY
+
+	LDA dydxhi:CMP #2:BCC line_up_shallow
 	
+.line_up_steep
+
+	\\ Line with gradient >= 2
+
+	; Reduce gradient by 1 to compensate for subtracting 1 from Y when plotting the upper point
+	DEC dydxhi
+
+	; Get pixel count
+	; C already set here
+	LDA x1:SBC x0:STA count
+
+	; Get initial mask
+	LDA x0:AND #3:TAX
+	LDA pixelmask,X
+	CLC
+
+	.foreachcolumn
+	TAX		; save pixel mask
+	
+	AND linecolours,Y
+	EOR (write),Y
+	STA (write),Y
+	
+	TXA		; get back pixel mask
+	DEY:BMI crossedrow
+	
+	AND linecolours,Y
+	EOR (write),Y
+	STA (write),Y
+	.backfromcrossedrow
+	
+	DEC count:BEQ nextline
+	
+	; C clear here
+	LDA acc:SBC dydxlo:STA acc
+	TYA:SBC dydxhi:BPL samerow
+	TAY
+	LSR A:LSR A:LSR A:ORA #&E0
+	CLC:ADC write+1:STA write+1
+	TYA:AND #7
+	.samerow
+	TAY
+	
+	TXA:LSR A:BCC foreachcolumn
+	LDA write:ADC #7:STA write
+	LDA #&88
+	BCC foreachcolumn
+	INC write+1:CLC
+	BCC foreachcolumn
+	
+	.crossedrow
+	LDY #7:DEC write+1
+	AND linecolours+7
+	EOR (write),Y
+	STA (write),Y
+	BCC backfromcrossedrow
+	
+	IF (foreachcolumn EOR P%) AND &FF00
+		ERROR "Hot loop crosses page boundary"
+	ENDIF
+
+
+.line_up_shallow
+
+	\\ Line with gradient between 0 and 2
+	
+	; A contains dydxhi
+	; If it's a semi-shallow line (gradient between 1 and 2), adjust the branch destination
+	; for the code which increments y after the block is plotted.
+	CMP #1:BNE selfmodbranch
+	LDA #finishedblock2-finish_branch-2:STA finish_branch+1
+	.selfmodbranch
+	
+	\\ Determine if this line has no whole bytes and can therefore be plotted columnwise
+	
+	LDA x0:AND #3:BEQ noleftsliver
+	TAX
+	EOR #3:SEC:ADC x0:CMP x1:BCC plotleftsliver
+	SBC x0:STA count
+	LDA pixelmask,X:BNE sliver_up
+	
+	\\ Plot the leftmost sliver
+	
+	.plotleftsliver	
+	LDA pixelmask,X:STA count:BNE sliver_up
+	
+	\\ Plot byte at a time
+	
+	.noleftsliver
 	SEC
-	LDA line_x1,X:SBC line_x0,X:LSR A:LSR A:STA count
+	LDA x1:AND #&FC:SBC x0:BCC shallowlineend:LSR A:LSR A:BEQ shallowlineend:STA count
 
+	; Main loop for byte-at-a-time plotting
+	.nextblock_clc
+	CLC
 	.nextblock
 	
-	DEC count:BMI finishedline
+	DEC count:BMI shallowlineend
 	
 	.plot4pixels
 
-	LDA #0:STA state
+	LDA dydxhi:STA state
+	LDA acc
+	SBC dydxlo:ROL state
+	SBC dydxlo:ROL state
+	SBC dydxlo:ROL state
+	SBC dydxlo			; [1] C here determines whether we inc y or stay in the same line after the block is rendered
+	STA acc
+
+	LDX state
+	LDA blockoffset_reverse,X:TAX
+	LDA blockdefs,X
+
+	.plotblock
+	AND linecolours,Y
+	EOR (write),Y
+	STA (write),Y
+	
+	LDA blockdefs+1,X:.finish_branch BEQ finishedblock
+	INX:DEY:BPL plotblock
+	DEC write+1:LDY #7
+	BNE plotblock
+
+	IF (plotblock EOR P%) AND &FF00
+		ERROR "Hot loop crosses page boundary"
+	ENDIF
+
+	\\ This version for gradients between 0 and 1
+	\\ We either go back to the row above or stay where we are.
+	
+	.finishedblock
+	BCC correctrow2		; clear from [1]
+	INY:CPY #8:BCC correctrow2:LDY #0:INC write+1
+	.correctrow
 	CLC
+	.correctrow2
+	LDA write:ADC #8:STA write:BCC nextblock
+	INC write+1:BCS nextblock_clc
+	
+	\\ This version for gradients between 1 and 2
+	\\ We either stay where we are or go to the row below
+	
+	.finishedblock2
+	BCS correctrow
+	DEY:BPL correctrow2:LDY #7:DEC write+1
+	BCC correctrow2
+	
+	\\ Plot the remaining right hand sliver
+	
+	.shallowlineend
+
+	LDA x1:AND #3:BEQ finishedsliver
+	STA count
+	LDA #&88
+
+.sliver_up
+
+	\\ This routine is called to plot left and right slivers
+	\\ A = pixel mask, count = maximum number of columns to plot
+	\\ It will stop as soon as it finishes a byte column
+
+	CLC
+
+	.foreachslivercolumn
+	TAX		; save pixel mask
+	
+	AND linecolours,Y
+	EOR (write),Y
+	STA (write),Y
+	
+	TXA		; get back pixel mask
+	DEY:BMI slivercrossedrow
+	
+	AND linecolours,Y
+	EOR (write),Y
+	STA (write),Y
+	INY
+	.backfromslivercrossedrow
+
+	DEC count:BEQ finishedsliver
+	
+	; C must be clear here
+	LDA acc:SBC dydxlo:STA acc
+	TYA:SBC dydxhi:BPL sliversamerow
+	TAY
+	LSR A:LSR A:LSR A:ORA #&E0
+	CLC:ADC write+1:STA write+1
+	TYA:AND #7
+	.sliversamerow
+	TAY
+	
+	; Repeat if we are not yet at the end of the byte column
+	TXA:LSR A:BCC foreachslivercolumn
+	LDA write:ADC #7:STA write
+	BCC P%+4:INC write+1
+	
+	; If we got here it's because we were plotting the left sliver and now need to continue
+	; with the rest of the line
+	JMP noleftsliver
+
+	.finishedsliver
+	; put the self-modified branches back to their defaults (for gradient 0-1)
+	LDX #finishedblock-finish_branch-2:STX finish_branch+1
+	JMP nextline
+	
+	.slivercrossedrow
+	LDY #7:DEC write+1
+	AND linecolours+7
+	EOR (write),Y
+	STA (write),Y
+	LDY #0:INC write+1
+	BCC backfromslivercrossedrow
+}
+
+
+\\ line going down
+
+.line_down
+{
+	; on entry:
+	; A = x0
+	; dydxlo/hi, x0, x1, acc initialised
+
+	; offset (write) by -&78 and Y by +&78
+	; so we can test Y passing a row boundary by checking the N flag
+
+	AND #&7C:ASL A:SBC #&77:PHP:STA write
+	LDA line_y0,X:LSR A:LSR A:LSR A:PLP:SBC #0:CLC:ADC scrnbase:STA write+1
+	LDA line_y0,X:ORA #&78:TAY
+
+	LDA dydxhi:CMP #2:BCC line_down_shallow
+	
+.line_down_steep
+
+	\\ Line with gradient >= 2
+
+	; Reduce gradient by 1 to compensate for adding 1 to Y when plotting the lower point
+	DEC dydxhi
+
+	; Get pixel count
+	SEC:LDA x1:SBC x0:STA count
+
+	; Get initial mask
+	LDA x0:AND #3:TAX
+	LDA pixelmask,X	
+	CLC
+
+	.foreachcolumn
+	TAX		; save pixel mask
+	
+	AND linecolours-&78,Y
+	EOR (write),Y
+	STA (write),Y
+	
+	TXA		; get back pixel mask
+	INY:BMI crossedrow
+	
+	AND linecolours-&78,Y
+	EOR (write),Y
+	STA (write),Y
+	.backfromcrossedrow
+	
+	DEC count:BEQ finishedsteepline
+	
+	; C must be clear here
+	LDA acc:ADC dydxlo:STA acc
+	TYA:ADC dydxhi:BPL samerow		; C now clear
+	TAY
+	SBC #&77:LSR A:LSR A:LSR A
+	CLC:ADC write+1:STA write+1
+	TYA
+	AND #7:ORA #&78
+	.samerow
+	TAY
+	
+	TXA:LSR A:BCC foreachcolumn
+	LDA write:ADC #7:STA write
+	LDA #&88
+	BCC foreachcolumn
+	INC write+1:CLC
+	BCC foreachcolumn
+	
+	.crossedrow
+	LDY #&78:INC write+1
+	AND linecolours+0
+	EOR (write),Y
+	STA (write),Y
+	BCC backfromcrossedrow
+	
+	IF (foreachcolumn EOR P%) AND &FF00
+		ERROR "Hot loop crosses page boundary"
+	ENDIF
+
+	.finishedsteepline
+	JMP nextline
+
+.line_down_shallow
+
+	\\ Line with gradient between 0 and 2
+	
+	; A contains dydxhi
+	; If it's a semi-shallow line (gradient between 1 and 2), adjust the branch destination
+	; for the code which increments y after the block is plotted.
+	CMP #1:BNE selfmodbranch
+	LDA #finishedblock2-finish_branch-2:STA finish_branch+1
+	.selfmodbranch
+	
+	\\ Determine if this line has no whole bytes and can therefore be plotted columnwise
+	
+	LDA x0:AND #3:BEQ noleftsliver
+	TAX
+	EOR #3:SEC:ADC x0:CMP x1:BCC plotleftsliver
+	SBC x0:STA count
+	LDA pixelmask,X:BNE sliver_down
+	
+	\\ Plot the leftmost sliver
+	
+	.plotleftsliver	
+	LDA pixelmask,X:STA count:BNE sliver_down
+	
+	\\ Plot byte at a time
+	
+	.noleftsliver
+	SEC
+	LDA x1:AND #&FC:SBC x0:BCC shallowlineend:LSR A:LSR A:BEQ shallowlineend:STA count
+
+	; Main loop for byte-at-a-time plotting
+	.nextblock_clc
+	CLC
+	.nextblock
+	
+	DEC count:BMI shallowlineend
+	
+	.plot4pixels
+
+	LDA dydxhi:STA state
 	LDA acc
 	ADC dydxlo:ROL state
 	ADC dydxlo:ROL state
 	ADC dydxlo:ROL state
-	ADC dydxlo					; C set here
+	ADC dydxlo			; [1] C here determines whether we inc y or stay in the same line after the block is rendered
 	STA acc
 
 	LDX state
 	LDA blockoffset,X:TAX
-
 	LDA blockdefs,X
+
 	.plotblock
 	AND linecolours-&78,Y
 	EOR (write),Y
 	STA (write),Y
-	LDA blockdefs+1,X:BEQ finishedblock
+	
+	LDA blockdefs+1,X:.finish_branch BEQ finishedblock
 	INX:INY:BPL plotblock
 	INC write+1:LDY #&78
 	BNE plotblock
+
+	IF (plotblock EOR P%) AND &FF00
+		ERROR "Hot loop crosses page boundary"
+	ENDIF
+
+	\\ This version for gradients between 0 and 1
+	\\ We either go back to the row above or stay where we are.
 	
 	.finishedblock
-	TYA:ADC #5					; using C from above
-	BMI samerow
+	BCS correctrow2		; set from [1]
+	DEY:CPY #&78:BCS correctrow2:LDY #&7F:DEC write+1
+	.correctrow
+	SEC
+	.correctrow2
+	LDA write:ADC #7:STA write:BCC nextblock
+	INC write+1:BCS nextblock_clc
 	
+	\\ This version for gradients between 1 and 2
+	\\ We either stay where we are or go to the row below
+	
+	.finishedblock2
+	BCC correctrow		; set from [1]
+	INY:BPL correctrow2:LDY #&78:INC write+1
+	BCS correctrow2
+	
+	\\ Plot the remaining right hand sliver
+	
+	.shallowlineend
+
+	LDA x1:AND #3:BEQ finishedsliver
+	STA count
+	LDA #&88
+
+.sliver_down
+
+	\\ This routine is called to plot left and right slivers
+	\\ A = pixel mask, count = maximum number of columns to plot
+	\\ It will stop as soon as it finishes a byte column
+
+	CLC
+
+	.foreachslivercolumn
+	TAX		; save pixel mask
+	
+	AND linecolours-&78,Y
+	EOR (write),Y
+	STA (write),Y
+	
+	TXA		; get back pixel mask
+	INY:BMI slivercrossedrow
+	
+	AND linecolours-&78,Y
+	EOR (write),Y
+	STA (write),Y
+	DEY
+	.backfromslivercrossedrow
+
+	DEC count:BEQ finishedsliver
+	
+	; C must be clear here
+	LDA acc:ADC dydxlo:STA acc
+	TYA:ADC dydxhi:BPL sliversamerow		; C now clear
 	TAY
-	DEC write+1
-	LDA write:ADC #8:STA write
-	BCC nextblock
-	INC write+1
-	BCS nextblock
-
-	.samerow
-	SBC #7:TAY
+	SBC #&77:LSR A:LSR A:LSR A
+	CLC:ADC write+1:STA write+1
+	TYA
+	AND #7:ORA #&78
+	.sliversamerow
+	TAY
+	
+	; Repeat if we are not yet at the end of the byte column
+	TXA:LSR A:BCC foreachslivercolumn
 	LDA write:ADC #7:STA write
-	BCC nextblock
-	INC write+1
-	BCS nextblock
+	BCC P%+4:INC write+1
+	
+	; If we got here it's because we were plotting the left sliver and now need to continue
+	; with the rest of the line
+	JMP noleftsliver
 
-.finishedline
-	RTS
-
-
+	.finishedsliver
+	; put the self-modified branches back to their defaults (for gradient 0-1)
+	LDX #finishedblock-finish_branch-2:STX finish_branch+1
+	JMP nextline
+	
+	.slivercrossedrow
+	LDY #&78:INC write+1
+	AND linecolours+0
+	EOR (write),Y
+	STA (write),Y
+	LDY #&7F:DEC write+1
+	BCC backfromslivercrossedrow
+}

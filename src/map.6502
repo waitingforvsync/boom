@@ -138,19 +138,6 @@
 	RTS
 
 
-
-.clear_world_angle_cache
-{
-	LDX cont_num_verts	; num verts in the current contour, minus one
-	LDA #&FF
-	.loop
-	STA world_angle_cache_hi,X
-	DEX
-	BPL loop
-	RTS
-}
-
-
 .clear_subzone_cache
 {
 	LDX numcachedsubzones:DEX	; will always be at least 1
@@ -184,3 +171,9 @@
 \	LDA dy+1:SBC playery+2:STA dy+1
 \
 \	RTS
+
+
+LDA &FFFF,X:ASL A:ASL A:ASL A:ASL A:ASL A
+SEC:SBC playerxlo:STA dx
+LDA &FFFF,X:ROR A:LSR A:LSR A
+CMP #32:AND #&DF:SBC playerxhi:STA dx+1
